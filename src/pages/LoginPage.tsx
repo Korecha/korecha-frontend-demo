@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { ApiRequestError } from '../api/client'
 import { getHomeRoute, useAuth } from '../auth/AuthContext'
 import { Alert } from '../components/ui/Alert'
@@ -119,9 +119,9 @@ export function LoginPage() {
             <div className="mt-6 border-t border-korecha-border pt-6">
               <p className="text-center text-sm text-korecha-muted">New to Korecha?</p>
               <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                <a href="/register/driver" className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50">Driver</a>
-                <a href="/register/fleet" className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50">Fleet</a>
-                <a href="/register/importer" className="rounded-xl border border-emerald-200 py-2.5 text-center text-sm font-semibold text-emerald-700 hover:bg-emerald-50">Importer</a>
+                <Link to="/register/driver" className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50">Driver</Link>
+                <Link to="/register/fleet" className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50">Fleet</Link>
+                <Link to="/register/importer" className="rounded-xl border border-emerald-200 py-2.5 text-center text-sm font-semibold text-emerald-700 hover:bg-emerald-50">Importer</Link>
               </div>
             </div>
           </div>
