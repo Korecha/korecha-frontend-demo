@@ -10,8 +10,9 @@ import { jobRouteLocations } from '../../utils/jobMap'
 import type { Job } from '../../types'
 
 export function ImporterHomePage() {
-  const { memberProfile } = useAuth()
+  const { memberProfile, organization } = useAuth()
   const approved = isApproved(memberProfile)
+  const isSoleImporter = !organization
   const [stats, setStats] = useState<Record<string, number>>({})
   const [recentJobs, setRecentJobs] = useState<Job[]>([])
 
@@ -36,12 +37,16 @@ export function ImporterHomePage() {
           <p className="mt-2 max-w-sm text-sm text-blue-100/90">
             Post haul jobs, find live trucks nearby, and track every delivery until it&apos;s done.
           </p>
-          {approved ? (
+          {approved && !isSoleImporter ? (
             <Link to="/importer/jobs/new" className="mt-5 inline-block">
               <Button className="bg-white text-korecha-primary shadow-lg hover:bg-blue-50">
                 + Post a job
               </Button>
             </Link>
+          ) : approved && isSoleImporter ? (
+            <p className="mt-4 rounded-xl bg-white/10 px-3 py-2 text-xs font-medium text-blue-100">
+              Your account is approved. Contact the platform admin to be linked to an organization before posting jobs.
+            </p>
           ) : (
             <p className="mt-4 rounded-xl bg-white/10 px-3 py-2 text-xs font-medium text-blue-100">
               Awaiting approval — you can post jobs once your account is verified

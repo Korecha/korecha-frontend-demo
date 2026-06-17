@@ -1,10 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import {
-  createItemType,
-  listItemTypes,
-  updateItemType,
-  upsertItemTypePricing,
-} from '../../api/org'
+import { createDefaultItemType, listDefaultItemTypes, updateDefaultItemType } from '../../api/admin'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
@@ -15,7 +10,7 @@ import { Table, TableEmpty, TableHead, TableRow, TableWrapper, Td, Th } from '..
 import { formatEtb } from '../../utils/format'
 import type { ItemType } from '../../types'
 
-export function OrgItemTypesPage() {
+export function AdminItemTypesPage() {
   const [types, setTypes] = useState<ItemType[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -31,7 +26,7 @@ export function OrgItemTypesPage() {
 
   const load = () => {
     setLoading(true)
-    listItemTypes()
+    listDefaultItemTypes()
       .then((r) => setTypes(r.data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
@@ -47,7 +42,7 @@ export function OrgItemTypesPage() {
     setShowForm(false)
   }
 
-  const openPricing = (type: ItemType) => {
+  const openEdit = (type: ItemType) => {
     setEditing(type)
     setForm({
       name: type.name,
@@ -63,24 +58,20 @@ export function OrgItemTypesPage() {
     e.preventDefault()
     try {
       if (editing) {
-        if (editing.isPlatformDefault) {
-          await upsertItemTypePricing(editing.id, {
-            pricePerKmEtb: form.pricePerKmEtb,
-            flatFeeEtb: form.flatFeeEtb,
-          })
-        } else {
-          await updateItemType(editing.id, {
-            name: form.name,
-            description: form.description,
-            unit: form.unit,
-            pricePerKmEtb: form.pricePerKmEtb,
-            flatFeeEtb: form.flatFeeEtb,
-          })
-        }
+        await updateDefaultItemType(editing.id, form)
       } else {
-        await createItemType(form)
+        await createDefaultItemType(form)
       }
       resetForm()
+      load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed')
+    }
+  }
+
+  const toggleActive = async (type: ItemType) => {
+    try {
+      await updateDefaultItemType(type.id, { isActive: !type.isActive })
       load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed')
@@ -90,11 +81,9 @@ export function OrgItemTypesPage() {
   return (
     <div>
       <PageHeader
-        title="Item Types & Pricing"
-        description="Platform defaults are shown for reference. Set your org rates per km (ETB) and flat fees per unit."
-        action={
-          <Button onClick={() => { resetForm(); setShowForm(true) }}>+ Add org type</Button>
-        }
+        title="Default Item Types"
+        description="Platform-wide cargo types with default pricing. Container and Unstuffed are created automatically."
+        action={<Button onClick={() => { resetForm(); setShowForm(true) }}>+ Add default type</Button>}
       />
       {error && (
         <div className="mb-4">
@@ -109,16 +98,15 @@ export function OrgItemTypesPage() {
               <Th>Unit</Th>
               <Th>ETB / km</Th>
               <Th>Flat fee</Th>
-              <Th>Scope</Th>
               <Th>Status</Th>
               <Th>Actions</Th>
             </tr>
           </TableHead>
           <tbody>
             {loading ? (
-              <TableEmpty colSpan={7} message="Loading..." />
+              <TableEmpty colSpan={6} message="Loading..." />
             ) : types.length === 0 ? (
-              <TableEmpty colSpan={7} message="No item types available" />
+              <TableEmpty colSpan={6} message="No default item types yet" />
             ) : (
               types.map((t) => (
                 <TableRow key={t.id}>
@@ -126,14 +114,18 @@ export function OrgItemTypesPage() {
                   <Td>{t.unit}</Td>
                   <Td>{formatEtb(t.pricePerKmEtb ?? 0)}</Td>
                   <Td>{formatEtb(t.flatFeeEtb ?? 0)}</Td>
-                  <Td>{t.isPlatformDefault ? 'Platform default' : 'Organization'}</Td>
                   <Td>
                     <Badge status={t.isActive ? 'ACTIVE' : 'SUSPENDED'} />
                   </Td>
                   <Td>
-                    <Button size="sm" variant="secondary" onClick={() => openPricing(t)}>
-                      {t.isPlatformDefault ? 'Set org pricing' : 'Edit'}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => openEdit(t)}>
+                        Edit
+                      </Button>
+                      <Button size="sm" variant="secondary" onClick={() => toggleActive(t)}>
+                        {t.isActive ? 'Deactivate' : 'Activate'}
+                      </Button>
+                    </div>
                   </Td>
                 </TableRow>
               ))
@@ -142,32 +134,20 @@ export function OrgItemTypesPage() {
         </Table>
       </TableWrapper>
       {showForm && (
-        <Modal
-          title={editing ? (editing.isPlatformDefault ? `Org pricing: ${editing.name}` : `Edit ${editing.name}`) : 'Add item type'}
-          onClose={resetForm}
-        >
+        <Modal title={editing ? `Edit ${editing.name}` : 'Add default item type'} onClose={resetForm}>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!editing?.isPlatformDefault && (
-              <>
-                <Field label="Name">
-                  <Input
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    required
-                  />
-                </Field>
-                <Field label="Unit">
-                  <Input value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
-                </Field>
-                <Field label="Description">
-                  <Input
-                    value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  />
-                </Field>
-              </>
-            )}
-            <Field label="Extra ETB per km (added to base org rate)">
+            <Field label="Name">
+              <Input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                required
+                disabled={!!editing}
+              />
+            </Field>
+            <Field label="Unit">
+              <Input value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
+            </Field>
+            <Field label="Default extra ETB per km">
               <Input
                 type="number"
                 min={0}
@@ -175,13 +155,16 @@ export function OrgItemTypesPage() {
                 onChange={(e) => setForm({ ...form, pricePerKmEtb: Number(e.target.value) })}
               />
             </Field>
-            <Field label="Flat fee per unit (ETB)">
+            <Field label="Default flat fee per unit (ETB)">
               <Input
                 type="number"
                 min={0}
                 value={form.flatFeeEtb}
                 onChange={(e) => setForm({ ...form, flatFeeEtb: Number(e.target.value) })}
               />
+            </Field>
+            <Field label="Description">
+              <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             </Field>
             <ModalFooter>
               <Button variant="secondary" onClick={resetForm}>

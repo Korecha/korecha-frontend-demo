@@ -48,6 +48,7 @@ export const JOB_STATUS_LABELS: Record<string, string> = {
   REQUESTED: 'Awaiting driver',
   ASSIGNED: 'Truck assigned',
   IN_TRANSIT: 'In transit',
+  PENDING_APPROVAL: 'Awaiting importer approval',
   COMPLETED: 'Completed',
   CANCELLED: 'Cancelled',
 }
@@ -72,6 +73,7 @@ export const STATUS_COLORS: Record<string, string> = {
   REQUESTED: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
   ASSIGNED: 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200',
   IN_TRANSIT: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200',
+  PENDING_APPROVAL: 'bg-orange-50 text-orange-700 ring-1 ring-orange-200',
   COMPLETED: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
   CANCELLED: 'bg-red-50 text-red-700 ring-1 ring-red-200',
   PENDING: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',

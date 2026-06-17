@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getJob, getNearbyTrucks, requestTruck } from '../../api/importer'
+import { getJob, getNearbyTrucks, requestTruck, approveJob } from '../../api/importer'
 import { DriverMap } from '../../components/driver/DriverMap'
 import { JobPricingCard } from '../../components/importer/JobPricingCard'
 import { JobStatusTimeline } from '../../components/importer/JobStatusTimeline'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
-import { refName } from '../../utils/format'
+import { refName, formatDate } from '../../utils/format'
 import { jobRouteLocations } from '../../utils/jobMap'
 import type { Job, JobRequest, NearbyTruck } from '../../types'
 
@@ -40,7 +40,15 @@ function TruckRequestCard({
             {truck.distanceKm} km away
           </span>
         </p>
-        <p className="text-xs text-slate-400">{refName(truck.truck.truckTypeId)}</p>
+        <p className="text-xs text-slate-400">
+          {refName(truck.truck.truckTypeId)}
+          {truck.organization?.name && (
+            <>
+              {' · '}
+              <span className="font-medium text-slate-500">{truck.organization.name}</span>
+            </>
+          )}
+        </p>
         {extended && (
           <p className="mt-1 text-xs font-medium text-amber-700">
             Outside {80} km range — still available to request
@@ -64,6 +72,7 @@ export function ImporterJobDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [requesting, setRequesting] = useState<string | null>(null)
+  const [approving, setApproving] = useState(false)
 
   const load = () => {
     if (!id) return
@@ -100,11 +109,28 @@ export function ImporterJobDetailPage() {
     }
   }
 
+  const handleApprove = async () => {
+    if (!id) return
+    setApproving(true)
+    setError('')
+    try {
+      await approveJob(id)
+      load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Approval failed')
+    } finally {
+      setApproving(false)
+    }
+  }
+
   if (loading) return <p className="text-sm text-slate-500">Loading job...</p>
   if (!job) return <Alert>Job not found</Alert>
 
   const canRequest = ['OPEN', 'REQUESTED'].includes(job.status)
-  const showPricing = job.pricingQuote && !['ASSIGNED', 'IN_TRANSIT', 'COMPLETED'].includes(job.status)
+  const awaitingApproval = job.status === 'PENDING_APPROVAL'
+  const showPricing = job.pricingQuote && !['ASSIGNED', 'IN_TRANSIT', 'PENDING_APPROVAL', 'COMPLETED'].includes(job.status)
+  const pickupGate = typeof job.pickupGateId === 'object' ? job.pickupGateId : null
+  const deliveryGate = typeof job.deliveryGateId === 'object' ? job.deliveryGateId : null
   const driver = typeof job.assignedDriverId === 'object' ? job.assignedDriverId : null
   const truck = typeof job.assignedTruckId === 'object' ? job.assignedTruckId : null
 
@@ -131,10 +157,12 @@ export function ImporterJobDetailPage() {
           <div className="rounded-xl bg-blue-50 px-3 py-2.5">
             <p className="text-[10px] font-bold uppercase tracking-wide text-korecha-primary">Pickup</p>
             <p className="text-sm font-medium text-slate-800">{job.pickup.label}</p>
+            {pickupGate && <p className="mt-1 text-xs text-slate-500">Gate: {pickupGate.name}</p>}
           </div>
           <div className="rounded-xl bg-amber-50 px-3 py-2.5">
             <p className="text-[10px] font-bold uppercase tracking-wide text-amber-600">Delivery</p>
             <p className="text-sm font-medium text-slate-800">{job.delivery.label}</p>
+            {deliveryGate && <p className="mt-1 text-xs text-slate-500">Gate: {deliveryGate.name}</p>}
           </div>
         </div>
         {job.notes && (
@@ -164,6 +192,18 @@ export function ImporterJobDetailPage() {
 
       {error && <Alert>{error}</Alert>}
 
+      {awaitingApproval && (
+        <div className="rounded-3xl border border-orange-200 bg-gradient-to-br from-orange-50 to-white p-5 shadow-sm">
+          <h3 className="font-bold text-orange-900">Driver marked delivery complete</h3>
+          <p className="mt-1 text-sm text-orange-800">
+            Review the job and approve to finalize. The driver delivered on {formatDate(job.deliveredAt)}.
+          </p>
+          <Button className="mt-4 w-full py-3" disabled={approving} onClick={handleApprove}>
+            {approving ? 'Approving...' : 'Approve delivery & close job'}
+          </Button>
+        </div>
+      )}
+
       {showPricing && job.pricingQuote && (
         <JobPricingCard quote={job.pricingQuote} />
       )}
@@ -178,7 +218,7 @@ export function ImporterJobDetailPage() {
             </div>
             <div>
               <h3 className="font-bold text-slate-900">Find trucks</h3>
-              <p className="text-xs text-slate-500">Live drivers within ~{nearbyRadiusKm} km of pickup</p>
+              <p className="text-xs text-slate-500">Live drivers from all organizations within ~{nearbyRadiusKm} km</p>
             </div>
           </div>
 

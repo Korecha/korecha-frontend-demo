@@ -39,11 +39,20 @@ export function JobPricingCard({ quote, compact = false }: JobPricingCardProps) 
 
       <div className="mt-4 space-y-2 rounded-2xl bg-white/80 p-4 ring-1 ring-blue-100">
         {quote.basePricePerKm != null && (
-          <Row label="Rate" value={`${formatEtb(quote.basePricePerKm)}/km`} />
+          <Row label="Base rate" value={`${formatEtb(quote.basePricePerKm)}/km`} />
+        )}
+        {quote.effectivePricePerKm != null && quote.effectivePricePerKm !== quote.basePricePerKm && (
+          <Row label="Item type rate" value={`${formatEtb(quote.effectivePricePerKm)}/km`} />
         )}
         <Row label="Distance" value={`${quote.distanceKm} km`} />
         <Row label="Per unit" value={formatEtb(perUnit)} />
         <Row label="Quantity" value={String(quote.quantity)} />
+        {(quote.breakdown.itemFlatFeeEtb ?? 0) > 0 && (
+          <Row label="Item flat fees" value={formatEtb(quote.breakdown.itemFlatFeeEtb!)} />
+        )}
+        {(quote.breakdown.gateFeesEtb ?? 0) > 0 && (
+          <Row label="Gate entrance fees" value={formatEtb(quote.breakdown.gateFeesEtb!)} />
+        )}
         {(quote.breakdown.weekendPremium ?? 0) > 0 && (
           <Row label="Weekend premium" value={formatEtb(quote.breakdown.weekendPremium!)} />
         )}

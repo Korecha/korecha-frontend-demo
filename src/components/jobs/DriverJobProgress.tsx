@@ -3,10 +3,11 @@ import type { JobStatus } from '../../types'
 const DRIVER_STEPS: { key: JobStatus; label: string }[] = [
   { key: 'ASSIGNED', label: 'Assigned' },
   { key: 'IN_TRANSIT', label: 'In transit' },
+  { key: 'PENDING_APPROVAL', label: 'Awaiting approval' },
   { key: 'COMPLETED', label: 'Completed' },
 ]
 
-const STATUS_ORDER: JobStatus[] = ['ASSIGNED', 'IN_TRANSIT', 'COMPLETED']
+const STATUS_ORDER: JobStatus[] = ['ASSIGNED', 'IN_TRANSIT', 'PENDING_APPROVAL', 'COMPLETED']
 
 export function DriverJobProgress({ status }: { status: JobStatus }) {
   const currentIdx = STATUS_ORDER.indexOf(status)

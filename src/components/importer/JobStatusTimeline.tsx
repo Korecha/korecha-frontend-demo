@@ -1,7 +1,7 @@
 import { JOB_STATUS_LABELS } from '../../utils/format'
 import type { JobStatus } from '../../types'
 
-const STEPS: JobStatus[] = ['OPEN', 'REQUESTED', 'ASSIGNED', 'IN_TRANSIT', 'COMPLETED']
+const STEPS: JobStatus[] = ['OPEN', 'REQUESTED', 'ASSIGNED', 'IN_TRANSIT', 'PENDING_APPROVAL', 'COMPLETED']
 
 export function JobStatusTimeline({ status }: { status: JobStatus }) {
   const currentIdx = STEPS.indexOf(status)

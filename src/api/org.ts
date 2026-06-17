@@ -4,6 +4,8 @@ import type {
   ContainerSize,
   DriverProfile,
   FleetProfile,
+  GateEntrance,
+  ItemType,
   Location,
   Organization,
   Pricing,
@@ -84,18 +86,69 @@ export function reviewFleetApplication(id: string, body: { status: 'APPROVED' | 
 }
 
 export function listItemTypes() {
-  return api<{ data: import('../types').ItemType[] }>('/api/org/item-types')
+  return api<{ data: ItemType[] }>('/api/org/item-types')
 }
 
-export function createItemType(body: { name: string; description?: string; unit?: string }) {
-  return api<{ data: import('../types').ItemType }>('/api/org/item-types', {
+export function createItemType(body: {
+  name: string
+  description?: string
+  unit?: string
+  pricePerKmEtb?: number
+  flatFeeEtb?: number
+}) {
+  return api<{ data: ItemType }>('/api/org/item-types', {
     method: 'POST',
     body: JSON.stringify(body),
   })
 }
 
-export function updateItemType(id: string, body: Partial<{ name: string; description: string; unit: string; isActive: boolean }>) {
-  return api<{ data: import('../types').ItemType }>(`/api/org/item-types/${id}`, {
+export function updateItemType(
+  id: string,
+  body: Partial<{
+    name: string
+    description: string
+    unit: string
+    pricePerKmEtb: number
+    flatFeeEtb: number
+    isActive: boolean
+  }>
+) {
+  return api<{ data: ItemType }>(`/api/org/item-types/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  })
+}
+
+export function upsertItemTypePricing(
+  id: string,
+  body: { pricePerKmEtb: number; flatFeeEtb: number }
+) {
+  return api<{ data: ItemType }>(`/api/org/item-types/${id}/pricing`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  })
+}
+
+export function listGateEntrances() {
+  return api<{ data: GateEntrance[] }>('/api/org/gate-entrances')
+}
+
+export function createGateEntrance(body: {
+  name: string
+  locationId?: string
+  feeEtb: number
+}) {
+  return api<{ data: GateEntrance }>('/api/org/gate-entrances', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+export function updateGateEntrance(
+  id: string,
+  body: Partial<{ name: string; locationId: string; feeEtb: number; isActive: boolean }>
+) {
+  return api<{ data: GateEntrance }>(`/api/org/gate-entrances/${id}`, {
     method: 'PUT',
     body: JSON.stringify(body),
   })

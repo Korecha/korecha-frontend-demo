@@ -3,8 +3,9 @@ import { Alert } from './Alert'
 import { Badge } from './Badge'
 
 export function ApprovalBanner() {
-  const { memberProfile } = useAuth()
+  const { memberProfile, organization, user } = useAuth()
   const status = memberProfile?.profile?.status
+  const isSoleImporter = user?.role === 'IMPORTER' && !organization
 
   if (!status || status === 'APPROVED') return null
 
@@ -15,7 +16,9 @@ export function ApprovalBanner() {
           <div>
             <p className="font-semibold">Application under review</p>
             <p className="mt-1 text-sm opacity-90">
-              Your documents have been submitted. The organization admin will review and approve your account.
+              {isSoleImporter
+                ? 'Your documents have been submitted. A platform admin will review and approve your account.'
+                : 'Your documents have been submitted. The organization admin will review and approve your account.'}
             </p>
           </div>
           <Badge status="PENDING" />
@@ -30,7 +33,8 @@ export function ApprovalBanner() {
         <div>
           <p className="font-semibold">Application rejected</p>
           <p className="mt-1 text-sm opacity-90">
-            {memberProfile?.profile?.rejectionReason || 'Contact your organization admin for details.'}
+            {memberProfile?.profile?.rejectionReason ||
+              (isSoleImporter ? 'Contact platform support for details.' : 'Contact your organization admin for details.')}
           </p>
         </div>
         <Badge status="REJECTED" />

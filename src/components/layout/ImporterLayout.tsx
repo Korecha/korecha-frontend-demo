@@ -25,7 +25,9 @@ export function ImporterLayout() {
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-blue-200/80">Korecha Importer</p>
             <h1 className="truncate text-lg font-bold">{company || user?.fullName}</h1>
-            <p className="truncate text-xs text-blue-100/70">{organization?.name}</p>
+            <p className="truncate text-xs text-blue-100/70">
+              {organization?.name || 'Independent importer'}
+            </p>
           </div>
           <button
             type="button"

@@ -18,6 +18,7 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: 'REQUESTED', label: 'Requested' },
   { key: 'ASSIGNED', label: 'Assigned' },
   { key: 'IN_TRANSIT', label: 'In transit' },
+  { key: 'PENDING_APPROVAL', label: 'Awaiting approval' },
   { key: 'COMPLETED', label: 'Done' },
 ]
 

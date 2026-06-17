@@ -1,13 +1,19 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { createJob, listImporterItemTypes, listImporterLocations, previewJobPricing } from '../../api/importer'
+import {
+  createJob,
+  listImporterGateEntrances,
+  listImporterItemTypes,
+  listImporterLocations,
+  previewJobPricing,
+} from '../../api/importer'
 import { isApproved, useAuth } from '../../auth/AuthContext'
-import { JobLocationPicker, type MapPoint } from '../../components/importer/JobLocationPicker'
 import { JobPricingCard } from '../../components/importer/JobPricingCard'
 import { Alert } from '../../components/ui/Alert'
 import { Button } from '../../components/ui/Button'
 import { Field, Input, Select } from '../../components/ui/Input'
-import type { ItemType, Location } from '../../types'
+import { LocationAutocomplete } from '../../components/ui/LocationAutocomplete'
+import type { GateEntrance, ItemType, Location } from '../../types'
 
 export function ImporterNewJobPage() {
   const navigate = useNavigate()
@@ -15,12 +21,14 @@ export function ImporterNewJobPage() {
   const approved = isApproved(memberProfile)
   const [itemTypes, setItemTypes] = useState<ItemType[]>([])
   const [locations, setLocations] = useState<Location[]>([])
+  const [gates, setGates] = useState<GateEntrance[]>([])
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [mapMode, setMapMode] = useState<'pickup' | 'delivery'>('pickup')
-  const [pickup, setPickup] = useState<MapPoint | null>(null)
-  const [delivery, setDelivery] = useState<MapPoint | null>(null)
   const [form, setForm] = useState({
+    pickupLocationId: '',
+    deliveryLocationId: '',
+    pickupGateId: '',
+    deliveryGateId: '',
     itemTypeId: '',
     quantity: 1,
     notes: '',
@@ -31,40 +39,65 @@ export function ImporterNewJobPage() {
   useEffect(() => {
     listImporterItemTypes().then((r) => setItemTypes(r.data)).catch(() => {})
     listImporterLocations().then((r) => setLocations(r.data)).catch(() => {})
+    listImporterGateEntrances().then((r) => setGates(r.data)).catch(() => {})
   }, [])
 
+  const pickupLocation = locations.find((loc) => loc.id === form.pickupLocationId)
+  const deliveryLocation = locations.find((loc) => loc.id === form.deliveryLocationId)
+  const pickupGates = gates.filter((gate) => {
+    const locId = typeof gate.locationId === 'object' ? gate.locationId?.id : gate.locationId
+    return !locId || locId === form.pickupLocationId
+  })
+  const deliveryGates = gates.filter((gate) => {
+    const locId = typeof gate.locationId === 'object' ? gate.locationId?.id : gate.locationId
+    return !locId || locId === form.deliveryLocationId
+  })
+
+  const canPreview =
+    form.pickupLocationId &&
+    form.deliveryLocationId &&
+    form.pickupGateId &&
+    form.deliveryGateId &&
+    form.quantity >= 1
+
   useEffect(() => {
-    if (!pickup || !delivery || form.quantity < 1) {
+    if (!canPreview) {
       setPriceQuote(null)
       return
     }
     setPriceLoading(true)
     const timer = setTimeout(() => {
       previewJobPricing({
+        itemTypeId: form.itemTypeId || undefined,
         quantity: form.quantity,
-        pickup: { coordinates: pickup.coordinates },
-        delivery: { coordinates: delivery.coordinates },
+        pickup: { locationId: form.pickupLocationId },
+        delivery: { locationId: form.deliveryLocationId },
+        pickupGateId: form.pickupGateId,
+        deliveryGateId: form.deliveryGateId,
       })
         .then((r) => setPriceQuote(r.data))
         .catch(() => setPriceQuote(null))
         .finally(() => setPriceLoading(false))
     }, 400)
     return () => clearTimeout(timer)
-  }, [pickup, delivery, form.quantity])
-
-  const handlePointSet = (mode: 'pickup' | 'delivery', point: MapPoint) => {
-    if (mode === 'pickup') {
-      setPickup(point)
-      if (!delivery) setMapMode('delivery')
-    } else {
-      setDelivery(point)
-    }
-  }
+  }, [
+    canPreview,
+    form.pickupLocationId,
+    form.deliveryLocationId,
+    form.pickupGateId,
+    form.deliveryGateId,
+    form.quantity,
+    form.itemTypeId,
+  ])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!pickup || !delivery) {
-      setError('Set both pickup and delivery on the map')
+    if (!pickupLocation || !deliveryLocation) {
+      setError('Select valid pickup and delivery locations')
+      return
+    }
+    if (!form.pickupGateId || !form.deliveryGateId) {
+      setError('Select gate entrances for pickup and delivery')
       return
     }
     setSubmitting(true)
@@ -74,8 +107,10 @@ export function ImporterNewJobPage() {
         itemTypeId: form.itemTypeId,
         quantity: form.quantity,
         notes: form.notes || undefined,
-        pickup,
-        delivery,
+        pickup: { locationId: form.pickupLocationId },
+        delivery: { locationId: form.deliveryLocationId },
+        pickupGateId: form.pickupGateId,
+        deliveryGateId: form.deliveryGateId,
       })
       navigate(`/importer/jobs/${res.data.id}`)
     } catch (err) {
@@ -102,77 +137,127 @@ export function ImporterNewJobPage() {
       <div className="rounded-3xl border border-korecha-border bg-white p-5 shadow-sm">
         <h2 className="text-xl font-bold text-slate-900">Post a haul job</h2>
         <p className="mt-1 text-sm text-slate-500">
-          Set pickup and delivery on the map, then choose your cargo type
+          Choose pickup and delivery locations, select gate entrances, then set cargo details
         </p>
       </div>
-
-      <JobLocationPicker
-        pickup={pickup}
-        delivery={delivery}
-        activeMode={mapMode}
-        onModeChange={setMapMode}
-        onPointSet={handlePointSet}
-        presetLocations={locations}
-      />
-
-      {(pickup || delivery) && (
-        <div className="grid gap-2 sm:grid-cols-2">
-          <div className={`rounded-2xl px-4 py-3 text-sm ${pickup ? 'bg-blue-50 ring-1 ring-blue-100' : 'bg-slate-50'}`}>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-korecha-primary">Pickup</p>
-            <p className="mt-0.5 font-medium text-slate-800">{pickup?.label || 'Not set'}</p>
-          </div>
-          <div className={`rounded-2xl px-4 py-3 text-sm ${delivery ? 'bg-amber-50 ring-1 ring-amber-100' : 'bg-slate-50'}`}>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-amber-600">Delivery</p>
-            <p className="mt-0.5 font-medium text-slate-800">{delivery?.label || 'Not set'}</p>
-          </div>
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-4 rounded-3xl border border-korecha-border bg-white p-5 shadow-sm">
         {error && <Alert>{error}</Alert>}
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Pickup label">
-            <Input
-              value={pickup?.label || ''}
-              onChange={(e) => pickup && setPickup({ ...pickup, label: e.target.value })}
-              placeholder="Tap map to set pickup"
-              disabled={!pickup}
-              required={!!pickup}
-            />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <LocationAutocomplete
+            label="Pickup location"
+            value={form.pickupLocationId}
+            locations={locations}
+            onChange={(pickupLocationId) =>
+              setForm({ ...form, pickupLocationId, pickupGateId: '' })
+            }
+            required
+          />
+          <LocationAutocomplete
+            label="Delivery location"
+            value={form.deliveryLocationId}
+            locations={locations}
+            onChange={(deliveryLocationId) =>
+              setForm({ ...form, deliveryLocationId, deliveryGateId: '' })
+            }
+            required
+          />
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Pickup gate entrance">
+            <Select
+              value={form.pickupGateId}
+              onChange={(e) => setForm({ ...form, pickupGateId: e.target.value })}
+              required
+              disabled={!form.pickupLocationId}
+            >
+              <option value="">
+                {form.pickupLocationId
+                  ? pickupGates.length
+                    ? 'Select pickup gate'
+                    : 'No gates for this location'
+                  : 'Select pickup location first'}
+              </option>
+              {pickupGates.map((gate) => (
+                <option key={gate.id} value={gate.id}>
+                  {gate.name} (ETB {gate.feeEtb.toLocaleString()})
+                </option>
+              ))}
+            </Select>
           </Field>
-          <Field label="Delivery label">
-            <Input
-              value={delivery?.label || ''}
-              onChange={(e) => delivery && setDelivery({ ...delivery, label: e.target.value })}
-              placeholder="Tap map to set delivery"
-              disabled={!delivery}
-              required={!!delivery}
-            />
+          <Field label="Delivery gate entrance">
+            <Select
+              value={form.deliveryGateId}
+              onChange={(e) => setForm({ ...form, deliveryGateId: e.target.value })}
+              required
+              disabled={!form.deliveryLocationId}
+            >
+              <option value="">
+                {form.deliveryLocationId
+                  ? deliveryGates.length
+                    ? 'Select delivery gate'
+                    : 'No gates for this location'
+                  : 'Select delivery location first'}
+              </option>
+              {deliveryGates.map((gate) => (
+                <option key={gate.id} value={gate.id}>
+                  {gate.name} (ETB {gate.feeEtb.toLocaleString()})
+                </option>
+              ))}
+            </Select>
           </Field>
         </div>
+
+        {(pickupLocation || deliveryLocation) && (
+          <div className="grid gap-2 sm:grid-cols-2">
+            <div className="rounded-2xl bg-blue-50 px-4 py-3 text-sm ring-1 ring-blue-100">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-korecha-primary">Pickup</p>
+              <p className="mt-0.5 font-medium text-slate-800">{pickupLocation?.name || 'Not set'}</p>
+            </div>
+            <div className="rounded-2xl bg-amber-50 px-4 py-3 text-sm ring-1 ring-amber-100">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-amber-600">Delivery</p>
+              <p className="mt-0.5 font-medium text-slate-800">{deliveryLocation?.name || 'Not set'}</p>
+            </div>
+          </div>
+        )}
 
         <Field label="Cargo type">
           <Select value={form.itemTypeId} onChange={(e) => setForm({ ...form, itemTypeId: e.target.value })} required>
             <option value="">Select item type</option>
-            {itemTypes.map((t) => <option key={t.id} value={t.id}>{t.name} ({t.unit})</option>)}
+            {itemTypes.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name} ({t.unit})
+              </option>
+            ))}
           </Select>
         </Field>
         <Field label="Quantity">
-          <Input type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })} required />
+          <Input
+            type="number"
+            min={1}
+            value={form.quantity}
+            onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })}
+            required
+          />
         </Field>
         <Field label="Notes (optional)">
-          <Input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Special handling, timing..." />
+          <Input
+            value={form.notes}
+            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            placeholder="Special handling, timing..."
+          />
         </Field>
 
-        {priceLoading && pickup && delivery && (
+        {priceLoading && canPreview && (
           <p className="text-center text-sm text-slate-500">Calculating estimate...</p>
         )}
         {priceQuote && !priceLoading && <JobPricingCard quote={priceQuote} />}
 
         <Button
           type="submit"
-          disabled={submitting || !pickup || !delivery}
+          disabled={submitting || !canPreview || !form.itemTypeId}
           className="w-full py-3.5 shadow-lg shadow-blue-900/10"
         >
           {submitting ? 'Posting...' : 'Post job & find trucks'}

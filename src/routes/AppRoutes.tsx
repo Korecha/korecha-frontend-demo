@@ -13,6 +13,8 @@ import { LocationsPage } from '../pages/admin/LocationsPage'
 import { OrganizationDetailPage } from '../pages/admin/OrganizationDetailPage'
 import { OrganizationsPage } from '../pages/admin/OrganizationsPage'
 import { SettingsPage } from '../pages/admin/SettingsPage'
+import { AdminApplicationsPage } from '../pages/admin/ApplicationsPage'
+import { AdminItemTypesPage } from '../pages/admin/ItemTypesPage'
 import { DriverHomePage } from '../pages/driver/DriverHomePage'
 import { DriverProfilePage } from '../pages/driver/DriverProfilePage'
 import { DriverRoutesPage } from '../pages/driver/DriverRoutesPage'
@@ -37,6 +39,7 @@ import { ImporterProfilePage } from '../pages/importer/ImporterProfilePage'
 import { DriverJobsPage } from '../pages/driver/DriverJobsPage'
 import { DriverJobDetailPage } from '../pages/driver/DriverJobDetailPage'
 import { OrgItemTypesPage } from '../pages/org/OrgItemTypesPage'
+import { OrgGateEntrancesPage } from '../pages/org/OrgGateEntrancesPage'
 
 function HomeRedirect() {
   return <Navigate to="/login" replace />
@@ -62,6 +65,8 @@ export function AppRoutes() {
             <Route index element={<DashboardPage />} />
             <Route path="organizations" element={<OrganizationsPage />} />
             <Route path="organizations/:id" element={<OrganizationDetailPage />} />
+            <Route path="applications" element={<AdminApplicationsPage />} />
+            <Route path="item-types" element={<AdminItemTypesPage />} />
             <Route path="containers" element={<ContainersPage />} />
             <Route path="containers/upload" element={<ContainerBulkUploadPage />} />
             <Route path="locations" element={<LocationsPage />} />
@@ -80,6 +85,7 @@ export function AppRoutes() {
             <Route path="users" element={<OrgUsersPage />} />
             <Route path="truck-types" element={<OrgTruckTypesPage />} />
             <Route path="item-types" element={<OrgItemTypesPage />} />
+            <Route path="gate-entrances" element={<OrgGateEntrancesPage />} />
             <Route path="pricing" element={<OrgPricingPage />} />
           </Route>
           <Route

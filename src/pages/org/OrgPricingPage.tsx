@@ -98,7 +98,7 @@ export function OrgPricingPage() {
     <div>
       <PageHeader
         title="Pricing Settings"
-        description="Configure your organization's ETB rates for the Djibouti–Addis corridor"
+        description="Set your base haul rate in ETB per km. Item-type and gate fees are configured separately."
       />
 
       {error && <div className="mb-4"><Alert>{error}</Alert></div>}
@@ -106,7 +106,10 @@ export function OrgPricingPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <h3 className="font-bold text-slate-900">ETB Pricing Rules</h3>
+          <h3 className="font-bold text-slate-900">Base ETB Pricing</h3>
+          <p className="mt-1 text-sm text-slate-500">
+            Base rate per kilometer plus container surcharges. Item-type premiums and gate fees are added on top.
+          </p>
           <form onSubmit={handleSave} className="mt-5 space-y-4">
             <Field label="Base price per km (ETB)">
               <Input type="number" min={0} value={pricingForm.basePricePerKm}

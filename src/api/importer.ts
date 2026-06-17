@@ -15,10 +15,17 @@ export function listImporterItemTypes() {
   return api<{ data: ItemType[] }>('/api/importer/item-types')
 }
 
+export function listImporterGateEntrances() {
+  return api<{ data: import('../types').GateEntrance[] }>('/api/importer/gate-entrances')
+}
+
 export function previewJobPricing(body: {
+  itemTypeId?: string
   quantity: number
-  pickup: { coordinates: { lat: number; lng: number } }
-  delivery: { coordinates: { lat: number; lng: number } }
+  pickup: { locationId: string }
+  delivery: { locationId: string }
+  pickupGateId: string
+  deliveryGateId: string
 }) {
   return api<{ data: JobPricingQuote }>('/api/importer/jobs/preview-pricing', {
     method: 'POST',
@@ -30,8 +37,10 @@ export function createJob(body: {
   itemTypeId: string
   quantity: number
   notes?: string
-  pickup: { label: string; coordinates: { lat: number; lng: number }; locationId?: string }
-  delivery: { label: string; coordinates: { lat: number; lng: number }; locationId?: string }
+  pickup: { locationId: string }
+  delivery: { locationId: string }
+  pickupGateId: string
+  deliveryGateId: string
 }) {
   return api<{ data: Job }>('/api/importer/jobs', {
     method: 'POST',
@@ -61,5 +70,11 @@ export function requestTruck(jobId: string, body: { driverId: string; truckId: s
   return api<{ data: JobRequest }>(`/api/importer/jobs/${jobId}/request`, {
     method: 'POST',
     body: JSON.stringify(body),
+  })
+}
+
+export function approveJob(jobId: string) {
+  return api<{ data: Job }>(`/api/importer/jobs/${jobId}/approve`, {
+    method: 'POST',
   })
 }

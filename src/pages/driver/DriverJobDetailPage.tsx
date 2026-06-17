@@ -84,7 +84,7 @@ export function DriverJobDetailPage() {
 
   const importer = typeof job.importerId === 'object' ? job.importerId : null
   const showRequestActions = !!request && ['OPEN', 'REQUESTED'].includes(job.status)
-  const showDriverProgress = ['ASSIGNED', 'IN_TRANSIT', 'COMPLETED'].includes(job.status)
+  const showDriverProgress = ['ASSIGNED', 'IN_TRANSIT', 'PENDING_APPROVAL', 'COMPLETED'].includes(job.status)
 
   return (
     <div className="space-y-4">
@@ -159,8 +159,20 @@ export function DriverJobDetailPage() {
 
       {job.status === 'IN_TRANSIT' && (
         <Button className="w-full py-3.5" disabled={acting} onClick={handleComplete}>
-          {acting ? 'Completing...' : 'Mark delivered — job complete'}
+          {acting ? 'Submitting...' : 'Mark delivered — submit for importer approval'}
         </Button>
+      )}
+
+      {job.status === 'PENDING_APPROVAL' && (
+        <div className="rounded-2xl bg-orange-50 p-4 text-center">
+          <p className="font-semibold text-orange-800">Delivery submitted</p>
+          <p className="mt-1 text-sm text-orange-700">
+            Waiting for the importer to approve. You will be available for new jobs after approval.
+          </p>
+          {job.deliveredAt && (
+            <p className="mt-2 text-xs text-orange-600">Delivered {formatDate(job.deliveredAt)}</p>
+          )}
+        </div>
       )}
 
       {job.status === 'COMPLETED' && (

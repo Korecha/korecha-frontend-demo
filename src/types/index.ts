@@ -11,7 +11,14 @@ export type OrgMemberRole = 'DRIVER' | 'FLEET_OWNER' | 'IMPORTER'
 export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
 export type TruckStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
 export type DriverAvailability = 'AVAILABLE' | 'ON_JOB' | 'OFFLINE'
-export type JobStatus = 'OPEN' | 'REQUESTED' | 'ASSIGNED' | 'IN_TRANSIT' | 'COMPLETED' | 'CANCELLED'
+export type JobStatus =
+  | 'OPEN'
+  | 'REQUESTED'
+  | 'ASSIGNED'
+  | 'IN_TRANSIT'
+  | 'PENDING_APPROVAL'
+  | 'COMPLETED'
+  | 'CANCELLED'
 export type JobRequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED'
 
 export interface LiveLocation {
@@ -98,7 +105,7 @@ export interface Truck {
 export interface ImporterProfile {
   id: string
   userId: string
-  organizationId: string
+  organizationId: string | null
   companyName?: string
   nationalIdFile: string
   importLicenseFile: string
@@ -109,10 +116,22 @@ export interface ImporterProfile {
 
 export interface ItemType {
   id: string
-  organizationId: string
+  organizationId: string | null
   name: string
   description?: string
   unit: string
+  pricePerKmEtb?: number
+  flatFeeEtb?: number
+  isActive: boolean
+  isPlatformDefault?: boolean
+}
+
+export interface GateEntrance {
+  id: string
+  organizationId: string
+  name: string
+  locationId?: string | Location | null
+  feeEtb: number
   isActive: boolean
 }
 
@@ -131,9 +150,12 @@ export interface Job {
   notes?: string
   pickup: JobPoint
   delivery: JobPoint
+  pickupGateId?: string | GateEntrance
+  deliveryGateId?: string | GateEntrance
   status: JobStatus
   assignedDriverId?: string | User | null
   assignedTruckId?: string | Truck | null
+  deliveredAt?: string
   completedAt?: string
   pricingQuote?: JobPricingQuote
   createdAt?: string
@@ -153,6 +175,7 @@ export interface NearbyTruck {
   distanceKm: number
   driver: User
   truck: Truck
+  organization?: { id: string; name: string; type?: string } | null
   liveLocation: LiveLocation
 }
 
@@ -173,6 +196,11 @@ export interface Pricing {
   }
   roundTripDiscountPercent: number
   minTripPriceEtb: number
+  itemTypeOverrides?: Array<{
+    itemTypeId: string
+    pricePerKmEtb: number
+    flatFeeEtb: number
+  }>
   updatedAt?: string
 }
 
@@ -267,6 +295,7 @@ export interface JobPricingQuote {
   distanceKm: number
   quantity: number
   basePricePerKm?: number
+  effectivePricePerKm?: number
   breakdown: {
     base: number
     weekendPremium?: number
@@ -276,6 +305,9 @@ export interface JobPricingQuote {
     reeferPremium?: number
     detentionCost?: number
     roundTripDiscount?: number
+    itemTypeKmPremiumEtb?: number
+    itemFlatFeeEtb?: number
+    gateFeesEtb?: number
   }
   totalEtb: number
   isWeekend?: boolean

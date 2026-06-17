@@ -5,6 +5,8 @@ import type {
   ContainerStatus,
   ContainerType,
   DashboardStats,
+  ImporterProfile,
+  ItemType,
   Location,
   Organization,
   OrgStatus,
@@ -177,6 +179,54 @@ export function getSettings() {
 export function updateSettings(body: Partial<PlatformSettings>) {
   return api<{ data: PlatformSettings }>('/api/admin/settings', {
     method: 'PUT',
+    body: JSON.stringify(body),
+  })
+}
+
+export function listSoleImporterApplications(status = 'PENDING') {
+  return api<{ data: ImporterProfile[] }>(`/api/admin/applications/importers?status=${status}`)
+}
+
+export function reviewSoleImporterApplication(
+  id: string,
+  body: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string }
+) {
+  return api<{ data: ImporterProfile }>(`/api/admin/applications/importers/${id}/review`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+export function listDefaultItemTypes() {
+  return api<{ data: ItemType[] }>('/api/admin/item-types')
+}
+
+export function createDefaultItemType(body: {
+  name: string
+  description?: string
+  unit?: string
+  pricePerKmEtb?: number
+  flatFeeEtb?: number
+}) {
+  return api<{ data: ItemType }>('/api/admin/item-types', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+export function updateDefaultItemType(
+  id: string,
+  body: Partial<{
+    name: string
+    description: string
+    unit: string
+    pricePerKmEtb: number
+    flatFeeEtb: number
+    isActive: boolean
+  }>
+) {
+  return api<{ data: ItemType }>(`/api/admin/item-types/${id}`, {
+    method: 'PATCH',
     body: JSON.stringify(body),
   })
 }
