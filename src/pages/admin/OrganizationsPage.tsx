@@ -9,15 +9,18 @@ import {
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
-import { Field, Input } from '../../components/ui/Input'
+import { Field, Input, Select } from '../../components/ui/Input'
 import { Modal, ModalFooter } from '../../components/ui/Modal'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Table, TableEmpty, TableHead, TableRow, TableWrapper, Td, Th } from '../../components/ui/Table'
-import type { Organization } from '../../types'
-import { formatEtb } from '../../utils/format'
+import type { Organization, OrgType } from '../../types'
+import { formatEtb, TYPE_LABELS } from '../../utils/format'
+
+const ORG_TYPES: OrgType[] = ['IMPORTER', 'EXPORTER', 'TRUCKING', 'SHIPPING_LINE']
 
 const emptyForm = {
   name: '',
+  type: '' as OrgType | '',
   contactEmail: '',
   phone: '',
   address: '',
@@ -59,6 +62,7 @@ export function OrganizationsPage() {
     setEditing(org)
     setForm({
       name: org.name,
+      type: org.type || '',
       contactEmail: org.contactEmail || '',
       phone: org.phone || '',
       address: org.address || '',
@@ -75,8 +79,9 @@ export function OrganizationsPage() {
     setSubmitting(true)
     setError('')
     try {
-      if (editing) await updateOrganization(editing.id, form)
-      else await createOrganization(form)
+      const body = { ...form, type: form.type || undefined }
+      if (editing) await updateOrganization(editing.id, body)
+      else await createOrganization(body)
       setShowForm(false)
       load()
     } catch (err) {
@@ -132,6 +137,7 @@ export function OrganizationsPage() {
           <TableHead>
             <tr>
               <Th>Name</Th>
+              <Th>Type</Th>
               <Th>Status</Th>
               <Th>Price/km</Th>
               <Th>Org Admin</Th>
@@ -141,13 +147,14 @@ export function OrganizationsPage() {
           </TableHead>
           <tbody>
             {loading ? (
-              <TableEmpty colSpan={6} message="Loading..." />
+              <TableEmpty colSpan={7} message="Loading..." />
             ) : orgs.length === 0 ? (
-              <TableEmpty colSpan={6} message="No organizations found" />
+              <TableEmpty colSpan={7} message="No organizations found" />
             ) : (
               orgs.map((org) => (
                 <TableRow key={org.id}>
                   <Td className="font-semibold text-slate-900">{org.name}</Td>
+                  <Td>{org.type ? TYPE_LABELS[org.type] : 'Unassigned'}</Td>
                   <Td><Badge status={org.status} /></Td>
                   <Td>
                     {org.pricing ? formatEtb(org.pricing.basePricePerKm) : '—'}
@@ -185,6 +192,16 @@ export function OrganizationsPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <Field label="Name">
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            </Field>
+            <Field label="Organization Type">
+              <Select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as OrgType })} required>
+                <option value="">Select type</option>
+                {ORG_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {TYPE_LABELS[type]}
+                  </option>
+                ))}
+              </Select>
             </Field>
             <Field label="Contact Email">
               <Input type="email" value={form.contactEmail} onChange={(e) => setForm({ ...form, contactEmail: e.target.value })} />

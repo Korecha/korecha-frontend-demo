@@ -8,7 +8,7 @@ import { Card } from '../../components/ui/Card'
 import { Field, Input, Select } from '../../components/ui/Input'
 import { Loading } from '../../components/ui/Loading'
 import type { ContainerSize, Location, Organization, QuotePreview } from '../../types'
-import { formatEtb } from '../../utils/format'
+import { formatEtb, TYPE_LABELS } from '../../utils/format'
 
 type Tab = 'profile' | 'pricing'
 
@@ -158,6 +158,7 @@ export function OrganizationDetailPage() {
         <Card className="mt-6 max-w-lg">
           <div className="space-y-4">
             {[
+              ['Type', org.type ? TYPE_LABELS[org.type] : 'Unassigned'],
               ['Org Admin', org.orgAdmin?.email || 'Not set'],
               ['Email', org.contactEmail || '—'],
               ['Phone', org.phone || '—'],
