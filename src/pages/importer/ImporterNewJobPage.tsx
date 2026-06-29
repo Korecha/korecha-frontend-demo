@@ -17,8 +17,9 @@ import type { GateEntrance, ItemType, Location } from '../../types'
 
 export function ImporterNewJobPage() {
   const navigate = useNavigate()
-  const { memberProfile } = useAuth()
+  const { memberProfile, organization } = useAuth()
   const approved = isApproved(memberProfile)
+  const canUseJobs = approved && Boolean(organization)
   const [itemTypes, setItemTypes] = useState<ItemType[]>([])
   const [locations, setLocations] = useState<Location[]>([])
   const [gates, setGates] = useState<GateEntrance[]>([])
@@ -37,10 +38,11 @@ export function ImporterNewJobPage() {
   const [priceLoading, setPriceLoading] = useState(false)
 
   useEffect(() => {
+    if (!canUseJobs) return
     listImporterItemTypes().then((r) => setItemTypes(r.data)).catch(() => {})
     listImporterLocations().then((r) => setLocations(r.data)).catch(() => {})
     listImporterGateEntrances().then((r) => setGates(r.data)).catch(() => {})
-  }, [])
+  }, [canUseJobs])
 
   const pickupLocation = locations.find((loc) => loc.id === form.pickupLocationId)
   const deliveryLocation = locations.find((loc) => loc.id === form.deliveryLocationId)
@@ -62,11 +64,11 @@ export function ImporterNewJobPage() {
 
   useEffect(() => {
     if (!canPreview) {
-      setPriceQuote(null)
+      void Promise.resolve().then(() => setPriceQuote(null))
       return
     }
-    setPriceLoading(true)
     const timer = setTimeout(() => {
+      setPriceLoading(true)
       previewJobPricing({
         itemTypeId: form.itemTypeId || undefined,
         quantity: form.quantity,
@@ -123,7 +125,15 @@ export function ImporterNewJobPage() {
   if (!approved) {
     return (
       <Alert variant="warning">
-        Post jobs after your account is approved by your organization admin.
+        Post jobs after your account is approved.
+      </Alert>
+    )
+  }
+
+  if (!organization) {
+    return (
+      <Alert variant="warning">
+        Your account is approved. Contact the platform admin to be linked to an organization before posting jobs.
       </Alert>
     )
   }

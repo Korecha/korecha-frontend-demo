@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getJob, getNearbyTrucks, requestTruck, approveJob } from '../../api/importer'
+import { isApproved, useAuth } from '../../auth/AuthContext'
 import { DriverMap } from '../../components/driver/DriverMap'
 import { JobPricingCard } from '../../components/importer/JobPricingCard'
 import { JobStatusTimeline } from '../../components/importer/JobStatusTimeline'
@@ -64,6 +65,9 @@ function TruckRequestCard({
 
 export function ImporterJobDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const { memberProfile, organization } = useAuth()
+  const approved = isApproved(memberProfile)
+  const canUseJobs = approved && Boolean(organization)
   const [job, setJob] = useState<Job | null>(null)
   const [requests, setRequests] = useState<JobRequest[]>([])
   const [nearby, setNearby] = useState<NearbyTruck[]>([])
@@ -74,8 +78,11 @@ export function ImporterJobDetailPage() {
   const [requesting, setRequesting] = useState<string | null>(null)
   const [approving, setApproving] = useState(false)
 
-  const load = () => {
-    if (!id) return
+  const load = useCallback(() => {
+    if (!id || !canUseJobs) {
+      setLoading(false)
+      return
+    }
     setLoading(true)
     getJob(id)
       .then((r) => {
@@ -91,9 +98,11 @@ export function ImporterJobDetailPage() {
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
-  }
+  }, [id, canUseJobs])
 
-  useEffect(() => { load() }, [id])
+  useEffect(() => {
+    void Promise.resolve().then(load)
+  }, [load])
 
   const handleRequest = async (truck: NearbyTruck) => {
     if (!id) return
@@ -121,6 +130,18 @@ export function ImporterJobDetailPage() {
     } finally {
       setApproving(false)
     }
+  }
+
+  if (!approved) {
+    return <Alert variant="warning">Jobs are available after your account is approved.</Alert>
+  }
+
+  if (!organization) {
+    return (
+      <Alert variant="warning">
+        Your account is approved. Contact the platform admin to be linked to an organization before viewing jobs.
+      </Alert>
+    )
   }
 
   if (loading) return <p className="text-sm text-slate-500">Loading job...</p>

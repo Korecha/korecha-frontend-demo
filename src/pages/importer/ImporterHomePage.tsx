@@ -13,15 +13,16 @@ export function ImporterHomePage() {
   const { memberProfile, organization } = useAuth()
   const approved = isApproved(memberProfile)
   const isSoleImporter = !organization
+  const canUseJobs = approved && !isSoleImporter
   const [stats, setStats] = useState<Record<string, number>>({})
   const [recentJobs, setRecentJobs] = useState<Job[]>([])
 
   useEffect(() => {
     getImporterProfile().then((r) => setStats(r.data.stats)).catch(() => {})
-    if (approved) {
+    if (canUseJobs) {
       listJobs().then((r) => setRecentJobs(r.data.slice(0, 3))).catch(() => {})
     }
-  }, [approved])
+  }, [canUseJobs])
 
   const activeCount = (stats.ASSIGNED || 0) + (stats.IN_TRANSIT || 0) + (stats.REQUESTED || 0)
 
@@ -70,7 +71,7 @@ export function ImporterHomePage() {
         ))}
       </div>
 
-      {approved && activeCount > 0 && (
+      {canUseJobs && activeCount > 0 && (
         <Link
           to="/importer/jobs"
           className="flex items-center justify-between rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 to-white px-4 py-3 shadow-sm transition hover:border-korecha-primary/30"
@@ -90,7 +91,7 @@ export function ImporterHomePage() {
         </Link>
       )}
 
-      {approved && (
+      {canUseJobs && (
         <div>
           <div className="mb-3 flex items-center justify-between">
             <h3 className="font-bold text-slate-900">Recent jobs</h3>

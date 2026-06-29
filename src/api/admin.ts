@@ -189,7 +189,18 @@ export function listSoleImporterApplications(status = 'PENDING') {
 
 export function reviewSoleImporterApplication(
   id: string,
-  body: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string }
+  body: {
+    status: 'APPROVED' | 'REJECTED'
+    rejectionReason?: string
+    organizationId?: string
+    createOrganization?: {
+      name: string
+      contactEmail?: string
+      phone?: string
+      address?: string
+      basePricePerKm?: number
+    }
+  }
 ) {
   return api<{ data: ImporterProfile }>(`/api/admin/applications/importers/${id}/review`, {
     method: 'POST',

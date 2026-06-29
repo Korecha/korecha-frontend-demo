@@ -23,21 +23,44 @@ const FILTERS: { key: Filter; label: string }[] = [
 ]
 
 export function ImporterJobsPage() {
-  const { memberProfile } = useAuth()
+  const { memberProfile, organization } = useAuth()
   const approved = isApproved(memberProfile)
+  const canUseJobs = approved && Boolean(organization)
   const [jobs, setJobs] = useState<Job[]>([])
   const [filter, setFilter] = useState<Filter>('all')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!approved) { setLoading(false); return }
-    listJobs().then((r) => setJobs(r.data)).finally(() => setLoading(false))
-  }, [approved])
+    if (!canUseJobs) return
+    let active = true
+    void Promise.resolve()
+      .then(() => {
+        setLoading(true)
+        return listJobs()
+      })
+      .then((r) => {
+        if (active) setJobs(r.data)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [canUseJobs])
 
   if (!approved) {
     return (
       <Alert variant="warning">
-        Jobs are available after your account is approved by your organization.
+        Jobs are available after your account is approved.
+      </Alert>
+    )
+  }
+
+  if (!organization) {
+    return (
+      <Alert variant="warning">
+        Your account is approved. Contact the platform admin to be linked to an organization before posting jobs.
       </Alert>
     )
   }
