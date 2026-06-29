@@ -126,14 +126,36 @@ export function listContainers(params?: {
   )
 }
 
-export function createContainer(body: Record<string, unknown>) {
+export function createContainer(body: {
+  containerNumber: string
+  size: ContainerSize
+  type: ContainerType
+  status: ContainerStatus
+  organizationId: string
+  locationId?: string
+  locationLabel?: string
+  shippingLineCode?: string
+  lastFreeDay?: string
+  notes?: string
+}) {
   return api<{ data: Container }>('/api/admin/containers', {
     method: 'POST',
     body: JSON.stringify(body),
   })
 }
 
-export function updateContainer(id: string, body: Record<string, unknown>) {
+export function updateContainer(
+  id: string,
+  body: Partial<{
+    status: ContainerStatus
+    organizationId: string
+    locationId: string | null
+    locationLabel: string
+    shippingLineCode: string
+    lastFreeDay: string | null
+    notes: string
+  }>
+) {
   return api<{ data: Container }>(`/api/admin/containers/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(body),
