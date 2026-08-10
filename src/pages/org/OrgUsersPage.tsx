@@ -11,7 +11,7 @@ import type { Location, OrgMemberRole, TruckType, User } from '../../types'
 
 const MEMBER_ROLES: { value: OrgMemberRole; label: string }[] = [
   { value: 'DRIVER', label: 'Driver' },
-  { value: 'FLEET_OWNER', label: 'Fleet Owner' },
+  { value: 'FLEET_MANAGER_STAFF', label: 'Fleet Manager Staff' },
   { value: 'IMPORTER', label: 'Importer' },
 ]
 
@@ -24,7 +24,7 @@ const emptyForm = {
   phone: '',
   role: 'DRIVER' as OrgMemberRole,
   truckTypeId: '',
-  fleetOwnerId: '',
+  fleetManagerId: '',
   preferredRouteIds: [] as string[],
 }
 
@@ -56,9 +56,12 @@ export function OrgUsersPage() {
     listTruckTypes().then((r) => setTruckTypes(r.data.filter((t) => t.isActive))).catch(() => {})
   }, [])
 
-  const fleetOwners = users.filter(
-    (u) => u.role === 'FLEET_OWNER' && u.memberProfile?.status === 'APPROVED'
+  // A FleetManager is 1:1 with this Organization now, so there's at most one to assign to
+  // (rather than a list of individually-owned fleets).
+  const fleetManagerStaff = users.find(
+    (u) => u.role === 'FLEET_MANAGER_STAFF' && u.memberProfile?.status === 'APPROVED'
   )
+  const orgFleetManager = fleetManagerStaff?.memberProfile as { id?: string; fleetName?: string } | undefined
 
   const resetForm = () => {
     setForm(emptyForm)
@@ -88,9 +91,9 @@ export function OrgUsersPage() {
         setSubmitting(false)
         return
       }
-    } else if (form.role === 'FLEET_OWNER') {
-      if (!ceoNationalId) {
-        setError('CEO national ID document is required')
+    } else if (form.role === 'FLEET_MANAGER_STAFF') {
+      if (!orgFleetManager && !ceoNationalId) {
+        setError('CEO national ID document is required to set up this organization\'s fleet manager')
         setSubmitting(false)
         return
       }
@@ -111,12 +114,12 @@ export function OrgUsersPage() {
       if (form.role === 'DRIVER') {
         fd.append('preferredRouteIds', JSON.stringify(form.preferredRouteIds))
         if (form.truckTypeId) fd.append('truckTypeId', form.truckTypeId)
-        if (form.fleetOwnerId) fd.append('fleetOwnerId', form.fleetOwnerId)
+        if (form.fleetManagerId) fd.append('fleetManagerId', form.fleetManagerId)
         fd.append('nationalId', nationalId!)
         fd.append('driversLicense', driversLicense!)
-      } else if (form.role === 'FLEET_OWNER') {
-        fd.append('fleetName', form.fleetName)
-        fd.append('ceoNationalId', ceoNationalId!)
+      } else if (form.role === 'FLEET_MANAGER_STAFF') {
+        if (!orgFleetManager) fd.append('fleetName', form.fleetName)
+        if (ceoNationalId) fd.append('ceoNationalId', ceoNationalId)
       } else {
         if (form.companyName) fd.append('companyName', form.companyName)
         fd.append('nationalId', nationalId!)
@@ -140,7 +143,7 @@ export function OrgUsersPage() {
     <div>
       <PageHeader
         title="Team Members"
-        description="Create driver, fleet owner, or importer accounts with documents"
+        description="Create driver, fleet manager staff, or importer accounts with documents"
         action={<Button onClick={() => { resetForm(); setShowForm(true) }}>+ Add Member</Button>}
       />
 
@@ -161,12 +164,12 @@ export function OrgUsersPage() {
             {loading ? (
               <TableEmpty colSpan={5} message="Loading..." />
             ) : teamMembers.length === 0 ? (
-              <TableEmpty colSpan={5} message="No team members yet. Add your first driver, fleet owner, or importer." />
+              <TableEmpty colSpan={5} message="No team members yet. Add your first driver, fleet manager staff, or importer." />
             ) : (
               teamMembers.map((u) => (
                 <TableRow key={u.id}>
                   <Td className="font-semibold text-slate-900">
-                    {u.role === 'FLEET_OWNER' && u.memberProfile && 'fleetName' in u.memberProfile
+                    {u.role === 'FLEET_MANAGER_STAFF' && u.memberProfile && 'fleetName' in u.memberProfile
                       ? (u.memberProfile as { fleetName?: string }).fleetName || u.fullName
                       : u.role === 'IMPORTER' && u.memberProfile && 'companyName' in u.memberProfile
                         ? (u.memberProfile as { companyName?: string }).companyName || u.fullName
@@ -201,16 +204,22 @@ export function OrgUsersPage() {
               </Select>
             </Field>
 
-            {form.role === 'FLEET_OWNER' ? (
+            {form.role === 'FLEET_MANAGER_STAFF' ? (
               <>
-                <Field label="Fleet / Company Name">
-                  <Input
-                    value={form.fleetName}
-                    onChange={(e) => setForm({ ...form, fleetName: e.target.value })}
-                    required
-                  />
-                </Field>
-                <Field label="CEO / Contact Name">
+                {orgFleetManager ? (
+                  <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                    Joining existing fleet manager: <strong>{orgFleetManager.fleetName}</strong>
+                  </p>
+                ) : (
+                  <Field label="Fleet / Company Name">
+                    <Input
+                      value={form.fleetName}
+                      onChange={(e) => setForm({ ...form, fleetName: e.target.value })}
+                      required
+                    />
+                  </Field>
+                )}
+                <Field label="Contact Name">
                   <Input
                     value={form.fullName}
                     onChange={(e) => setForm({ ...form, fullName: e.target.value })}
@@ -289,17 +298,15 @@ export function OrgUsersPage() {
                     ))}
                   </Select>
                 </Field>
-                <Field label="Assign to Fleet (optional)">
+                <Field label="Assign to Fleet Manager (optional)">
                   <Select
-                    value={form.fleetOwnerId}
-                    onChange={(e) => setForm({ ...form, fleetOwnerId: e.target.value })}
+                    value={form.fleetManagerId}
+                    onChange={(e) => setForm({ ...form, fleetManagerId: e.target.value })}
                   >
                     <option value="">Independent driver</option>
-                    {fleetOwners.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {(f.memberProfile as { fleetName?: string })?.fleetName || f.fullName}
-                      </option>
-                    ))}
+                    {orgFleetManager?.id && (
+                      <option value={orgFleetManager.id}>{orgFleetManager.fleetName}</option>
+                    )}
                   </Select>
                 </Field>
                 {locations.length > 0 && (
@@ -319,13 +326,13 @@ export function OrgUsersPage() {
                   </Field>
                 )}
               </>
-            ) : form.role === 'FLEET_OWNER' ? (
-              <Field label="CEO National ID (image or PDF)">
+            ) : form.role === 'FLEET_MANAGER_STAFF' ? (
+              <Field label={orgFleetManager ? 'CEO National ID (not required for additional staff)' : 'CEO National ID (image or PDF)'}>
                 <Input
                   type="file"
                   accept="image/*,.pdf"
                   onChange={(e) => setCeoNationalId(e.target.files?.[0] || null)}
-                  required
+                  required={!orgFleetManager}
                 />
               </Field>
             ) : (

@@ -118,10 +118,12 @@ export function LoginPage() {
             </form>
             <div className="mt-6 border-t border-korecha-border pt-6">
               <p className="text-center text-sm text-korecha-muted">New to Korecha?</p>
-              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 <Link to="/register/driver" className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50">Driver</Link>
-                <Link to="/register/fleet" className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50">Fleet</Link>
+                <Link to="/register/fleet" className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50">Fleet Manager</Link>
+                <Link to="/register/truck-owner" className="rounded-xl border border-teal-200 py-2.5 text-center text-sm font-semibold text-teal-700 hover:bg-teal-50">Truck Owner</Link>
                 <Link to="/register/importer" className="rounded-xl border border-emerald-200 py-2.5 text-center text-sm font-semibold text-emerald-700 hover:bg-emerald-50">Importer</Link>
+                <Link to="/register/corporate-customer" className="rounded-xl border border-purple-200 py-2.5 text-center text-sm font-semibold text-purple-700 hover:bg-purple-50">Corporate</Link>
               </div>
             </div>
           </div>

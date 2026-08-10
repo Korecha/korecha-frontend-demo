@@ -23,7 +23,14 @@ export function DriverProfilePage() {
     ['Phone', user?.phone || '—'],
     ['Organization', organization?.name],
     ['Truck type', refName(profile?.truckTypeId)],
-    ['Fleet', typeof profile?.fleetOwnerId === 'object' ? profile.fleetOwnerId.fullName : 'Independent'],
+    [
+      'Fleet Manager',
+      typeof profile?.fleetManagerId === 'object' && profile.fleetManagerId
+        ? profile.fleetManagerId.fleetName
+        : typeof profile?.truckOwnerId === 'object' && profile.truckOwnerId
+          ? `${profile.truckOwnerId.ownerName} (truck owner)`
+          : 'Independent',
+    ],
     ['Routes', routes.length ? routes.join(', ') : '—'],
   ]
 

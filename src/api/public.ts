@@ -1,12 +1,16 @@
 import { api } from './client'
-import type { Location, Organization, TruckType } from '../types'
+import type { Location, Organization, ProviderType, TruckType } from '../types'
 
-export interface FleetOwnerOption {
+// A FleetManager is now 1:1 with an Organization, so this returns at most one entry.
+export interface FleetManagerOption {
   id: string
-  fullName: string
-  email: string
-  phone?: string
   fleetName: string
+  providerType: ProviderType
+}
+
+export interface TruckOwnerOption {
+  id: string
+  ownerName: string
 }
 
 export function listPublicOrganizations() {
@@ -22,5 +26,9 @@ export function listPublicTruckTypes(orgId: string) {
 }
 
 export function listPublicFleetOwners(orgId: string) {
-  return api<{ data: FleetOwnerOption[] }>(`/api/public/organizations/${orgId}/fleet-owners`)
+  return api<{ data: FleetManagerOption[] }>(`/api/public/organizations/${orgId}/fleet-owners`)
+}
+
+export function listPublicTruckOwners(orgId: string) {
+  return api<{ data: TruckOwnerOption[] }>(`/api/public/organizations/${orgId}/truck-owners`)
 }

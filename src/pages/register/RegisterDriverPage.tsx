@@ -1,14 +1,20 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ApiRequestError } from '../../api/client'
-import { listPublicFleetOwners, listPublicLocations, listPublicOrganizations, listPublicTruckTypes } from '../../api/public'
+import {
+  listPublicFleetOwners,
+  listPublicLocations,
+  listPublicOrganizations,
+  listPublicTruckOwners,
+  listPublicTruckTypes,
+} from '../../api/public'
 import { registerDriver } from '../../api/register'
 import { getHomeRoute, useAuth } from '../../auth/AuthContext'
 import { Alert } from '../../components/ui/Alert'
 import { Button } from '../../components/ui/Button'
 import { Field, Input, Select } from '../../components/ui/Input'
 import { PageHeader } from '../../components/ui/PageHeader'
-import type { FleetOwnerOption } from '../../api/public'
+import type { FleetManagerOption, TruckOwnerOption } from '../../api/public'
 import type { Location, Organization, TruckType } from '../../types'
 
 export function RegisterDriverPage() {
@@ -17,7 +23,8 @@ export function RegisterDriverPage() {
   const [orgs, setOrgs] = useState<Organization[]>([])
   const [locations, setLocations] = useState<Location[]>([])
   const [truckTypes, setTruckTypes] = useState<TruckType[]>([])
-  const [fleets, setFleets] = useState<FleetOwnerOption[]>([])
+  const [fleetManagers, setFleetManagers] = useState<FleetManagerOption[]>([])
+  const [truckOwners, setTruckOwners] = useState<TruckOwnerOption[]>([])
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
@@ -27,7 +34,8 @@ export function RegisterDriverPage() {
     password: '',
     phone: '',
     truckTypeId: '',
-    fleetOwnerId: '',
+    fleetManagerId: '',
+    truckOwnerId: '',
     preferredRouteIds: [] as string[],
   })
   const [nationalId, setNationalId] = useState<File | null>(null)
@@ -43,11 +51,13 @@ export function RegisterDriverPage() {
       listPublicLocations(form.organizationId),
       listPublicTruckTypes(form.organizationId),
       listPublicFleetOwners(form.organizationId),
+      listPublicTruckOwners(form.organizationId),
     ])
-      .then(([locRes, typeRes, fleetRes]) => {
+      .then(([locRes, typeRes, fleetRes, ownerRes]) => {
         setLocations(locRes.data)
         setTruckTypes(typeRes.data)
-        setFleets(fleetRes.data)
+        setFleetManagers(fleetRes.data)
+        setTruckOwners(ownerRes.data)
       })
       .catch(() => {})
   }, [form.organizationId])
@@ -78,7 +88,8 @@ export function RegisterDriverPage() {
       fd.append('phone', form.phone)
       fd.append('preferredRouteIds', JSON.stringify(form.preferredRouteIds))
       if (form.truckTypeId) fd.append('truckTypeId', form.truckTypeId)
-      if (form.fleetOwnerId) fd.append('fleetOwnerId', form.fleetOwnerId)
+      if (form.fleetManagerId) fd.append('fleetManagerId', form.fleetManagerId)
+      if (form.truckOwnerId) fd.append('truckOwnerId', form.truckOwnerId)
       fd.append('nationalId', nationalId)
       fd.append('driversLicense', driversLicense)
       const res = await registerDriver(fd)
@@ -120,10 +131,22 @@ export function RegisterDriverPage() {
                 {truckTypes.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
               </Select>
             </Field>
-            <Field label="Join a Fleet (optional)">
-              <Select value={form.fleetOwnerId} onChange={(e) => setForm({ ...form, fleetOwnerId: e.target.value })}>
-                <option value="">Independent driver</option>
-                {fleets.map((f) => <option key={f.id} value={f.id}>{f.fleetName} — {f.fullName}</option>)}
+            <Field label="Fleet Manager (optional)">
+              <Select
+                value={form.fleetManagerId}
+                onChange={(e) => setForm({ ...form, fleetManagerId: e.target.value, truckOwnerId: '' })}
+              >
+                <option value="">None — hired directly by a truck owner instead</option>
+                {fleetManagers.map((f) => <option key={f.id} value={f.id}>{f.fleetName}</option>)}
+              </Select>
+            </Field>
+            <Field label="Truck Owner (optional)">
+              <Select
+                value={form.truckOwnerId}
+                onChange={(e) => setForm({ ...form, truckOwnerId: e.target.value, fleetManagerId: '' })}
+              >
+                <option value="">None — hired directly by the fleet manager above</option>
+                {truckOwners.map((o) => <option key={o.id} value={o.id}>{o.ownerName}</option>)}
               </Select>
             </Field>
             {locations.length > 0 && (

@@ -9,7 +9,15 @@ import {
 } from 'react'
 import { getMe, login as apiLogin } from '../api/auth'
 import { clearToken, getToken, setToken } from '../api/client'
-import type { DriverProfile, FleetProfile, MemberProfileResponse, Organization, User } from '../types'
+import type {
+  CorporateCustomerProfile,
+  DriverProfile,
+  FleetProfile,
+  MemberProfileResponse,
+  Organization,
+  TruckOwnerProfile,
+  User,
+} from '../types'
 
 interface AuthContextValue {
   user: User | null
@@ -90,7 +98,9 @@ export function getHomeRoute(role?: string) {
   if (role === 'ADMIN') return '/admin'
   if (role === 'ORG_ADMIN') return '/org'
   if (role === 'DRIVER') return '/driver'
-  if (role === 'FLEET_OWNER') return '/fleet'
+  if (role === 'FLEET_MANAGER_STAFF') return '/fleet'
+  if (role === 'TRUCK_OWNER') return '/truck-owner'
+  if (role === 'CORPORATE_CUSTOMER') return '/corporate'
   if (role === 'IMPORTER') return '/importer'
   return '/login'
 }
@@ -110,5 +120,17 @@ export function getDriverProfile(memberProfile: MemberProfileResponse | null): D
 
 export function getFleetProfile(memberProfile: MemberProfileResponse | null): FleetProfile | null {
   if (memberProfile?.type === 'fleet') return memberProfile.profile as FleetProfile
+  return null
+}
+
+export function getTruckOwnerProfile(memberProfile: MemberProfileResponse | null): TruckOwnerProfile | null {
+  if (memberProfile?.type === 'truckOwner') return memberProfile.profile as TruckOwnerProfile
+  return null
+}
+
+export function getCorporateCustomerProfile(
+  memberProfile: MemberProfileResponse | null
+): CorporateCustomerProfile | null {
+  if (memberProfile?.type === 'corporateCustomer') return memberProfile.profile as CorporateCustomerProfile
   return null
 }

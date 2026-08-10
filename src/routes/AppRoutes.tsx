@@ -2,9 +2,11 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from '../auth/AuthContext'
 import { ProtectedRoute } from '../auth/ProtectedRoute'
 import { AdminLayout } from '../components/layout/AdminLayout'
+import { CorporateLayout } from '../components/layout/CorporateLayout'
 import { DriverLayout } from '../components/layout/DriverLayout'
 import { FleetLayout } from '../components/layout/FleetLayout'
 import { OrgLayout } from '../components/layout/OrgLayout'
+import { TruckOwnerLayout } from '../components/layout/TruckOwnerLayout'
 import { LoginPage } from '../pages/LoginPage'
 import { ContainerBulkUploadPage } from '../pages/admin/ContainerBulkUploadPage'
 import { ContainersPage } from '../pages/admin/ContainersPage'
@@ -22,6 +24,11 @@ import { DriverTrucksPage } from '../pages/driver/DriverTrucksPage'
 import { FleetDashboardPage } from '../pages/fleet/FleetDashboardPage'
 import { FleetDriversPage } from '../pages/fleet/FleetDriversPage'
 import { FleetTrucksPage } from '../pages/fleet/FleetTrucksPage'
+import { FleetContainersPage } from '../pages/fleet/FleetContainersPage'
+import { TruckOwnerHomePage } from '../pages/truckOwner/TruckOwnerHomePage'
+import { CorporateHomePage } from '../pages/corporate/CorporateHomePage'
+import { RegisterTruckOwnerPage } from '../pages/register/RegisterTruckOwnerPage'
+import { RegisterCorporateCustomerPage } from '../pages/register/RegisterCorporateCustomerPage'
 import { OrgApplicationsPage } from '../pages/org/OrgApplicationsPage'
 import { OrgDashboardPage } from '../pages/org/OrgDashboardPage'
 import { OrgPricingPage } from '../pages/org/OrgPricingPage'
@@ -54,6 +61,8 @@ export function AppRoutes() {
           <Route path="/register/driver" element={<RegisterDriverPage />} />
           <Route path="/register/fleet" element={<RegisterFleetPage />} />
           <Route path="/register/importer" element={<RegisterImporterPage />} />
+          <Route path="/register/truck-owner" element={<RegisterTruckOwnerPage />} />
+          <Route path="/register/corporate-customer" element={<RegisterCorporateCustomerPage />} />
           <Route
             path="/admin"
             element={
@@ -120,7 +129,7 @@ export function AppRoutes() {
           <Route
             path="/fleet"
             element={
-              <ProtectedRoute roles={['FLEET_OWNER']}>
+              <ProtectedRoute roles={['FLEET_MANAGER_STAFF']}>
                 <FleetLayout />
               </ProtectedRoute>
             }
@@ -128,6 +137,27 @@ export function AppRoutes() {
             <Route index element={<FleetDashboardPage />} />
             <Route path="drivers" element={<FleetDriversPage />} />
             <Route path="trucks" element={<FleetTrucksPage />} />
+            <Route path="containers" element={<FleetContainersPage />} />
+          </Route>
+          <Route
+            path="/truck-owner"
+            element={
+              <ProtectedRoute roles={['TRUCK_OWNER']}>
+                <TruckOwnerLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<TruckOwnerHomePage />} />
+          </Route>
+          <Route
+            path="/corporate"
+            element={
+              <ProtectedRoute roles={['CORPORATE_CUSTOMER']}>
+                <CorporateLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<CorporateHomePage />} />
           </Route>
           <Route path="*" element={<HomeRedirect />} />
         </Routes>

@@ -3,11 +3,16 @@ export type UserRole =
   | 'ORG_ADMIN'
   | 'IMPORTER'
   | 'EXPORTER'
+  | 'CORPORATE_CUSTOMER'
   | 'DRIVER'
-  | 'FLEET_OWNER'
+  | 'FLEET_MANAGER_STAFF'
+  | 'TRUCK_OWNER'
   | 'SHIPPING_LINE'
+  | 'CUSTOMS_OFFICER'
+  | 'GOVERNMENT_OFFICER'
 
-export type OrgMemberRole = 'DRIVER' | 'FLEET_OWNER' | 'IMPORTER'
+export type OrgMemberRole = 'DRIVER' | 'FLEET_MANAGER_STAFF' | 'IMPORTER'
+export type ProviderType = 'INTERNAL_UNIMODAL' | 'TRANSIT_COMPANY' | 'ASSOCIATION' | 'MTO'
 export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
 export type TruckStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
 export type DriverAvailability = 'AVAILABLE' | 'ON_JOB' | 'OFFLINE'
@@ -49,7 +54,11 @@ export interface User {
   organizationId: string | null
   phone?: string
   isVerified?: boolean
-  memberProfile?: (DriverProfile | FleetProfile | ImporterProfile) & { type?: 'driver' | 'fleet' | 'importer' } | null
+  memberProfile?:
+    | ((DriverProfile | FleetProfile | ImporterProfile | TruckOwnerProfile | CorporateCustomerProfile) & {
+        type?: 'driver' | 'fleet' | 'importer' | 'truckOwner' | 'corporateCustomer'
+      })
+    | null
 }
 
 export interface TruckType {
@@ -68,7 +77,8 @@ export interface DriverProfile {
   driversLicenseFile: string
   preferredRouteIds: string[] | Location[]
   truckTypeId?: string | TruckType
-  fleetOwnerId?: string | { id: string; fullName: string; email: string }
+  fleetManagerId?: string | { id: string; fleetName: string; providerType: ProviderType } | null
+  truckOwnerId?: string | { id: string; ownerName: string } | null
   status: ApprovalStatus
   rejectionReason?: string
   availability?: DriverAvailability
@@ -77,17 +87,59 @@ export interface DriverProfile {
   user?: User
 }
 
+// Org-level fleet manager record (doc: "fleet manager is a role, not one org type" — covers
+// Korecha's internal Unimodal dept, transit companies, truck owner associations, and MTOs).
 export interface FleetProfile {
   id: string
-  userId: string
   organizationId: string
   fleetName: string
+  providerType: ProviderType
+  shippingLineOrgId?: string | null
   ceoNationalIdFile: string
   status: ApprovalStatus
   rejectionReason?: string
   user?: User
+  staff?: FleetManagerStaff
   driverCount?: number
   truckCount?: number
+}
+
+export interface FleetManagerStaff {
+  id: string
+  userId: string
+  fleetManagerId: string
+  canAssignJobs: boolean
+  canViewEarnings: boolean
+  canManageAffiliations: boolean
+  canToggleTruckAvailability: boolean
+}
+
+// Genuinely separate role/table from FleetProfile per product decision.
+export interface TruckOwnerProfile {
+  id: string
+  userId: string
+  organizationId?: string | null
+  fleetManagerId?: string | { id: string; fleetName: string; providerType: ProviderType } | null
+  ownerName: string
+  nationalIdFile: string
+  canPostAvailability: boolean
+  status: ApprovalStatus
+  rejectionReason?: string
+  user?: User
+}
+
+// Genuinely separate onboarding/approval path from ImporterProfile per product decision.
+export interface CorporateCustomerProfile {
+  id: string
+  userId: string
+  organizationId?: string | null
+  companyName: string
+  businessRegistrationFile: string
+  nationalIdFile?: string
+  tier: string
+  status: ApprovalStatus
+  rejectionReason?: string
+  user?: User
 }
 
 export interface Truck {
@@ -95,9 +147,13 @@ export interface Truck {
   organizationId: string
   plateNumber: string
   truckTypeId: string | TruckType
-  fleetOwnerId?: string | null
+  truckOwnerId?: string | { id: string; ownerName: string } | null
+  fleetManagerId?: string | null
   driverId?: string | User | null
   status: TruckStatus
+  isAvailable?: boolean
+  flaggedSuspicious?: boolean
+  flagReason?: string
   rejectionReason?: string
   createdAt?: string
 }
@@ -180,8 +236,24 @@ export interface NearbyTruck {
 }
 
 export interface MemberProfileResponse {
-  type: 'driver' | 'fleet' | 'importer'
-  profile: DriverProfile | FleetProfile | ImporterProfile
+  type: 'driver' | 'fleet' | 'importer' | 'truckOwner' | 'corporateCustomer'
+  profile: DriverProfile | FleetProfile | ImporterProfile | TruckOwnerProfile | CorporateCustomerProfile
+}
+
+export interface CustomsBranch {
+  id: string
+  name: string
+  region: string
+  locationId?: string | Location | null
+  isActive: boolean
+}
+
+export interface GovernmentProject {
+  id: string
+  name: string
+  category: 'FUEL' | 'SUGAR' | 'OIL' | 'CORRIDOR' | 'AIRPORT' | 'OTHER'
+  status: 'ACTIVE' | 'COMPLETED' | 'SUSPENDED'
+  description?: string
 }
 
 export interface Pricing {

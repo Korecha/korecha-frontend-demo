@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { listFleetTrucks, reviewFleetTruck } from '../../api/fleet'
-import { isApproved, useAuth } from '../../auth/AuthContext'
+import { listFleetTrucks, reviewFleetTruck, toggleFleetTruckAvailability } from '../../api/fleet'
+import { getFleetProfile as getFleetMemberProfile, isApproved, useAuth } from '../../auth/AuthContext'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { PageHeader } from '../../components/ui/PageHeader'
@@ -14,6 +14,8 @@ export function FleetTrucksPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const approved = isApproved(memberProfile)
+  const fleetProfile = getFleetMemberProfile(memberProfile)
+  const canToggleAvailability = fleetProfile?.staff?.canToggleTruckAvailability ?? true
 
   const load = () => {
     if (!approved) { setLoading(false); return }
@@ -35,6 +37,15 @@ export function FleetTrucksPage() {
     }
   }
 
+  const handleToggleAvailability = async (truck: Truck) => {
+    try {
+      await toggleFleetTruckAvailability(truck.id, !truck.isAvailable)
+      load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update availability')
+    }
+  }
+
   if (!approved) {
     return (
       <div>
@@ -53,16 +64,28 @@ export function FleetTrucksPage() {
       {error && <div className="mb-4"><Alert>{error}</Alert></div>}
       <TableWrapper>
         <Table>
-          <TableHead><tr><Th>Plate</Th><Th>Type</Th><Th>Driver</Th><Th>Status</Th><Th>Actions</Th></tr></TableHead>
+          <TableHead><tr><Th>Plate</Th><Th>Type</Th><Th>Driver</Th><Th>Status</Th><Th>Availability</Th><Th>Actions</Th></tr></TableHead>
           <tbody>
-            {loading ? <TableEmpty colSpan={5} message="Loading..." /> : trucks.length === 0 ? (
-              <TableEmpty colSpan={5} message="No trucks yet. Drivers register their own trucks after approval." />
+            {loading ? <TableEmpty colSpan={6} message="Loading..." /> : trucks.length === 0 ? (
+              <TableEmpty colSpan={6} message="No trucks yet. Drivers register their own trucks after approval." />
             ) : trucks.map((t) => (
               <TableRow key={t.id}>
                 <Td className="font-semibold">{t.plateNumber}</Td>
                 <Td>{refName(t.truckTypeId)}</Td>
                 <Td>{typeof t.driverId === 'object' && t.driverId ? t.driverId.fullName : '—'}</Td>
                 <Td><Badge status={t.status} /></Td>
+                <Td>
+                  {t.status === 'APPROVED' ? (
+                    <button
+                      type="button"
+                      disabled={!canToggleAvailability}
+                      onClick={() => handleToggleAvailability(t)}
+                      className={`text-xs font-medium ${t.isAvailable ? 'text-emerald-600' : 'text-slate-400'} ${canToggleAvailability ? 'hover:underline' : 'cursor-not-allowed'}`}
+                    >
+                      {t.isAvailable ? 'Available' : 'Unavailable'}
+                    </button>
+                  ) : '—'}
+                </Td>
                 <Td>
                   {t.status === 'PENDING' && (
                     <div className="flex gap-2">

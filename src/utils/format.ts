@@ -39,8 +39,17 @@ export const TYPE_LABELS: Record<string, string> = {
 export const ROLE_LABELS: Record<string, string> = {
   ORG_ADMIN: 'Org Admin',
   DRIVER: 'Driver',
-  FLEET_OWNER: 'Fleet Owner',
+  FLEET_MANAGER_STAFF: 'Fleet Manager',
+  TRUCK_OWNER: 'Truck Owner',
+  CORPORATE_CUSTOMER: 'Corporate Customer',
   IMPORTER: 'Importer',
+}
+
+export const PROVIDER_TYPE_LABELS: Record<string, string> = {
+  INTERNAL_UNIMODAL: 'Korecha Unimodal Dept',
+  TRANSIT_COMPANY: 'Transit Company',
+  ASSOCIATION: 'Truck Owner Association',
+  MTO: 'Licensed MTO',
 }
 
 export const JOB_STATUS_LABELS: Record<string, string> = {
@@ -83,7 +92,9 @@ export const STATUS_COLORS: Record<string, string> = {
   SUSPENDED: 'bg-red-50 text-red-700 ring-1 ring-red-200',
   ORG_ADMIN: 'bg-blue-50 text-blue-700 ring-1 ring-blue-200',
   DRIVER: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200',
-  FLEET_OWNER: 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200',
+  FLEET_MANAGER_STAFF: 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200',
+  TRUCK_OWNER: 'bg-teal-50 text-teal-700 ring-1 ring-teal-200',
+  CORPORATE_CUSTOMER: 'bg-purple-50 text-purple-700 ring-1 ring-purple-200',
   IMPORTER: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
   EMPTY: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200',
   LOADED: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200',

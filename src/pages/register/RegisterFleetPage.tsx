@@ -8,7 +8,10 @@ import { Alert } from '../../components/ui/Alert'
 import { Button } from '../../components/ui/Button'
 import { Field, Input, Select } from '../../components/ui/Input'
 import { PageHeader } from '../../components/ui/PageHeader'
-import type { Organization } from '../../types'
+import { PROVIDER_TYPE_LABELS } from '../../utils/format'
+import type { Organization, ProviderType } from '../../types'
+
+const PROVIDER_TYPES: ProviderType[] = ['ASSOCIATION', 'TRANSIT_COMPANY', 'MTO', 'INTERNAL_UNIMODAL']
 
 export function RegisterFleetPage() {
   const navigate = useNavigate()
@@ -19,6 +22,7 @@ export function RegisterFleetPage() {
   const [form, setForm] = useState({
     organizationId: '',
     fleetName: '',
+    providerType: 'ASSOCIATION' as ProviderType,
     fullName: '',
     email: '',
     password: '',
@@ -55,7 +59,7 @@ export function RegisterFleetPage() {
   return (
     <div className="min-h-screen bg-korecha-bg px-6 py-10">
       <div className="mx-auto max-w-2xl">
-        <PageHeader title="Fleet Owner Registration" description="Register your fleet and manage drivers and trucks" />
+        <PageHeader title="Fleet Manager Registration" description="Register as a Korecha fleet manager — internal dept, transit company, truck owner association, or licensed MTO" />
         <div className="mt-6 rounded-2xl border border-korecha-border bg-white p-8 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && <Alert>{error}</Alert>}
@@ -66,6 +70,17 @@ export function RegisterFleetPage() {
               </Select>
             </Field>
             <Field label="Fleet / Company Name"><Input value={form.fleetName} onChange={(e) => setForm({ ...form, fleetName: e.target.value })} required /></Field>
+            <Field label="Fleet Manager Type">
+              <Select
+                value={form.providerType}
+                onChange={(e) => setForm({ ...form, providerType: e.target.value as ProviderType })}
+                required
+              >
+                {PROVIDER_TYPES.map((p) => (
+                  <option key={p} value={p}>{PROVIDER_TYPE_LABELS[p]}</option>
+                ))}
+              </Select>
+            </Field>
             <Field label="CEO / Contact Name"><Input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} required /></Field>
             <Field label="Email"><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required /></Field>
             <Field label="Phone"><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required /></Field>

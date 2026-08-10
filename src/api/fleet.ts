@@ -1,10 +1,10 @@
 import { api } from './client'
-import type { DriverProfile, FleetProfile, Location, Truck, TruckType, User } from '../types'
+import type { Container, DriverProfile, FleetManagerStaff, FleetProfile, Location, Truck, TruckType, User } from '../types'
 
 export function getFleetProfile() {
-  return api<{ data: { user: User; profile: FleetProfile; driverCount: number; truckCount: number } }>(
-    '/api/fleet/profile'
-  )
+  return api<{
+    data: { user: User; profile: FleetProfile; staff: FleetManagerStaff; driverCount: number; truckCount: number }
+  }>('/api/fleet/profile')
 }
 
 export function listFleetLocations() {
@@ -35,4 +35,16 @@ export function reviewFleetTruck(id: string, body: { status: 'APPROVED' | 'REJEC
     method: 'POST',
     body: JSON.stringify(body),
   })
+}
+
+export function toggleFleetTruckAvailability(id: string, isAvailable: boolean) {
+  return api<{ data: Truck }>(`/api/fleet/trucks/${id}/availability`, {
+    method: 'POST',
+    body: JSON.stringify({ isAvailable }),
+  })
+}
+
+// Read-only tab for MTO-linked fleet managers (heads-up #2) — empty for everyone else.
+export function listFleetContainers() {
+  return api<{ data: Container[] }>('/api/fleet/containers')
 }

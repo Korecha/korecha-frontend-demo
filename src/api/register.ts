@@ -1,11 +1,19 @@
 import { api, setToken } from './client'
-import type { DriverProfile, FleetProfile, ImporterProfile, Organization, User } from '../types'
+import type {
+  CorporateCustomerProfile,
+  DriverProfile,
+  FleetProfile,
+  ImporterProfile,
+  Organization,
+  TruckOwnerProfile,
+  User,
+} from '../types'
 
 interface RegisterResponse {
   token: string
   user: User
-  organization: Organization
-  profile: DriverProfile | FleetProfile | ImporterProfile
+  organization: Organization | null
+  profile: DriverProfile | FleetProfile | ImporterProfile | TruckOwnerProfile | CorporateCustomerProfile
 }
 
 export async function registerDriver(form: FormData) {
@@ -28,6 +36,24 @@ export async function registerImporter(form: FormData) {
 
 export async function registerFleet(form: FormData) {
   const res = await api<RegisterResponse>('/api/auth/register/fleet', {
+    method: 'POST',
+    body: form,
+  })
+  setToken(res.token)
+  return res
+}
+
+export async function registerTruckOwner(form: FormData) {
+  const res = await api<RegisterResponse>('/api/auth/register/truck-owner', {
+    method: 'POST',
+    body: form,
+  })
+  setToken(res.token)
+  return res
+}
+
+export async function registerCorporateCustomer(form: FormData) {
+  const res = await api<RegisterResponse>('/api/auth/register/corporate-customer', {
     method: 'POST',
     body: form,
   })
