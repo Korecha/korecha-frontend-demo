@@ -51,6 +51,11 @@ export const PROVIDER_TYPE_LABELS: Record<string, string> = {
   mto: 'MTO',
 }
 
+export const TRUCK_OWNER_TYPE_LABELS: Record<string, string> = {
+  INDIVIDUAL: 'Individual',
+  COMPANY: 'Company',
+}
+
 export const CORPORATE_TIER_LABELS: Record<string, string> = {
   STANDARD: 'Standard',
   PRIORITY: 'Priority',

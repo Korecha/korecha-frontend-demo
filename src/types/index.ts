@@ -5,6 +5,8 @@ export type UserRole =
   | 'EXPORTER'
   | 'DRIVER'
   | 'FLEET_OWNER'
+  | 'TRUCK_OWNER'
+  | 'CORPORATE_CUSTOMER'
   | 'SHIPPING_LINE'
 
 export type OrgMemberRole = 'DRIVER' | 'FLEET_OWNER' | 'IMPORTER'
@@ -13,6 +15,7 @@ export type TruckStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
 export type DriverAvailability = 'AVAILABLE' | 'ON_JOB' | 'OFFLINE'
 export type FleetProviderType = 'internal_unimodal' | 'transit_company' | 'association' | 'mto'
 export type CorporateTier = 'STANDARD' | 'PRIORITY' | 'PREFERRED'
+export type TruckOwnerType = 'INDIVIDUAL' | 'COMPANY'
 export type TradeSide = 'IMPORTER' | 'EXPORTER'
 export type ShipmentMode = 'UNIMODAL' | 'MULTIMODAL'
 export type JobStatus =
@@ -114,7 +117,8 @@ export interface TruckOwnerProfile {
   id: string
   userId: string
   organizationId: string | null
-  fleetManagerId?: string | { id: string; fleetName: string } | null
+  fleetManagerId?: string | { id: string; fleetName: string; providerType?: FleetProviderType } | null
+  ownerType: TruckOwnerType
   displayName?: string
   canPostAvailability: boolean
   status: ApprovalStatus
@@ -232,8 +236,13 @@ export interface NearbyTruck {
 }
 
 export interface MemberProfileResponse {
-  type: 'driver' | 'fleet' | 'importer'
-  profile: DriverProfile | FleetProfile | ImporterProfile
+  type: 'driver' | 'fleet' | 'importer' | 'truckOwner' | 'corporate'
+  profile:
+    | DriverProfile
+    | FleetProfile
+    | ImporterProfile
+    | TruckOwnerProfile
+    | CorporateCustomerProfile
 }
 
 export interface Pricing {

@@ -32,8 +32,11 @@ export function AdminApplicationsPage() {
 
   useEffect(() => {
     let active = true
-    setLoading(true)
-    listSoleImporterApplications(status)
+    void Promise.resolve()
+      .then(() => {
+        setLoading(true)
+        return listSoleImporterApplications(status)
+      })
       .then((res) => {
         if (active) setImporters(res.data)
       })

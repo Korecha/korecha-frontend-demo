@@ -37,8 +37,11 @@ export function CorporateApplicationsPage() {
 
   useEffect(() => {
     let active = true
-    setLoading(true)
-    listCorporateCustomerApplications(status)
+    void Promise.resolve()
+      .then(() => {
+        setLoading(true)
+        return listCorporateCustomerApplications(status)
+      })
       .then((res) => {
         if (active) setCustomers(res.data)
       })

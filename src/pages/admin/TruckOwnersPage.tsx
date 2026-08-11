@@ -11,6 +11,7 @@ import { Field, Textarea } from '../../components/ui/Input'
 import { Modal, ModalFooter } from '../../components/ui/Modal'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Table, TableEmpty, TableHead, TableRow, TableWrapper, Td, Th } from '../../components/ui/Table'
+import { TRUCK_OWNER_TYPE_LABELS } from '../../utils/format'
 import type { ApprovalStatus, TruckOwnerProfile } from '../../types'
 
 const STATUS_TABS: Array<ApprovalStatus | 'ALL'> = ['PENDING', 'APPROVED', 'REJECTED', 'ALL']
@@ -36,8 +37,11 @@ export function TruckOwnersPage() {
 
   useEffect(() => {
     let active = true
-    setLoading(true)
-    listTruckOwners(status === 'ALL' ? undefined : status)
+    void Promise.resolve()
+      .then(() => {
+        setLoading(true)
+        return listTruckOwners(status === 'ALL' ? undefined : status)
+      })
       .then((res) => {
         if (active) setOwners(res.data)
       })
@@ -144,6 +148,7 @@ export function TruckOwnersPage() {
           <TableHead>
             <tr>
               <Th>Owner</Th>
+              <Th>Type</Th>
               <Th>Contact</Th>
               <Th>Affiliation</Th>
               <Th>Status</Th>
@@ -153,15 +158,16 @@ export function TruckOwnersPage() {
           </TableHead>
           <tbody>
             {loading ? (
-              <TableEmpty colSpan={6} message="Loading..." />
+              <TableEmpty colSpan={7} message="Loading..." />
             ) : owners.length === 0 ? (
-              <TableEmpty colSpan={6} message="No truck owners for this filter" />
+              <TableEmpty colSpan={7} message="No truck owners for this filter" />
             ) : (
               owners.map((owner) => (
                 <TableRow key={owner.id}>
                   <Td className="font-semibold">
                     {owner.displayName || owner.user?.fullName || '—'}
                   </Td>
+                  <Td>{TRUCK_OWNER_TYPE_LABELS[owner.ownerType] || owner.ownerType}</Td>
                   <Td>
                     <div>{owner.user?.fullName}</div>
                     <div className="text-xs text-slate-500">{owner.user?.email}</div>
