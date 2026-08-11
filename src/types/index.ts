@@ -121,6 +121,7 @@ export interface TruckOwnerProfile {
   ownerType: TruckOwnerType
   displayName?: string
   canPostAvailability: boolean
+  isSelfPaired?: boolean
   status: ApprovalStatus
   reviewedBy?: string
   reviewedAt?: string

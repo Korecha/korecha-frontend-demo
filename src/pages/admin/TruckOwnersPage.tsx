@@ -172,12 +172,25 @@ export function TruckOwnersPage() {
                     <div>{owner.user?.fullName}</div>
                     <div className="text-xs text-slate-500">{owner.user?.email}</div>
                   </Td>
-                  <Td>{fleetLabel(owner)}</Td>
+                  <Td>
+                    {owner.isSelfPaired ? (
+                      <div>
+                        <div className="font-medium text-slate-900">Self-owned (Fleet Manager)</div>
+                        <div className="text-xs text-slate-500">{fleetLabel(owner)}</div>
+                      </div>
+                    ) : (
+                      fleetLabel(owner)
+                    )}
+                  </Td>
                   <Td>
                     <Badge status={owner.status} />
                   </Td>
                   <Td>
-                    {owner.status === 'APPROVED' ? (
+                    {owner.isSelfPaired ? (
+                      <span className="text-xs text-slate-500">
+                        Posts availability via its own fleet manager account
+                      </span>
+                    ) : owner.status === 'APPROVED' ? (
                       <Button
                         size="sm"
                         variant={owner.canPostAvailability ? 'secondary' : 'primary'}
@@ -197,7 +210,9 @@ export function TruckOwnersPage() {
                     )}
                   </Td>
                   <Td>
-                    {owner.status === 'PENDING' ? (
+                    {owner.isSelfPaired ? (
+                      <span className="text-xs text-slate-500">Follows fleet manager review</span>
+                    ) : owner.status === 'PENDING' ? (
                       <div className="flex gap-2">
                         <Button size="sm" onClick={() => setApproving(owner)}>
                           Approve
