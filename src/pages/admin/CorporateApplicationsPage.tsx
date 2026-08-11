@@ -1,31 +1,36 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { listSoleImporterApplications, reviewSoleImporterApplication } from '../../api/admin'
+import {
+  listCorporateCustomerApplications,
+  reviewCorporateCustomerApplication,
+} from '../../api/admin'
 import { ApplicationQueueTabs } from '../../components/admin/ApplicationQueueTabs'
 import { Alert } from '../../components/ui/Alert'
 import { Button } from '../../components/ui/Button'
-import { Field, Textarea } from '../../components/ui/Input'
+import { Field, Select, Textarea } from '../../components/ui/Input'
 import { Modal, ModalFooter } from '../../components/ui/Modal'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Table, TableEmpty, TableHead, TableRow, TableWrapper, Td, Th } from '../../components/ui/Table'
+import { CORPORATE_TIER_LABELS } from '../../utils/format'
 import { fileUrl } from '../../utils/fileUrl'
-import type { ApprovalStatus, ImporterProfile } from '../../types'
+import type { ApprovalStatus, CorporateCustomerProfile, CorporateTier } from '../../types'
 
 const STATUS_TABS: ApprovalStatus[] = ['PENDING', 'APPROVED', 'REJECTED']
 
-export function AdminApplicationsPage() {
-  const [importers, setImporters] = useState<ImporterProfile[]>([])
+export function CorporateApplicationsPage() {
+  const [customers, setCustomers] = useState<CorporateCustomerProfile[]>([])
   const [status, setStatus] = useState<ApprovalStatus>('PENDING')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [approving, setApproving] = useState<ImporterProfile | null>(null)
-  const [rejecting, setRejecting] = useState<ImporterProfile | null>(null)
+  const [approving, setApproving] = useState<CorporateCustomerProfile | null>(null)
+  const [rejecting, setRejecting] = useState<CorporateCustomerProfile | null>(null)
+  const [tier, setTier] = useState<CorporateTier>('STANDARD')
   const [rejectionReason, setRejectionReason] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   const load = () => {
     setLoading(true)
-    listSoleImporterApplications(status)
-      .then((res) => setImporters(res.data))
+    listCorporateCustomerApplications(status)
+      .then((res) => setCustomers(res.data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }
@@ -33,9 +38,9 @@ export function AdminApplicationsPage() {
   useEffect(() => {
     let active = true
     setLoading(true)
-    listSoleImporterApplications(status)
+    listCorporateCustomerApplications(status)
       .then((res) => {
-        if (active) setImporters(res.data)
+        if (active) setCustomers(res.data)
       })
       .catch((err) => {
         if (active) setError(err.message)
@@ -48,12 +53,22 @@ export function AdminApplicationsPage() {
     }
   }, [status])
 
-  const approve = async () => {
+  const openApprove = (customer: CorporateCustomerProfile) => {
+    setError('')
+    setApproving(customer)
+    setTier(customer.tier || 'STANDARD')
+  }
+
+  const approve = async (e: FormEvent) => {
+    e.preventDefault()
     if (!approving) return
     setSubmitting(true)
     setError('')
     try {
-      await reviewSoleImporterApplication(approving.id, { status: 'APPROVED' })
+      await reviewCorporateCustomerApplication(approving.id, {
+        status: 'APPROVED',
+        tier,
+      })
       setApproving(null)
       load()
     } catch (err) {
@@ -73,7 +88,7 @@ export function AdminApplicationsPage() {
     setSubmitting(true)
     setError('')
     try {
-      await reviewSoleImporterApplication(rejecting.id, {
+      await reviewCorporateCustomerApplication(rejecting.id, {
         status: 'REJECTED',
         rejectionReason: rejectionReason.trim(),
       })
@@ -91,7 +106,7 @@ export function AdminApplicationsPage() {
     <div>
       <PageHeader
         title="Applications"
-        description="Separate review queues for sole importers/exporters and corporate customers"
+        description="Corporate customer KYC queue — separate from importer/exporter approvals"
       />
       <ApplicationQueueTabs />
       {error && (
@@ -123,8 +138,8 @@ export function AdminApplicationsPage() {
             <tr>
               <Th>Company</Th>
               <Th>Contact</Th>
-              <Th>Phone</Th>
-              <Th>Trade side</Th>
+              <Th>TIN</Th>
+              <Th>Tier</Th>
               <Th>Documents</Th>
               <Th>Actions</Th>
             </tr>
@@ -132,49 +147,44 @@ export function AdminApplicationsPage() {
           <tbody>
             {loading ? (
               <TableEmpty colSpan={6} message="Loading..." />
-            ) : importers.length === 0 ? (
-              <TableEmpty colSpan={6} message={`No ${status.toLowerCase()} sole importer applications`} />
+            ) : customers.length === 0 ? (
+              <TableEmpty colSpan={6} message={`No ${status.toLowerCase()} corporate applications`} />
             ) : (
-              importers.map((imp) => (
-                <TableRow key={imp.id}>
-                  <Td className="font-semibold">{imp.companyName || imp.user?.fullName}</Td>
-                  <Td>{imp.user?.fullName}</Td>
-                  <Td>{imp.user?.phone || '—'}</Td>
-                  <Td>{imp.tradeSide || 'IMPORTER'}</Td>
-                  <Td className="space-x-3">
-                    {imp.nationalIdFile && (
+              customers.map((customer) => (
+                <TableRow key={customer.id}>
+                  <Td className="font-semibold">{customer.companyName}</Td>
+                  <Td>
+                    <div>{customer.user?.fullName}</div>
+                    <div className="text-xs text-slate-500">{customer.user?.email}</div>
+                  </Td>
+                  <Td>{customer.tinNumber || '—'}</Td>
+                  <Td>{CORPORATE_TIER_LABELS[customer.tier] || customer.tier}</Td>
+                  <Td>
+                    {customer.businessRegistrationFile ? (
                       <a
-                        href={fileUrl(imp.nationalIdFile)}
+                        href={fileUrl(customer.businessRegistrationFile)}
                         target="_blank"
                         rel="noreferrer"
                         className="text-xs text-korecha-primary hover:underline"
                       >
-                        National ID
+                        Business registration
                       </a>
-                    )}
-                    {imp.importLicenseFile && (
-                      <a
-                        href={fileUrl(imp.importLicenseFile)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs text-korecha-primary hover:underline"
-                      >
-                        Import license
-                      </a>
+                    ) : (
+                      '—'
                     )}
                   </Td>
                   <Td>
                     {status === 'PENDING' ? (
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={() => setApproving(imp)}>
+                        <Button size="sm" onClick={() => openApprove(customer)}>
                           Approve
                         </Button>
                         <Button
                           size="sm"
                           variant="secondary"
                           onClick={() => {
-                            setRejecting(imp)
-                            setRejectionReason(imp.rejectionReason || '')
+                            setRejecting(customer)
+                            setRejectionReason(customer.rejectionReason || '')
                           }}
                         >
                           Reject
@@ -182,7 +192,7 @@ export function AdminApplicationsPage() {
                       </div>
                     ) : (
                       <span className="text-xs text-slate-500">
-                        {status === 'REJECTED' ? imp.rejectionReason || 'Rejected' : 'Reviewed'}
+                        {status === 'REJECTED' ? customer.rejectionReason || 'Rejected' : 'Reviewed'}
                       </span>
                     )}
                   </Td>
@@ -194,24 +204,37 @@ export function AdminApplicationsPage() {
       </TableWrapper>
 
       {approving && (
-        <Modal title="Approve importer" onClose={() => setApproving(null)}>
-          <p className="text-sm text-slate-600">
-            Approve <span className="font-semibold text-slate-900">{approving.companyName || approving.user?.fullName}</span>?
-            They will be marked verified and can continue in the importer portal.
-          </p>
-          <ModalFooter>
-            <Button variant="secondary" onClick={() => setApproving(null)} disabled={submitting}>
-              Cancel
-            </Button>
-            <Button onClick={approve} disabled={submitting}>
-              {submitting ? 'Approving...' : 'Approve'}
-            </Button>
-          </ModalFooter>
+        <Modal title="Approve corporate customer" onClose={() => setApproving(null)}>
+          <form onSubmit={approve} className="space-y-4">
+            <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-4">
+              <p className="text-sm font-semibold text-slate-900">{approving.companyName}</p>
+              <p className="mt-1 text-xs text-slate-600">
+                Set matching priority tier. Tier is stored for the matching engine; it does not change portal access.
+              </p>
+            </div>
+            <Field label="Tier">
+              <Select value={tier} onChange={(e) => setTier(e.target.value as CorporateTier)}>
+                {(Object.keys(CORPORATE_TIER_LABELS) as CorporateTier[]).map((value) => (
+                  <option key={value} value={value}>
+                    {CORPORATE_TIER_LABELS[value]}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <ModalFooter>
+              <Button variant="secondary" onClick={() => setApproving(null)} disabled={submitting}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting ? 'Approving...' : 'Approve'}
+              </Button>
+            </ModalFooter>
+          </form>
         </Modal>
       )}
 
       {rejecting && (
-        <Modal title="Reject importer application" onClose={() => setRejecting(null)}>
+        <Modal title="Reject corporate application" onClose={() => setRejecting(null)}>
           <form onSubmit={reject} className="space-y-4">
             <Field label="Rejection reason">
               <Textarea

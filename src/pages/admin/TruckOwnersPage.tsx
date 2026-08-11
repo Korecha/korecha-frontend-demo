@@ -1,31 +1,35 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { listSoleImporterApplications, reviewSoleImporterApplication } from '../../api/admin'
-import { ApplicationQueueTabs } from '../../components/admin/ApplicationQueueTabs'
+import {
+  listTruckOwners,
+  reviewTruckOwner,
+  setTruckOwnerCanPostAvailability,
+} from '../../api/admin'
 import { Alert } from '../../components/ui/Alert'
+import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { Field, Textarea } from '../../components/ui/Input'
 import { Modal, ModalFooter } from '../../components/ui/Modal'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Table, TableEmpty, TableHead, TableRow, TableWrapper, Td, Th } from '../../components/ui/Table'
-import { fileUrl } from '../../utils/fileUrl'
-import type { ApprovalStatus, ImporterProfile } from '../../types'
+import type { ApprovalStatus, TruckOwnerProfile } from '../../types'
 
-const STATUS_TABS: ApprovalStatus[] = ['PENDING', 'APPROVED', 'REJECTED']
+const STATUS_TABS: Array<ApprovalStatus | 'ALL'> = ['PENDING', 'APPROVED', 'REJECTED', 'ALL']
 
-export function AdminApplicationsPage() {
-  const [importers, setImporters] = useState<ImporterProfile[]>([])
-  const [status, setStatus] = useState<ApprovalStatus>('PENDING')
+export function TruckOwnersPage() {
+  const [owners, setOwners] = useState<TruckOwnerProfile[]>([])
+  const [status, setStatus] = useState<ApprovalStatus | 'ALL'>('PENDING')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [approving, setApproving] = useState<ImporterProfile | null>(null)
-  const [rejecting, setRejecting] = useState<ImporterProfile | null>(null)
+  const [approving, setApproving] = useState<TruckOwnerProfile | null>(null)
+  const [rejecting, setRejecting] = useState<TruckOwnerProfile | null>(null)
   const [rejectionReason, setRejectionReason] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
 
   const load = () => {
     setLoading(true)
-    listSoleImporterApplications(status)
-      .then((res) => setImporters(res.data))
+    listTruckOwners(status === 'ALL' ? undefined : status)
+      .then((res) => setOwners(res.data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }
@@ -33,9 +37,9 @@ export function AdminApplicationsPage() {
   useEffect(() => {
     let active = true
     setLoading(true)
-    listSoleImporterApplications(status)
+    listTruckOwners(status === 'ALL' ? undefined : status)
       .then((res) => {
-        if (active) setImporters(res.data)
+        if (active) setOwners(res.data)
       })
       .catch((err) => {
         if (active) setError(err.message)
@@ -53,7 +57,7 @@ export function AdminApplicationsPage() {
     setSubmitting(true)
     setError('')
     try {
-      await reviewSoleImporterApplication(approving.id, { status: 'APPROVED' })
+      await reviewTruckOwner(approving.id, { status: 'APPROVED' })
       setApproving(null)
       load()
     } catch (err) {
@@ -73,7 +77,7 @@ export function AdminApplicationsPage() {
     setSubmitting(true)
     setError('')
     try {
-      await reviewSoleImporterApplication(rejecting.id, {
+      await reviewTruckOwner(rejecting.id, {
         status: 'REJECTED',
         rejectionReason: rejectionReason.trim(),
       })
@@ -87,13 +91,31 @@ export function AdminApplicationsPage() {
     }
   }
 
+  const toggleAvailability = async (owner: TruckOwnerProfile) => {
+    setTogglingId(owner.id)
+    setError('')
+    try {
+      await setTruckOwnerCanPostAvailability(owner.id, !owner.canPostAvailability)
+      load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update availability flag')
+    } finally {
+      setTogglingId(null)
+    }
+  }
+
+  const fleetLabel = (owner: TruckOwnerProfile) => {
+    if (!owner.fleetManagerId) return 'Independent'
+    if (typeof owner.fleetManagerId === 'string') return 'Affiliated'
+    return owner.fleetManagerId.fleetName || 'Affiliated'
+  }
+
   return (
     <div>
       <PageHeader
-        title="Applications"
-        description="Separate review queues for sole importers/exporters and corporate customers"
+        title="Truck Owners"
+        description="Review truck owner applications and grant Unimodal availability posting (admin only)"
       />
-      <ApplicationQueueTabs />
       {error && (
         <div className="mb-4">
           <Alert>{error}</Alert>
@@ -108,11 +130,11 @@ export function AdminApplicationsPage() {
             onClick={() => setStatus(tab)}
             className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition ${
               status === tab
-                ? 'bg-slate-900 text-white shadow-sm'
+                ? 'bg-korecha-primary text-white shadow-sm'
                 : 'bg-white text-slate-600 ring-1 ring-korecha-border hover:bg-slate-50'
             }`}
           >
-            {tab.charAt(0) + tab.slice(1).toLowerCase()}
+            {tab === 'ALL' ? 'All' : tab.charAt(0) + tab.slice(1).toLowerCase()}
           </button>
         ))}
       </div>
@@ -121,60 +143,65 @@ export function AdminApplicationsPage() {
         <Table>
           <TableHead>
             <tr>
-              <Th>Company</Th>
+              <Th>Owner</Th>
               <Th>Contact</Th>
-              <Th>Phone</Th>
-              <Th>Trade side</Th>
-              <Th>Documents</Th>
+              <Th>Affiliation</Th>
+              <Th>Status</Th>
+              <Th>Can post availability</Th>
               <Th>Actions</Th>
             </tr>
           </TableHead>
           <tbody>
             {loading ? (
               <TableEmpty colSpan={6} message="Loading..." />
-            ) : importers.length === 0 ? (
-              <TableEmpty colSpan={6} message={`No ${status.toLowerCase()} sole importer applications`} />
+            ) : owners.length === 0 ? (
+              <TableEmpty colSpan={6} message="No truck owners for this filter" />
             ) : (
-              importers.map((imp) => (
-                <TableRow key={imp.id}>
-                  <Td className="font-semibold">{imp.companyName || imp.user?.fullName}</Td>
-                  <Td>{imp.user?.fullName}</Td>
-                  <Td>{imp.user?.phone || '—'}</Td>
-                  <Td>{imp.tradeSide || 'IMPORTER'}</Td>
-                  <Td className="space-x-3">
-                    {imp.nationalIdFile && (
-                      <a
-                        href={fileUrl(imp.nationalIdFile)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs text-korecha-primary hover:underline"
+              owners.map((owner) => (
+                <TableRow key={owner.id}>
+                  <Td className="font-semibold">
+                    {owner.displayName || owner.user?.fullName || '—'}
+                  </Td>
+                  <Td>
+                    <div>{owner.user?.fullName}</div>
+                    <div className="text-xs text-slate-500">{owner.user?.email}</div>
+                  </Td>
+                  <Td>{fleetLabel(owner)}</Td>
+                  <Td>
+                    <Badge status={owner.status} />
+                  </Td>
+                  <Td>
+                    {owner.status === 'APPROVED' ? (
+                      <Button
+                        size="sm"
+                        variant={owner.canPostAvailability ? 'secondary' : 'primary'}
+                        disabled={togglingId === owner.id}
+                        onClick={() => toggleAvailability(owner)}
                       >
-                        National ID
-                      </a>
-                    )}
-                    {imp.importLicenseFile && (
-                      <a
-                        href={fileUrl(imp.importLicenseFile)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs text-korecha-primary hover:underline"
-                      >
-                        Import license
-                      </a>
+                        {togglingId === owner.id
+                          ? 'Updating...'
+                          : owner.canPostAvailability
+                            ? 'Revoke'
+                            : 'Grant'}
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-slate-500">
+                        {owner.canPostAvailability ? 'Yes' : 'No (default)'}
+                      </span>
                     )}
                   </Td>
                   <Td>
-                    {status === 'PENDING' ? (
+                    {owner.status === 'PENDING' ? (
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={() => setApproving(imp)}>
+                        <Button size="sm" onClick={() => setApproving(owner)}>
                           Approve
                         </Button>
                         <Button
                           size="sm"
                           variant="secondary"
                           onClick={() => {
-                            setRejecting(imp)
-                            setRejectionReason(imp.rejectionReason || '')
+                            setRejecting(owner)
+                            setRejectionReason(owner.rejectionReason || '')
                           }}
                         >
                           Reject
@@ -182,7 +209,9 @@ export function AdminApplicationsPage() {
                       </div>
                     ) : (
                       <span className="text-xs text-slate-500">
-                        {status === 'REJECTED' ? imp.rejectionReason || 'Rejected' : 'Reviewed'}
+                        {owner.status === 'REJECTED'
+                          ? owner.rejectionReason || 'Rejected'
+                          : 'Reviewed'}
                       </span>
                     )}
                   </Td>
@@ -194,10 +223,13 @@ export function AdminApplicationsPage() {
       </TableWrapper>
 
       {approving && (
-        <Modal title="Approve importer" onClose={() => setApproving(null)}>
+        <Modal title="Approve truck owner" onClose={() => setApproving(null)}>
           <p className="text-sm text-slate-600">
-            Approve <span className="font-semibold text-slate-900">{approving.companyName || approving.user?.fullName}</span>?
-            They will be marked verified and can continue in the importer portal.
+            Approve{' '}
+            <span className="font-semibold text-slate-900">
+              {approving.displayName || approving.user?.fullName}
+            </span>
+            ? Availability posting stays off until you explicitly grant it.
           </p>
           <ModalFooter>
             <Button variant="secondary" onClick={() => setApproving(null)} disabled={submitting}>
@@ -211,14 +243,13 @@ export function AdminApplicationsPage() {
       )}
 
       {rejecting && (
-        <Modal title="Reject importer application" onClose={() => setRejecting(null)}>
+        <Modal title="Reject truck owner" onClose={() => setRejecting(null)}>
           <form onSubmit={reject} className="space-y-4">
             <Field label="Rejection reason">
               <Textarea
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 rows={4}
-                placeholder="Explain what documents or details need to be fixed"
                 required
               />
             </Field>
@@ -227,7 +258,7 @@ export function AdminApplicationsPage() {
                 Cancel
               </Button>
               <Button type="submit" variant="danger" disabled={submitting}>
-                {submitting ? 'Rejecting...' : 'Reject application'}
+                {submitting ? 'Rejecting...' : 'Reject'}
               </Button>
             </ModalFooter>
           </form>

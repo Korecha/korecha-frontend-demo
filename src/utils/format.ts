@@ -41,6 +41,20 @@ export const ROLE_LABELS: Record<string, string> = {
   DRIVER: 'Driver',
   FLEET_OWNER: 'Fleet Owner',
   IMPORTER: 'Importer',
+  EXPORTER: 'Exporter',
+}
+
+export const PROVIDER_TYPE_LABELS: Record<string, string> = {
+  internal_unimodal: 'Internal unimodal',
+  transit_company: 'Transit company',
+  association: 'Association',
+  mto: 'MTO',
+}
+
+export const CORPORATE_TIER_LABELS: Record<string, string> = {
+  STANDARD: 'Standard',
+  PRIORITY: 'Priority',
+  PREFERRED: 'Preferred',
 }
 
 export const JOB_STATUS_LABELS: Record<string, string> = {
