@@ -121,7 +121,9 @@ export function LoginPage() {
               <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
                 <Link to="/register/driver" className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50">Driver</Link>
                 <Link to="/register/fleet" className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50">Fleet</Link>
+                <Link to="/register/truck-owner" className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50">Truck owner</Link>
                 <Link to="/register/importer" className="rounded-xl border border-emerald-200 py-2.5 text-center text-sm font-semibold text-emerald-700 hover:bg-emerald-50">Importer</Link>
+                <Link to="/register/corporate" className="rounded-xl border border-indigo-200 py-2.5 text-center text-sm font-semibold text-indigo-700 hover:bg-indigo-50 sm:col-span-2">Corporate customer</Link>
               </div>
             </div>
           </div>

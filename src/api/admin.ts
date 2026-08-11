@@ -1,9 +1,12 @@
 import { api } from './client'
 import type {
+  ApprovalStatus,
   Container,
   ContainerSize,
   ContainerStatus,
   ContainerType,
+  CorporateCustomerProfile,
+  CorporateTier,
   DashboardStats,
   ImporterProfile,
   ItemType,
@@ -15,6 +18,7 @@ import type {
   PlatformSettings,
   Pricing,
   QuotePreview,
+  TruckOwnerProfile,
   User,
 } from '../types'
 
@@ -214,19 +218,59 @@ export function reviewSoleImporterApplication(
   body: {
     status: 'APPROVED' | 'REJECTED'
     rejectionReason?: string
-    organizationId?: string
-    createOrganization?: {
-      name: string
-      contactEmail?: string
-      phone?: string
-      address?: string
-      basePricePerKm?: number
-    }
   }
 ) {
   return api<{ data: ImporterProfile }>(`/api/admin/applications/importers/${id}/review`, {
     method: 'POST',
     body: JSON.stringify(body),
+  })
+}
+
+export function listCorporateCustomerApplications(status: ApprovalStatus | 'ALL' = 'PENDING') {
+  return api<{ data: CorporateCustomerProfile[] }>(
+    `/api/admin/applications/corporate-customers?status=${status}`
+  )
+}
+
+export function reviewCorporateCustomerApplication(
+  id: string,
+  body: {
+    status: 'APPROVED' | 'REJECTED'
+    rejectionReason?: string
+    tier?: CorporateTier
+  }
+) {
+  return api<{ data: CorporateCustomerProfile }>(
+    `/api/admin/applications/corporate-customers/${id}/review`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }
+  )
+}
+
+export function listTruckOwners(status?: ApprovalStatus) {
+  const qs = status ? `?status=${status}` : ''
+  return api<{ data: TruckOwnerProfile[] }>(`/api/admin/truck-owners${qs}`)
+}
+
+export function reviewTruckOwner(
+  id: string,
+  body: {
+    status: 'APPROVED' | 'REJECTED'
+    rejectionReason?: string
+  }
+) {
+  return api<{ data: TruckOwnerProfile }>(`/api/admin/truck-owners/${id}/review`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+export function setTruckOwnerCanPostAvailability(id: string, canPostAvailability: boolean) {
+  return api<{ data: TruckOwnerProfile }>(`/api/admin/truck-owners/${id}/can-post-availability`, {
+    method: 'POST',
+    body: JSON.stringify({ canPostAvailability }),
   })
 }
 
