@@ -14,6 +14,8 @@ import { OrganizationDetailPage } from '../pages/admin/OrganizationDetailPage'
 import { OrganizationsPage } from '../pages/admin/OrganizationsPage'
 import { SettingsPage } from '../pages/admin/SettingsPage'
 import { AdminApplicationsPage } from '../pages/admin/ApplicationsPage'
+import { CorporateApplicationsPage } from '../pages/admin/CorporateApplicationsPage'
+import { TruckOwnersPage } from '../pages/admin/TruckOwnersPage'
 import { AdminItemTypesPage } from '../pages/admin/ItemTypesPage'
 import { DriverHomePage } from '../pages/driver/DriverHomePage'
 import { DriverProfilePage } from '../pages/driver/DriverProfilePage'
@@ -30,6 +32,10 @@ import { OrgUsersPage } from '../pages/org/OrgUsersPage'
 import { RegisterDriverPage } from '../pages/register/RegisterDriverPage'
 import { RegisterFleetPage } from '../pages/register/RegisterFleetPage'
 import { RegisterImporterPage } from '../pages/register/RegisterImporterPage'
+import { RegisterTruckOwnerPage } from '../pages/register/RegisterTruckOwnerPage'
+import { RegisterCorporateCustomerPage } from '../pages/register/RegisterCorporateCustomerPage'
+import { TruckOwnerHomePage } from '../pages/truckOwner/TruckOwnerHomePage'
+import { CorporateHomePage } from '../pages/corporate/CorporateHomePage'
 import { ImporterLayout } from '../components/layout/ImporterLayout'
 import { ImporterHomePage } from '../pages/importer/ImporterHomePage'
 import { ImporterJobsPage } from '../pages/importer/ImporterJobsPage'
@@ -54,6 +60,8 @@ export function AppRoutes() {
           <Route path="/register/driver" element={<RegisterDriverPage />} />
           <Route path="/register/fleet" element={<RegisterFleetPage />} />
           <Route path="/register/importer" element={<RegisterImporterPage />} />
+          <Route path="/register/truck-owner" element={<RegisterTruckOwnerPage />} />
+          <Route path="/register/corporate" element={<RegisterCorporateCustomerPage />} />
           <Route
             path="/admin"
             element={
@@ -66,6 +74,8 @@ export function AppRoutes() {
             <Route path="organizations" element={<OrganizationsPage />} />
             <Route path="organizations/:id" element={<OrganizationDetailPage />} />
             <Route path="applications" element={<AdminApplicationsPage />} />
+            <Route path="applications/corporate" element={<CorporateApplicationsPage />} />
+            <Route path="truck-owners" element={<TruckOwnersPage />} />
             <Route path="item-types" element={<AdminItemTypesPage />} />
             <Route path="containers" element={<ContainersPage />} />
             <Route path="containers/upload" element={<ContainerBulkUploadPage />} />
@@ -129,6 +139,22 @@ export function AppRoutes() {
             <Route path="drivers" element={<FleetDriversPage />} />
             <Route path="trucks" element={<FleetTrucksPage />} />
           </Route>
+          <Route
+            path="/truck-owner"
+            element={
+              <ProtectedRoute roles={['TRUCK_OWNER']}>
+                <TruckOwnerHomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/corporate"
+            element={
+              <ProtectedRoute roles={['CORPORATE_CUSTOMER']}>
+                <CorporateHomePage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<HomeRedirect />} />
         </Routes>
       </AuthProvider>

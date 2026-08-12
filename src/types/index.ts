@@ -5,12 +5,19 @@ export type UserRole =
   | 'EXPORTER'
   | 'DRIVER'
   | 'FLEET_OWNER'
+  | 'TRUCK_OWNER'
+  | 'CORPORATE_CUSTOMER'
   | 'SHIPPING_LINE'
 
 export type OrgMemberRole = 'DRIVER' | 'FLEET_OWNER' | 'IMPORTER'
 export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
 export type TruckStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
 export type DriverAvailability = 'AVAILABLE' | 'ON_JOB' | 'OFFLINE'
+export type FleetProviderType = 'internal_unimodal' | 'transit_company' | 'association' | 'mto'
+export type CorporateTier = 'STANDARD' | 'PRIORITY' | 'PREFERRED'
+export type TruckOwnerType = 'INDIVIDUAL' | 'COMPANY'
+export type TradeSide = 'IMPORTER' | 'EXPORTER'
+export type ShipmentMode = 'UNIMODAL' | 'MULTIMODAL'
 export type JobStatus =
   | 'OPEN'
   | 'REQUESTED'
@@ -60,6 +67,16 @@ export interface TruckType {
   isActive: boolean
 }
 
+export interface FleetManagerStaff {
+  id: string
+  userId: string
+  fleetManagerId: string
+  canAssignJobs: boolean
+  canViewEarnings: boolean
+  canManageAffiliations: boolean
+  canToggleTruckAvailability: boolean
+}
+
 export interface DriverProfile {
   id: string
   userId: string
@@ -68,7 +85,10 @@ export interface DriverProfile {
   driversLicenseFile: string
   preferredRouteIds: string[] | Location[]
   truckTypeId?: string | TruckType
+  /** @deprecated Prefer fleetManagerId from Phase 1 DRIVERS table */
   fleetOwnerId?: string | { id: string; fullName: string; email: string }
+  fleetManagerId?: string | { id: string; fleetName: string; status: ApprovalStatus; providerType?: FleetProviderType }
+  truckOwnerId?: string | { id: string; displayName?: string; status: ApprovalStatus }
   status: ApprovalStatus
   rejectionReason?: string
   availability?: DriverAvailability
@@ -83,11 +103,47 @@ export interface FleetProfile {
   organizationId: string
   fleetName: string
   ceoNationalIdFile: string
+  providerType?: FleetProviderType
+  shippingLineId?: string | null
   status: ApprovalStatus
   rejectionReason?: string
+  staff?: FleetManagerStaff
   user?: User
   driverCount?: number
   truckCount?: number
+}
+
+export interface TruckOwnerProfile {
+  id: string
+  userId: string
+  organizationId: string | null
+  fleetManagerId?: string | { id: string; fleetName: string; providerType?: FleetProviderType } | null
+  ownerType: TruckOwnerType
+  displayName?: string
+  canPostAvailability: boolean
+  isSelfPaired?: boolean
+  status: ApprovalStatus
+  reviewedBy?: string
+  reviewedAt?: string
+  rejectionReason?: string
+  user?: User
+  createdAt?: string
+}
+
+export interface CorporateCustomerProfile {
+  id: string
+  userId: string
+  organizationId: string | null
+  companyName: string
+  businessRegistrationFile?: string
+  tinNumber?: string
+  tier: CorporateTier
+  status: ApprovalStatus
+  reviewedBy?: string
+  reviewedAt?: string
+  rejectionReason?: string
+  user?: User
+  createdAt?: string
 }
 
 export interface Truck {
@@ -106,6 +162,7 @@ export interface ImporterProfile {
   id: string
   userId: string
   organizationId: string | null
+  tradeSide?: TradeSide
   companyName?: string
   nationalIdFile: string
   importLicenseFile: string
@@ -180,8 +237,13 @@ export interface NearbyTruck {
 }
 
 export interface MemberProfileResponse {
-  type: 'driver' | 'fleet' | 'importer'
-  profile: DriverProfile | FleetProfile | ImporterProfile
+  type: 'driver' | 'fleet' | 'importer' | 'truckOwner' | 'corporate'
+  profile:
+    | DriverProfile
+    | FleetProfile
+    | ImporterProfile
+    | TruckOwnerProfile
+    | CorporateCustomerProfile
 }
 
 export interface Pricing {

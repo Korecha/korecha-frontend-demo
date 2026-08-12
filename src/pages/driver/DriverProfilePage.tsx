@@ -18,12 +18,21 @@ export function DriverProfilePage() {
     .map((r) => refName(r, ''))
     .filter(Boolean)
 
+  const employer =
+    typeof profile?.fleetManagerId === 'object' && profile.fleetManagerId
+      ? profile.fleetManagerId.fleetName
+      : typeof profile?.truckOwnerId === 'object' && profile.truckOwnerId
+        ? profile.truckOwnerId.displayName || 'Truck owner'
+        : typeof profile?.fleetOwnerId === 'object' && profile.fleetOwnerId
+          ? profile.fleetOwnerId.fullName
+          : '—'
+
   const rows = [
     ['Email', user?.email],
     ['Phone', user?.phone || '—'],
     ['Organization', organization?.name],
     ['Truck type', refName(profile?.truckTypeId)],
-    ['Fleet', typeof profile?.fleetOwnerId === 'object' ? profile.fleetOwnerId.fullName : 'Independent'],
+    ['Employer', employer],
     ['Routes', routes.length ? routes.join(', ') : '—'],
   ]
 
