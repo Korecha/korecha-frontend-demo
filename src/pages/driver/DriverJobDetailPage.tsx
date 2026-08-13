@@ -11,6 +11,7 @@ import { DriverJobProgress } from '../../components/jobs/DriverJobProgress'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+import { Modal, ModalFooter } from '../../components/ui/Modal'
 import { formatDate, refName } from '../../utils/format'
 import { jobRouteLocations, legRouteLocations } from '../../utils/jobMap'
 import type { Job, JobRequest, ShipmentLeg } from '../../types'
@@ -28,6 +29,7 @@ export function DriverJobDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [acting, setActing] = useState(false)
+  const [legCompleteOpen, setLegCompleteOpen] = useState(false)
 
   const load = () => {
     if (!id) return
@@ -62,10 +64,10 @@ export function DriverJobDetailPage() {
   const handleStart = async () => {
     if (!currentLeg) return
     setActing(true)
+    setError('')
     try {
-      const r = await startDriverLeg(currentLeg.id)
-      setJob(r.data.job)
-      setCurrentLeg(r.data.currentLeg)
+      await startDriverLeg(currentLeg.id)
+      load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed')
     } finally {
@@ -76,10 +78,14 @@ export function DriverJobDetailPage() {
   const handleComplete = async () => {
     if (!currentLeg) return
     setActing(true)
+    setError('')
     try {
       const r = await completeDriverLeg(currentLeg.id)
-      setJob(r.data.job)
-      setCurrentLeg(r.data.currentLeg)
+      if (r.data.released) {
+        setLegCompleteOpen(true)
+        return
+      }
+      load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed')
     } finally {
@@ -183,6 +189,17 @@ export function DriverJobDetailPage() {
         <Button className="w-full py-3.5" disabled={acting} onClick={handleComplete}>
           {acting ? 'Submitting...' : 'Complete this leg'}
         </Button>
+      )}
+
+      {legCompleteOpen && (
+        <Modal title="Your leg is complete" onClose={() => navigate('/driver/jobs')}>
+          <p className="text-sm text-slate-600">
+            You and your truck are available for another load. The rest of this shipment continues with the next leg.
+          </p>
+          <ModalFooter>
+            <Button onClick={() => navigate('/driver/jobs')}>Back to jobs</Button>
+          </ModalFooter>
+        </Modal>
       )}
 
       {!currentLeg && job.status === 'IN_TRANSIT' && (

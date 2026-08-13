@@ -14,6 +14,7 @@ import { DriverJobProgress } from '../../components/jobs/DriverJobProgress'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+import { Modal, ModalFooter } from '../../components/ui/Modal'
 import { formatDate, refName } from '../../utils/format'
 import { jobRouteLocations, legRouteLocations } from '../../utils/jobMap'
 import type { Job, JobRequest, ShipmentLeg } from '../../types'
@@ -33,6 +34,7 @@ export function DriverJobsPage() {
   const [history, setHistory] = useState<Job[]>([])
   const [error, setError] = useState('')
   const [acting, setActing] = useState<string | null>(null)
+  const [legCompleteOpen, setLegCompleteOpen] = useState(false)
 
   const load = () => {
     Promise.all([
@@ -85,7 +87,8 @@ export function DriverJobsPage() {
     if (!leg) return
     setActing(job.id)
     try {
-      await completeDriverLeg(leg.id)
+      const r = await completeDriverLeg(leg.id)
+      if (r.data.released) setLegCompleteOpen(true)
       load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed')
@@ -118,6 +121,17 @@ export function DriverJobsPage() {
       </div>
 
       {error && <Alert>{error}</Alert>}
+
+      {legCompleteOpen && (
+        <Modal title="Your leg is complete" onClose={() => setLegCompleteOpen(false)}>
+          <p className="text-sm text-slate-600">
+            You and your truck are available for another load. The rest of this shipment continues with the next leg.
+          </p>
+          <ModalFooter>
+            <Button onClick={() => setLegCompleteOpen(false)}>OK</Button>
+          </ModalFooter>
+        </Modal>
+      )}
 
       {featuredJob && tab !== 'active' && (
         <Link

@@ -145,7 +145,10 @@ export function FleetShipmentDetailPage() {
       {canAdd && canAssign && (
         <div className="mt-6 rounded-2xl border border-korecha-border bg-white p-5 shadow-sm">
           <h3 className="font-bold text-slate-900">Add a leg</h3>
-          <p className="mt-1 text-sm text-slate-500">Extra legs start after the last one is completed.</p>
+          <p className="mt-1 text-sm text-slate-500">
+            Add extra legs while the shipment is assigned or in transit, before the last open leg is completed.
+            After that the shipment waits for importer POD approval and no more legs can be added.
+          </p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <LocationAutocomplete
               label="From (optional — defaults to previous destination)"
