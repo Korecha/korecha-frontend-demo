@@ -9,6 +9,8 @@ import type {
   Truck,
   TruckType,
   User,
+  Shipment,
+  ShipmentLeg,
 } from '../types'
 
 export function getFleetProfile() {
@@ -84,6 +86,24 @@ export function createAvailabilityPosting(body: {
   availableTo: string
 }) {
   return api<{ data: AvailabilityPosting }>('/api/fleet/availability-postings', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+export function listFleetShipments() {
+  return api<{ data: Shipment[] }>('/api/fleet-manager/shipments')
+}
+
+export function getFleetShipment(id: string) {
+  return api<{ data: Shipment }>(`/api/fleet-manager/shipments/${id}`)
+}
+
+export function addFleetShipmentLeg(
+  id: string,
+  body: { fromLocationId?: string; toLocationId: string; truckId: string; driverId: string }
+) {
+  return api<{ data: { leg: ShipmentLeg; shipment: Shipment } }>(`/api/fleet-manager/shipments/${id}/legs`, {
     method: 'POST',
     body: JSON.stringify(body),
   })

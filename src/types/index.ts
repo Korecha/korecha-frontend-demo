@@ -33,6 +33,8 @@ export type JobStatus =
   | 'COMPLETED'
   | 'CANCELLED'
 export type JobRequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED'
+export type ShipmentStatus = 'ASSIGNED' | 'IN_TRANSIT' | 'PENDING_APPROVAL' | 'COMPLETED' | 'CANCELLED'
+export type ShipmentLegStatus = 'ASSIGNED' | 'IN_TRANSIT' | 'COMPLETED' | 'CANCELLED'
 
 export interface LiveLocation {
   lat: number
@@ -222,6 +224,7 @@ export interface Job {
   completedAt?: string
   pricingQuote?: JobPricingQuote
   createdAt?: string
+  currentLeg?: ShipmentLeg | null
 }
 
 export interface JobRequest {
@@ -231,6 +234,33 @@ export interface JobRequest {
   truckId: string | Truck
   importerId?: string | User
   status: JobRequestStatus
+  createdAt?: string
+}
+
+export interface ShipmentLeg {
+  id: string
+  shipmentId: string
+  sequenceNo: number
+  fromLocationId?: string | Location | null
+  toLocationId?: string | Location | null
+  truckId?: string | Truck | null
+  driverId?: string | User | null
+  status: ShipmentLegStatus
+  startedAt?: string | null
+  completedAt?: string | null
+  podPhotoUrl?: string
+}
+
+export interface Shipment {
+  id: string
+  loadPostingId?: string | null
+  jobId?: string | Job
+  job?: Job
+  mode: ShipmentMode
+  status: ShipmentStatus
+  fleetManagerId?: string | null
+  legs: ShipmentLeg[]
+  completedAt?: string | null
   createdAt?: string
 }
 

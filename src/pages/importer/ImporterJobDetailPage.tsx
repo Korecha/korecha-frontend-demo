@@ -10,7 +10,7 @@ import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { refName, formatDate } from '../../utils/format'
 import { jobRouteLocations } from '../../utils/jobMap'
-import type { Job, JobRequest, NearbyTruck } from '../../types'
+import type { Job, JobRequest, NearbyTruck, ShipmentLeg } from '../../types'
 
 function TruckRequestCard({
   truck,
@@ -70,6 +70,7 @@ export function ImporterJobDetailPage() {
   const canUseJobs = approved && Boolean(organization)
   const [job, setJob] = useState<Job | null>(null)
   const [requests, setRequests] = useState<JobRequest[]>([])
+  const [legs, setLegs] = useState<ShipmentLeg[]>([])
   const [nearby, setNearby] = useState<NearbyTruck[]>([])
   const [extended, setExtended] = useState<NearbyTruck[]>([])
   const [nearbyRadiusKm, setNearbyRadiusKm] = useState(80)
@@ -88,6 +89,7 @@ export function ImporterJobDetailPage() {
       .then((r) => {
         setJob(r.data.job)
         setRequests(r.data.requests)
+        setLegs(r.data.legs || [])
         if (['OPEN', 'REQUESTED'].includes(r.data.job.status)) {
           getNearbyTrucks(id).then((t) => {
             setNearby(t.data.nearby)
@@ -190,7 +192,7 @@ export function ImporterJobDetailPage() {
           <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">{job.notes}</p>
         )}
         <div className="mt-4">
-          <JobStatusTimeline status={job.status} />
+          <JobStatusTimeline status={job.status} legs={legs} />
         </div>
         {driver && (
           <div className="mt-4 flex items-center justify-between rounded-2xl bg-blue-50 px-4 py-3">
