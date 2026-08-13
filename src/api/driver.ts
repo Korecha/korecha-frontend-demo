@@ -89,15 +89,19 @@ export function completeDriverJob(id: string) {
 }
 
 export function startDriverLeg(id: string) {
-  return api<{ data: { job: import('../types').Job; currentLeg: import('../types').ShipmentLeg } }>(
+  return api<{ data: { job: import('../types').Job; currentLeg: import('../types').ShipmentLeg | null } }>(
     `/api/driver/legs/${id}/start`,
     { method: 'POST' }
   )
 }
 
 export function completeDriverLeg(id: string) {
-  return api<{ data: { job: import('../types').Job; currentLeg: import('../types').ShipmentLeg } }>(
-    `/api/driver/legs/${id}/complete`,
-    { method: 'POST' }
-  )
+  return api<{
+    data: {
+      job: import('../types').Job
+      currentLeg: import('../types').ShipmentLeg | null
+      completedLeg?: import('../types').ShipmentLeg | null
+      released?: boolean
+    }
+  }>(`/api/driver/legs/${id}/complete`, { method: 'POST' })
 }
