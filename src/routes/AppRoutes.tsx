@@ -23,6 +23,8 @@ import { DriverRoutesPage } from '../pages/driver/DriverRoutesPage'
 import { DriverTrucksPage } from '../pages/driver/DriverTrucksPage'
 import { FleetDashboardPage } from '../pages/fleet/FleetDashboardPage'
 import { FleetDriversPage } from '../pages/fleet/FleetDriversPage'
+import { FleetMatchOffersPage } from '../pages/fleet/FleetMatchOffersPage'
+import { FleetAvailabilityPage } from '../pages/fleet/FleetAvailabilityPage'
 import { FleetTrucksPage } from '../pages/fleet/FleetTrucksPage'
 import { OrgApplicationsPage } from '../pages/org/OrgApplicationsPage'
 import { OrgDashboardPage } from '../pages/org/OrgDashboardPage'
@@ -35,12 +37,19 @@ import { RegisterImporterPage } from '../pages/register/RegisterImporterPage'
 import { RegisterTruckOwnerPage } from '../pages/register/RegisterTruckOwnerPage'
 import { RegisterCorporateCustomerPage } from '../pages/register/RegisterCorporateCustomerPage'
 import { TruckOwnerHomePage } from '../pages/truckOwner/TruckOwnerHomePage'
+import { TruckOwnerAvailabilityPage } from '../pages/truckOwner/TruckOwnerAvailabilityPage'
+import { TruckOwnerLayout } from '../components/layout/TruckOwnerLayout'
 import { CorporateHomePage } from '../pages/corporate/CorporateHomePage'
+import { CorporatePostLoadPage } from '../pages/corporate/CorporatePostLoadPage'
+import { CorporateLoadPostingsPage } from '../pages/corporate/CorporateLoadPostingsPage'
+import { CorporateLoadPostingDetailPage } from '../pages/corporate/CorporateLoadPostingDetailPage'
+import { CorporateLayout } from '../components/layout/CorporateLayout'
 import { ImporterLayout } from '../components/layout/ImporterLayout'
 import { ImporterHomePage } from '../pages/importer/ImporterHomePage'
 import { ImporterJobsPage } from '../pages/importer/ImporterJobsPage'
 import { ImporterNewJobPage } from '../pages/importer/ImporterNewJobPage'
 import { ImporterJobDetailPage } from '../pages/importer/ImporterJobDetailPage'
+import { ImporterLoadPostingDetailPage } from '../pages/importer/ImporterLoadPostingDetailPage'
 import { ImporterProfilePage } from '../pages/importer/ImporterProfilePage'
 import { DriverJobsPage } from '../pages/driver/DriverJobsPage'
 import { DriverJobDetailPage } from '../pages/driver/DriverJobDetailPage'
@@ -125,6 +134,7 @@ export function AppRoutes() {
             <Route path="jobs" element={<ImporterJobsPage />} />
             <Route path="jobs/new" element={<ImporterNewJobPage />} />
             <Route path="jobs/:id" element={<ImporterJobDetailPage />} />
+            <Route path="load-postings/:id" element={<ImporterLoadPostingDetailPage />} />
             <Route path="profile" element={<ImporterProfilePage />} />
           </Route>
           <Route
@@ -136,6 +146,8 @@ export function AppRoutes() {
             }
           >
             <Route index element={<FleetDashboardPage />} />
+            <Route path="match-offers" element={<FleetMatchOffersPage />} />
+            <Route path="availability" element={<FleetAvailabilityPage />} />
             <Route path="drivers" element={<FleetDriversPage />} />
             <Route path="trucks" element={<FleetTrucksPage />} />
           </Route>
@@ -143,18 +155,26 @@ export function AppRoutes() {
             path="/truck-owner"
             element={
               <ProtectedRoute roles={['TRUCK_OWNER']}>
-                <TruckOwnerHomePage />
+                <TruckOwnerLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<TruckOwnerHomePage />} />
+            <Route path="availability" element={<TruckOwnerAvailabilityPage />} />
+          </Route>
           <Route
             path="/corporate"
             element={
               <ProtectedRoute roles={['CORPORATE_CUSTOMER']}>
-                <CorporateHomePage />
+                <CorporateLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<CorporateHomePage />} />
+            <Route path="loads" element={<CorporateLoadPostingsPage />} />
+            <Route path="loads/new" element={<CorporatePostLoadPage />} />
+            <Route path="loads/:id" element={<CorporateLoadPostingDetailPage />} />
+          </Route>
           <Route path="*" element={<HomeRedirect />} />
         </Routes>
       </AuthProvider>
