@@ -18,6 +18,12 @@ export type CorporateTier = 'STANDARD' | 'PRIORITY' | 'PREFERRED'
 export type TruckOwnerType = 'INDIVIDUAL' | 'COMPANY'
 export type TradeSide = 'IMPORTER' | 'EXPORTER'
 export type ShipmentMode = 'UNIMODAL' | 'MULTIMODAL'
+export type MatchingMode = 'BROADCAST' | 'MANUAL_REQUEST'
+export type LoadPosterType = 'IMPORTER_EXPORTER' | 'CORPORATE_CUSTOMER'
+export type LoadPostingStatus = 'OPEN' | 'MATCHING' | 'ASSIGNED' | 'CANCELLED' | 'EXPIRED'
+export type LoadMatchOfferStatus = 'SENT' | 'VIEWED' | 'ASSIGNED' | 'DECLINED' | 'EXPIRED'
+export type AvailabilityPosterType = 'FLEET_MANAGER' | 'TRUCK_OWNER'
+export type AvailabilityPostingStatus = 'OPEN' | 'CLOSED' | 'EXPIRED'
 export type JobStatus =
   | 'OPEN'
   | 'REQUESTED'
@@ -225,6 +231,68 @@ export interface JobRequest {
   truckId: string | Truck
   importerId?: string | User
   status: JobRequestStatus
+  createdAt?: string
+}
+
+export interface LoadPostingOffersSummary {
+  total: number
+  sent?: number
+  viewed?: number
+  assigned?: number
+  declined?: number
+  expired?: number
+}
+
+export interface LoadPosting {
+  id: string
+  posterType: LoadPosterType
+  posterId: string
+  organizationId: string
+  importerUserId: string | User
+  itemTypeId: string | ItemType
+  quantity: number
+  notes?: string
+  pickup: JobPoint
+  delivery: JobPoint
+  pickupGateId?: string | GateEntrance
+  deliveryGateId?: string | GateEntrance
+  fxFinanced: boolean
+  bankPermitNo?: string
+  mode: ShipmentMode
+  governmentProjectId?: string | null
+  pricingQuote?: JobPricingQuote
+  matchingMode: MatchingMode
+  status: LoadPostingStatus
+  linkedJobId?: string | Job | null
+  offersSummary?: LoadPostingOffersSummary
+  createdAt?: string
+}
+
+export interface LoadMatchOffer {
+  id: string
+  loadPostingId: string | LoadPosting
+  fleetManagerId: string
+  trucksNeededCount: number
+  status: LoadMatchOfferStatus
+  assignedTruckId?: string | Truck | null
+  assignedDriverId?: string | User | null
+  assignedDriverProfileId?: string | null
+  respondedAt?: string | null
+  createdAt?: string
+  /** Nested summary when list/detail APIs populate the posting */
+  loadPosting?: LoadPosting
+}
+
+export interface AvailabilityPosting {
+  id: string
+  posterType: AvailabilityPosterType
+  posterId: string
+  organizationId?: string | null
+  truckId?: string | Truck | null
+  originLocationId: string | Location
+  availableFrom: string
+  availableTo: string
+  status: AvailabilityPostingStatus
   createdAt?: string
 }
 

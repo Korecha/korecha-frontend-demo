@@ -4,6 +4,7 @@ import { ApprovalBanner } from '../ui/ApprovalBanner'
 
 const navItems = [
   { to: '/fleet', label: 'Overview', end: true },
+  { to: '/fleet/match-offers', label: 'Match offers', end: false },
   { to: '/fleet/drivers', label: 'Drivers', end: false },
   { to: '/fleet/trucks', label: 'Trucks', end: false },
 ]

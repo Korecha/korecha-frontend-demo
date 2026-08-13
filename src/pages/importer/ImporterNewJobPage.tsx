@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  createJob,
+  createLoadPosting,
   listImporterGateEntrances,
   listImporterItemTypes,
   listImporterLocations,
@@ -10,10 +10,21 @@ import {
 import { isApproved, useAuth } from '../../auth/AuthContext'
 import { JobPricingCard } from '../../components/importer/JobPricingCard'
 import { Alert } from '../../components/ui/Alert'
+import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { Field, Input, Select } from '../../components/ui/Input'
 import { LocationAutocomplete } from '../../components/ui/LocationAutocomplete'
-import type { GateEntrance, ItemType, Location } from '../../types'
+import type { GateEntrance, ItemType, Location, MatchingMode, ShipmentMode } from '../../types'
+
+function deriveShipmentModePreview(fxFinanced: boolean, bankPermitNo: string): ShipmentMode {
+  if (fxFinanced && bankPermitNo.trim().length > 0) return 'MULTIMODAL'
+  return 'UNIMODAL'
+}
+
+function linkedJobIdOf(linked: string | { id: string } | null | undefined): string | null {
+  if (!linked) return null
+  return typeof linked === 'string' ? linked : linked.id
+}
 
 export function ImporterNewJobPage() {
   const navigate = useNavigate()
@@ -24,6 +35,7 @@ export function ImporterNewJobPage() {
   const [locations, setLocations] = useState<Location[]>([])
   const [gates, setGates] = useState<GateEntrance[]>([])
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
     pickupLocationId: '',
@@ -33,6 +45,9 @@ export function ImporterNewJobPage() {
     itemTypeId: '',
     quantity: 1,
     notes: '',
+    matchingMode: 'MANUAL_REQUEST' as MatchingMode,
+    fxFinanced: false,
+    bankPermitNo: '',
   })
   const [priceQuote, setPriceQuote] = useState<import('../../types').JobPricingQuote | null>(null)
   const [priceLoading, setPriceLoading] = useState(false)
@@ -61,6 +76,8 @@ export function ImporterNewJobPage() {
     form.pickupGateId &&
     form.deliveryGateId &&
     form.quantity >= 1
+
+  const modePreview = deriveShipmentModePreview(form.fxFinanced, form.bankPermitNo)
 
   useEffect(() => {
     if (!canPreview) {
@@ -102,10 +119,15 @@ export function ImporterNewJobPage() {
       setError('Select gate entrances for pickup and delivery')
       return
     }
+    if (form.fxFinanced && !form.bankPermitNo.trim()) {
+      setError('Bank permit number is required for FX-financed loads')
+      return
+    }
     setSubmitting(true)
     setError('')
+    setSuccess('')
     try {
-      const res = await createJob({
+      const res = await createLoadPosting({
         itemTypeId: form.itemTypeId,
         quantity: form.quantity,
         notes: form.notes || undefined,
@@ -113,10 +135,20 @@ export function ImporterNewJobPage() {
         delivery: { locationId: form.deliveryLocationId },
         pickupGateId: form.pickupGateId,
         deliveryGateId: form.deliveryGateId,
+        fxFinanced: form.fxFinanced,
+        bankPermitNo: form.fxFinanced ? form.bankPermitNo.trim() : undefined,
+        matchingMode: form.matchingMode,
       })
-      navigate(`/importer/jobs/${res.data.id}`)
+      const posting = res.data
+      if (posting.matchingMode === 'MANUAL_REQUEST') {
+        const jobId = linkedJobIdOf(posting.linkedJobId)
+        navigate(jobId ? `/importer/jobs/${jobId}` : `/importer/load-postings/${posting.id}`)
+        return
+      }
+      setSuccess(`Load posted and broadcast (${posting.mode}).`)
+      navigate(`/importer/load-postings/${posting.id}`, { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create job')
+      setError(err instanceof Error ? err.message : 'Failed to create load posting')
     } finally {
       setSubmitting(false)
     }
@@ -147,12 +179,92 @@ export function ImporterNewJobPage() {
       <div className="rounded-3xl border border-korecha-border bg-white p-5 shadow-sm">
         <h2 className="text-xl font-bold text-slate-900">Post a haul job</h2>
         <p className="mt-1 text-sm text-slate-500">
-          Choose pickup and delivery locations, select gate entrances, then set cargo details
+          Choose matching style, pickup and delivery, then set cargo details
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 rounded-3xl border border-korecha-border bg-white p-5 shadow-sm">
         {error && <Alert>{error}</Alert>}
+        {success && <Alert variant="success">{success}</Alert>}
+
+        <div>
+          <p className="mb-2 text-sm font-medium text-slate-700">How should fleets find this load?</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(
+              [
+                {
+                  value: 'MANUAL_REQUEST' as MatchingMode,
+                  title: 'Manual request',
+                  desc: 'Browse nearby trucks and request drivers yourself',
+                },
+                {
+                  value: 'BROADCAST' as MatchingMode,
+                  title: 'Broadcast',
+                  desc: 'Send match offers to eligible fleet managers',
+                },
+              ] as const
+            ).map((opt) => {
+              const active = form.matchingMode === opt.value
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setForm({ ...form, matchingMode: opt.value })}
+                  className={`rounded-2xl border px-4 py-3 text-left transition ${
+                    active
+                      ? 'border-korecha-primary bg-blue-50 ring-2 ring-korecha-primary/20'
+                      : 'border-korecha-border bg-white hover:bg-slate-50'
+                  }`}
+                >
+                  <p className="font-semibold text-slate-900">{opt.title}</p>
+                  <p className="mt-1 text-xs text-slate-500">{opt.desc}</p>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <label className="flex items-start gap-3 rounded-2xl border border-korecha-border bg-slate-50/80 px-4 py-3">
+          <input
+            type="checkbox"
+            checked={form.fxFinanced}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                fxFinanced: e.target.checked,
+                bankPermitNo: e.target.checked ? form.bankPermitNo : '',
+              })
+            }
+            className="mt-1 h-4 w-4 rounded border-slate-300 text-korecha-primary focus:ring-korecha-primary"
+          />
+          <span>
+            <span className="block text-sm font-medium text-slate-800">FX financed cargo</span>
+            <span className="mt-0.5 block text-xs text-slate-500">
+              Shipment mode is derived automatically from FX + bank permit (not selectable)
+            </span>
+          </span>
+        </label>
+
+        {form.fxFinanced && (
+          <Field label="Bank permit number">
+            <Input
+              value={form.bankPermitNo}
+              onChange={(e) => setForm({ ...form, bankPermitNo: e.target.value })}
+              placeholder="Required for FX-financed loads"
+              required
+            />
+          </Field>
+        )}
+
+        <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 ring-1 ring-korecha-border">
+          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Derived mode</span>
+          <Badge status={modePreview} />
+          <span className="text-xs text-slate-500">
+            {modePreview === 'MULTIMODAL'
+              ? 'FX financed with bank permit → multimodal fleets (MTO)'
+              : 'Unimodal matching'}
+          </span>
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <LocationAutocomplete
@@ -270,7 +382,11 @@ export function ImporterNewJobPage() {
           disabled={submitting || !canPreview || !form.itemTypeId}
           className="w-full py-3.5 shadow-lg shadow-blue-900/10"
         >
-          {submitting ? 'Posting...' : 'Post job & find trucks'}
+          {submitting
+            ? 'Posting...'
+            : form.matchingMode === 'BROADCAST'
+              ? 'Broadcast load to fleets'
+              : 'Post job & find trucks'}
         </Button>
       </form>
     </div>

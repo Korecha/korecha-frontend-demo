@@ -23,6 +23,7 @@ import { DriverRoutesPage } from '../pages/driver/DriverRoutesPage'
 import { DriverTrucksPage } from '../pages/driver/DriverTrucksPage'
 import { FleetDashboardPage } from '../pages/fleet/FleetDashboardPage'
 import { FleetDriversPage } from '../pages/fleet/FleetDriversPage'
+import { FleetMatchOffersPage } from '../pages/fleet/FleetMatchOffersPage'
 import { FleetTrucksPage } from '../pages/fleet/FleetTrucksPage'
 import { OrgApplicationsPage } from '../pages/org/OrgApplicationsPage'
 import { OrgDashboardPage } from '../pages/org/OrgDashboardPage'
@@ -41,6 +42,7 @@ import { ImporterHomePage } from '../pages/importer/ImporterHomePage'
 import { ImporterJobsPage } from '../pages/importer/ImporterJobsPage'
 import { ImporterNewJobPage } from '../pages/importer/ImporterNewJobPage'
 import { ImporterJobDetailPage } from '../pages/importer/ImporterJobDetailPage'
+import { ImporterLoadPostingDetailPage } from '../pages/importer/ImporterLoadPostingDetailPage'
 import { ImporterProfilePage } from '../pages/importer/ImporterProfilePage'
 import { DriverJobsPage } from '../pages/driver/DriverJobsPage'
 import { DriverJobDetailPage } from '../pages/driver/DriverJobDetailPage'
@@ -125,6 +127,7 @@ export function AppRoutes() {
             <Route path="jobs" element={<ImporterJobsPage />} />
             <Route path="jobs/new" element={<ImporterNewJobPage />} />
             <Route path="jobs/:id" element={<ImporterJobDetailPage />} />
+            <Route path="load-postings/:id" element={<ImporterLoadPostingDetailPage />} />
             <Route path="profile" element={<ImporterProfilePage />} />
           </Route>
           <Route
@@ -136,6 +139,7 @@ export function AppRoutes() {
             }
           >
             <Route index element={<FleetDashboardPage />} />
+            <Route path="match-offers" element={<FleetMatchOffersPage />} />
             <Route path="drivers" element={<FleetDriversPage />} />
             <Route path="trucks" element={<FleetTrucksPage />} />
           </Route>
