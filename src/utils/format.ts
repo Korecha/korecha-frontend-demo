@@ -72,6 +72,38 @@ export const JOB_STATUS_LABELS: Record<string, string> = {
   CANCELLED: 'Cancelled',
 }
 
+export const MATCHING_MODE_LABELS: Record<string, string> = {
+  BROADCAST: 'Broadcast',
+  MANUAL_REQUEST: 'Manual request',
+}
+
+export const SHIPMENT_MODE_LABELS: Record<string, string> = {
+  UNIMODAL: 'Unimodal',
+  MULTIMODAL: 'Multimodal',
+}
+
+export const LOAD_POSTING_STATUS_LABELS: Record<string, string> = {
+  OPEN: 'Open',
+  MATCHING: 'Matching',
+  ASSIGNED: 'Assigned',
+  CANCELLED: 'Cancelled',
+  EXPIRED: 'Expired',
+}
+
+export const MATCH_OFFER_STATUS_LABELS: Record<string, string> = {
+  SENT: 'New',
+  VIEWED: 'Viewed',
+  ASSIGNED: 'Assigned',
+  DECLINED: 'Declined',
+  EXPIRED: 'Expired',
+}
+
+export const AVAILABILITY_POSTING_STATUS_LABELS: Record<string, string> = {
+  OPEN: 'Open',
+  CLOSED: 'Closed',
+  EXPIRED: 'Expired',
+}
+
 export const AVAILABILITY_LABELS: Record<string, string> = {
   AVAILABLE: 'Available for jobs',
   ON_JOB: 'On a job',
@@ -109,4 +141,14 @@ export const STATUS_COLORS: Record<string, string> = {
   AT_PORT: 'bg-cyan-50 text-cyan-700 ring-1 ring-cyan-200',
   DISCHARGED: 'bg-slate-100 text-slate-600 ring-1 ring-slate-200',
   MAINTENANCE: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
+  MATCHING: 'bg-blue-50 text-blue-700 ring-1 ring-blue-200',
+  EXPIRED: 'bg-slate-100 text-slate-600 ring-1 ring-slate-200',
+  SENT: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200',
+  VIEWED: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
+  DECLINED: 'bg-red-50 text-red-700 ring-1 ring-red-200',
+  BROADCAST: 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200',
+  MANUAL_REQUEST: 'bg-slate-100 text-slate-700 ring-1 ring-slate-200',
+  UNIMODAL: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200',
+  MULTIMODAL: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200',
+  CLOSED: 'bg-slate-100 text-slate-600 ring-1 ring-slate-200',
 }

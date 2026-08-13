@@ -1,14 +1,14 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  createLoadPosting,
-  listImporterGateEntrances,
-  listImporterItemTypes,
-  listImporterLocations,
-  listNearbyAvailabilityPostings,
-  previewJobPricing,
+  createCorporateLoadPosting,
+  listCorporateGateEntrances,
+  listCorporateItemTypes,
+  listCorporateLocations,
+  listCorporateNearbyAvailabilityPostings,
+  previewCorporateLoadPricing,
   type NearbyAvailabilityPosting,
-} from '../../api/importer'
+} from '../../api/corporate'
 import { isApproved, useAuth } from '../../auth/AuthContext'
 import { JobPricingCard } from '../../components/importer/JobPricingCard'
 import { Alert } from '../../components/ui/Alert'
@@ -24,21 +24,15 @@ function deriveShipmentModePreview(fxFinanced: boolean, bankPermitNo: string): S
   return 'UNIMODAL'
 }
 
-function linkedJobIdOf(linked: string | { id: string } | null | undefined): string | null {
-  if (!linked) return null
-  return typeof linked === 'string' ? linked : linked.id
-}
-
-export function ImporterNewJobPage() {
+export function CorporatePostLoadPage() {
   const navigate = useNavigate()
   const { memberProfile, organization } = useAuth()
   const approved = isApproved(memberProfile)
-  const canUseJobs = approved && Boolean(organization)
+  const canUse = approved && Boolean(organization)
   const [itemTypes, setItemTypes] = useState<ItemType[]>([])
   const [locations, setLocations] = useState<Location[]>([])
   const [gates, setGates] = useState<GateEntrance[]>([])
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
     pickupLocationId: '',
@@ -48,7 +42,7 @@ export function ImporterNewJobPage() {
     itemTypeId: '',
     quantity: 1,
     notes: '',
-    matchingMode: 'MANUAL_REQUEST' as MatchingMode,
+    matchingMode: 'BROADCAST' as MatchingMode,
     fxFinanced: false,
     bankPermitNo: '',
   })
@@ -58,11 +52,11 @@ export function ImporterNewJobPage() {
   const [nearbyLoading, setNearbyLoading] = useState(false)
 
   useEffect(() => {
-    if (!canUseJobs) return
-    listImporterItemTypes().then((r) => setItemTypes(r.data)).catch(() => {})
-    listImporterLocations().then((r) => setLocations(r.data)).catch(() => {})
-    listImporterGateEntrances().then((r) => setGates(r.data)).catch(() => {})
-  }, [canUseJobs])
+    if (!canUse) return
+    listCorporateItemTypes().then((r) => setItemTypes(r.data)).catch(() => {})
+    listCorporateLocations().then((r) => setLocations(r.data)).catch(() => {})
+    listCorporateGateEntrances().then((r) => setGates(r.data)).catch(() => {})
+  }, [canUse])
 
   const pickupLocation = locations.find((loc) => loc.id === form.pickupLocationId)
   const deliveryLocation = locations.find((loc) => loc.id === form.deliveryLocationId)
@@ -90,7 +84,7 @@ export function ImporterNewJobPage() {
       return
     }
     setNearbyLoading(true)
-    listNearbyAvailabilityPostings({
+    listCorporateNearbyAvailabilityPostings({
       lat: pickupLocation.coordinates.lat,
       lng: pickupLocation.coordinates.lng,
     })
@@ -106,7 +100,7 @@ export function ImporterNewJobPage() {
     }
     const timer = setTimeout(() => {
       setPriceLoading(true)
-      previewJobPricing({
+      previewCorporateLoadPricing({
         itemTypeId: form.itemTypeId || undefined,
         quantity: form.quantity,
         pickup: { locationId: form.pickupLocationId },
@@ -145,9 +139,8 @@ export function ImporterNewJobPage() {
     }
     setSubmitting(true)
     setError('')
-    setSuccess('')
     try {
-      const res = await createLoadPosting({
+      const res = await createCorporateLoadPosting({
         itemTypeId: form.itemTypeId,
         quantity: form.quantity,
         notes: form.notes || undefined,
@@ -159,14 +152,7 @@ export function ImporterNewJobPage() {
         bankPermitNo: form.fxFinanced ? form.bankPermitNo.trim() : undefined,
         matchingMode: form.matchingMode,
       })
-      const posting = res.data.loadPosting
-      if (posting.matchingMode === 'MANUAL_REQUEST') {
-        const jobId = linkedJobIdOf(posting.linkedJobId)
-        navigate(jobId ? `/importer/jobs/${jobId}` : `/importer/load-postings/${posting.id}`)
-        return
-      }
-      setSuccess(`Load posted and broadcast (${posting.mode}).`)
-      navigate(`/importer/load-postings/${posting.id}`, { replace: true })
+      navigate(`/corporate/loads/${res.data.loadPosting.id}`, { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create load posting')
     } finally {
@@ -175,29 +161,25 @@ export function ImporterNewJobPage() {
   }
 
   if (!approved) {
-    return (
-      <Alert variant="warning">
-        Post jobs after your account is approved.
-      </Alert>
-    )
+    return <Alert variant="warning">Post loads after your corporate account is approved.</Alert>
   }
 
   if (!organization) {
     return (
       <Alert variant="warning">
-        Your account is approved. Contact the platform admin to be linked to an organization before posting jobs.
+        Your account is approved. Contact the platform admin to be linked to an organization before posting loads.
       </Alert>
     )
   }
 
   return (
     <div className="space-y-4">
-      <Link to="/importer/jobs" className="inline-flex items-center gap-1 text-sm font-medium text-korecha-primary hover:underline">
-        ← Back to jobs
+      <Link to="/corporate/loads" className="inline-flex items-center gap-1 text-sm font-medium text-korecha-primary hover:underline">
+        ← Back to loads
       </Link>
 
       <div className="rounded-3xl border border-korecha-border bg-white p-5 shadow-sm">
-        <h2 className="text-xl font-bold text-slate-900">Post a haul job</h2>
+        <h2 className="text-xl font-bold text-slate-900">Post a load</h2>
         <p className="mt-1 text-sm text-slate-500">
           Choose matching style, pickup and delivery, then set cargo details
         </p>
@@ -205,7 +187,6 @@ export function ImporterNewJobPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4 rounded-3xl border border-korecha-border bg-white p-5 shadow-sm">
         {error && <Alert>{error}</Alert>}
-        {success && <Alert variant="success">{success}</Alert>}
 
         <div>
           <p className="mb-2 text-sm font-medium text-slate-700">How should fleets find this load?</p>
@@ -213,14 +194,14 @@ export function ImporterNewJobPage() {
             {(
               [
                 {
-                  value: 'MANUAL_REQUEST' as MatchingMode,
-                  title: 'Manual request',
-                  desc: 'Browse nearby trucks and request drivers yourself',
-                },
-                {
                   value: 'BROADCAST' as MatchingMode,
                   title: 'Broadcast',
                   desc: 'Send match offers to eligible fleet managers',
+                },
+                {
+                  value: 'MANUAL_REQUEST' as MatchingMode,
+                  title: 'Manual request',
+                  desc: 'Post as a job and request a specific driver later',
                 },
               ] as const
             ).map((opt) => {
@@ -352,19 +333,6 @@ export function ImporterNewJobPage() {
           </Field>
         </div>
 
-        {(pickupLocation || deliveryLocation) && (
-          <div className="grid gap-2 sm:grid-cols-2">
-            <div className="rounded-2xl bg-blue-50 px-4 py-3 text-sm ring-1 ring-blue-100">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-korecha-primary">Pickup</p>
-              <p className="mt-0.5 font-medium text-slate-800">{pickupLocation?.name || 'Not set'}</p>
-            </div>
-            <div className="rounded-2xl bg-amber-50 px-4 py-3 text-sm ring-1 ring-amber-100">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-amber-600">Delivery</p>
-              <p className="mt-0.5 font-medium text-slate-800">{deliveryLocation?.name || 'Not set'}</p>
-            </div>
-          </div>
-        )}
-
         {pickupLocation && (
           <div className="rounded-2xl border border-korecha-border bg-slate-50/60 px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -430,7 +398,7 @@ export function ImporterNewJobPage() {
             ? 'Posting...'
             : form.matchingMode === 'BROADCAST'
               ? 'Broadcast load to fleets'
-              : 'Post job & find trucks'}
+              : 'Post load'}
         </Button>
       </form>
     </div>

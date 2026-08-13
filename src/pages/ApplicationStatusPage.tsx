@@ -1,8 +1,6 @@
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { Alert } from '../components/ui/Alert'
 import { Badge } from '../components/ui/Badge'
-import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Loading } from '../components/ui/Loading'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -13,6 +11,7 @@ interface DetailRow {
   value: string
 }
 
+/** Renders inside a role layout (sidebar + Outlet already provides page chrome/sign-out). */
 export function ApplicationStatusPage({
   title,
   description,
@@ -26,33 +25,18 @@ export function ApplicationStatusPage({
   pendingMessage: string
   approvedMessage: string
 }) {
-  const { user, memberProfile, loading, logout } = useAuth()
-  const navigate = useNavigate()
+  const { user, memberProfile, loading } = useAuth()
 
   if (loading) return <Loading message="Loading your application..." />
 
   const status = (memberProfile?.profile?.status as ApprovalStatus | undefined) ?? 'PENDING'
   const rejectionReason = memberProfile?.profile?.rejectionReason
 
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
-
   return (
-    <div className="min-h-screen bg-korecha-bg px-6 py-10">
-      <div className="mx-auto max-w-2xl">
-        <PageHeader
-          title={title}
-          description={description}
-          action={
-            <Button variant="secondary" onClick={handleLogout}>
-              Sign out
-            </Button>
-          }
-        />
+    <div className="max-w-2xl">
+      <PageHeader title={title} description={description} />
 
-        {status === 'PENDING' && (
+      {status === 'PENDING' && (
           <Alert variant="warning" className="mb-6">
             <div className="flex items-center justify-between gap-4">
               <div>
@@ -110,8 +94,7 @@ export function ApplicationStatusPage({
               </div>
             ))}
           </dl>
-        </Card>
-      </div>
+      </Card>
     </div>
   )
 }

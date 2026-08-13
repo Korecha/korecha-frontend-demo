@@ -1,5 +1,31 @@
 import { api } from './client'
-import type { ImporterProfile, ItemType, Job, JobPricingQuote, JobRequest, Location, NearbyTruck, User } from '../types'
+import type {
+  AvailabilityPosting,
+  ImporterProfile,
+  ItemType,
+  Job,
+  JobPricingQuote,
+  JobRequest,
+  LoadMatchOffer,
+  LoadPosting,
+  Location,
+  MatchingMode,
+  NearbyTruck,
+  User,
+} from '../types'
+
+export type CreateLoadPostingBody = {
+  itemTypeId: string
+  quantity: number
+  notes?: string
+  pickup: { locationId: string }
+  delivery: { locationId: string }
+  pickupGateId: string
+  deliveryGateId: string
+  fxFinanced: boolean
+  bankPermitNo?: string
+  matchingMode: MatchingMode
+}
 
 export function getImporterProfile() {
   return api<{ data: { user: User; profile: ImporterProfile; stats: Record<string, number> } }>(
@@ -77,4 +103,35 @@ export function approveJob(jobId: string) {
   return api<{ data: Job }>(`/api/importer/jobs/${jobId}/approve`, {
     method: 'POST',
   })
+}
+
+export function createLoadPosting(body: CreateLoadPostingBody) {
+  return api<{ data: { loadPosting: LoadPosting; offers: LoadMatchOffer[] } }>(
+    '/api/importer/load-postings',
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }
+  )
+}
+
+export function listLoadPostings() {
+  return api<{ data: LoadPosting[] }>('/api/importer/load-postings')
+}
+
+export function getLoadPosting(id: string) {
+  return api<{
+    data: { loadPosting: LoadPosting; offers?: LoadMatchOffer[]; offersSummary?: { total: number } }
+  }>(`/api/importer/load-postings/${id}`)
+}
+
+export type NearbyAvailabilityPosting = AvailabilityPosting & { distanceKm: number }
+
+export function listNearbyAvailabilityPostings(params: { lat: number; lng: number; radiusKm?: number }) {
+  const qs = new URLSearchParams({
+    lat: String(params.lat),
+    lng: String(params.lng),
+    ...(params.radiusKm ? { radiusKm: String(params.radiusKm) } : {}),
+  })
+  return api<{ data: NearbyAvailabilityPosting[] }>(`/api/importer/availability-postings/nearby?${qs}`)
 }

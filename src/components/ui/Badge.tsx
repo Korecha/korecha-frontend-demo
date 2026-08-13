@@ -1,9 +1,25 @@
-import { APPROVAL_LABELS, AVAILABILITY_LABELS, JOB_STATUS_LABELS, ROLE_LABELS, STATUS_COLORS } from '../../utils/format'
+import {
+  APPROVAL_LABELS,
+  AVAILABILITY_LABELS,
+  AVAILABILITY_POSTING_STATUS_LABELS,
+  JOB_STATUS_LABELS,
+  LOAD_POSTING_STATUS_LABELS,
+  MATCHING_MODE_LABELS,
+  MATCH_OFFER_STATUS_LABELS,
+  ROLE_LABELS,
+  SHIPMENT_MODE_LABELS,
+  STATUS_COLORS,
+} from '../../utils/format'
 
 export function Badge({ status }: { status: string }) {
   const color = STATUS_COLORS[status] || 'bg-slate-100 text-slate-600 ring-1 ring-slate-200'
   const label =
     JOB_STATUS_LABELS[status] ||
+    LOAD_POSTING_STATUS_LABELS[status] ||
+    MATCH_OFFER_STATUS_LABELS[status] ||
+    MATCHING_MODE_LABELS[status] ||
+    SHIPMENT_MODE_LABELS[status] ||
+    AVAILABILITY_POSTING_STATUS_LABELS[status] ||
     AVAILABILITY_LABELS[status] ||
     APPROVAL_LABELS[status] ||
     ROLE_LABELS[status] ||
