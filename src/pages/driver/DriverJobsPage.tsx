@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   completeDriverLeg,
@@ -7,6 +7,7 @@ import {
   listDriverJobRequests,
   respondToJobRequest,
   startDriverLeg,
+  uploadDriverLegPod,
 } from '../../api/driver'
 import { isApproved, useAuth } from '../../auth/AuthContext'
 import { DriverMap } from '../../components/driver/DriverMap'
@@ -14,7 +15,9 @@ import { DriverJobProgress } from '../../components/jobs/DriverJobProgress'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+import { Field, Input } from '../../components/ui/Input'
 import { Modal, ModalFooter } from '../../components/ui/Modal'
+import { fileUrl } from '../../utils/fileUrl'
 import { formatDate, refName } from '../../utils/format'
 import { jobRouteLocations, legRouteLocations } from '../../utils/jobMap'
 import type { Job, JobRequest, ShipmentLeg } from '../../types'
@@ -35,6 +38,8 @@ export function DriverJobsPage() {
   const [error, setError] = useState('')
   const [acting, setActing] = useState<string | null>(null)
   const [legCompleteOpen, setLegCompleteOpen] = useState(false)
+  const [podFiles, setPodFiles] = useState<Record<string, File>>({})
+  const [podPreviews, setPodPreviews] = useState<Record<string, string>>({})
 
   const load = () => {
     Promise.all([
@@ -52,9 +57,20 @@ export function DriverJobsPage() {
       .catch((err) => setError(err.message))
   }
 
+  const podPreviewsRef = useRef(podPreviews)
+  podPreviewsRef.current = podPreviews
+
   useEffect(() => {
     if (approved) load()
   }, [approved])
+
+  useEffect(() => {
+    return () => {
+      Object.values(podPreviewsRef.current).forEach((url) => {
+        if (url.startsWith('blob:')) URL.revokeObjectURL(url)
+      })
+    }
+  }, [])
 
   const handleRespond = async (id: string, accept: boolean) => {
     setActing(id)
@@ -82,11 +98,39 @@ export function DriverJobsPage() {
     }
   }
 
+  const handlePodChange = (jobId: string, file: File | null) => {
+    setPodPreviews((prev) => {
+      const existing = prev[jobId]
+      if (existing?.startsWith('blob:')) URL.revokeObjectURL(existing)
+      if (!file) {
+        const next = { ...prev }
+        delete next[jobId]
+        return next
+      }
+      return { ...prev, [jobId]: URL.createObjectURL(file) }
+    })
+    setPodFiles((prev) => {
+      if (!file) {
+        const next = { ...prev }
+        delete next[jobId]
+        return next
+      }
+      return { ...prev, [jobId]: file }
+    })
+  }
+
   const handleComplete = async (job: Job) => {
     const leg = job.currentLeg
     if (!leg) return
+    const file = podFiles[job.id]
+    if (!file && !leg.podPhotoUrl) {
+      setError('A delivery photo is required to complete this leg')
+      return
+    }
     setActing(job.id)
+    setError('')
     try {
+      if (file) await uploadDriverLegPod(leg.id, file)
       const r = await completeDriverLeg(leg.id)
       if (r.data.released) setLegCompleteOpen(true)
       load()
@@ -251,6 +295,33 @@ export function DriverJobsPage() {
                   </div>
                   <p className="mt-1 text-sm text-slate-600">{routeLabel}</p>
                   <div className="mt-3"><DriverJobProgress status={job.status} currentLeg={leg} /></div>
+                  {leg?.status === 'IN_TRANSIT' && (
+                    <div className="mt-4 rounded-2xl border border-korecha-border bg-slate-50 p-3">
+                      <Field label="Delivery photo required">
+                        <Input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          capture="environment"
+                          className="cursor-pointer py-3"
+                          onChange={(e) => handlePodChange(job.id, e.target.files?.[0] || null)}
+                        />
+                      </Field>
+                      {(podPreviews[job.id] || leg.podPhotoUrl) && (
+                        <a
+                          href={podPreviews[job.id] || fileUrl(leg.podPhotoUrl)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-3 block overflow-hidden rounded-xl border border-korecha-border"
+                        >
+                          <img
+                            src={podPreviews[job.id] || fileUrl(leg.podPhotoUrl)}
+                            alt="Delivery photo preview"
+                            className="h-40 w-full object-cover"
+                          />
+                        </a>
+                      )}
+                    </div>
+                  )}
                   <div className="mt-4 flex gap-2">
                     {leg?.status === 'ASSIGNED' && (
                       <Button className="flex-1" disabled={acting === job.id} onClick={() => handleStart(job)}>

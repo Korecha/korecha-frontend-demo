@@ -5,6 +5,7 @@ import { isApproved, useAuth } from '../../auth/AuthContext'
 import { DriverMap } from '../../components/driver/DriverMap'
 import { JobPricingCard } from '../../components/importer/JobPricingCard'
 import { JobStatusTimeline } from '../../components/importer/JobStatusTimeline'
+import { PodPhotos } from '../../components/jobs/PodPhotos'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
@@ -212,6 +213,8 @@ export function ImporterJobDetailPage() {
           </div>
         )}
       </div>
+
+      <PodPhotos legs={legs} />
 
       {error && <Alert>{error}</Alert>}
 

@@ -3,11 +3,12 @@ import { Link, useParams } from 'react-router-dom'
 import { getCorporateLoadPosting } from '../../api/corporate'
 import { isApproved, useAuth } from '../../auth/AuthContext'
 import { JobPricingCard } from '../../components/importer/JobPricingCard'
+import { PodPhotos } from '../../components/jobs/PodPhotos'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Card } from '../../components/ui/Card'
 import { formatDate, refName } from '../../utils/format'
-import type { LoadMatchOffer, LoadPosting } from '../../types'
+import type { LoadMatchOffer, LoadPosting, ShipmentLeg } from '../../types'
 
 export function CorporateLoadPostingDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -16,6 +17,7 @@ export function CorporateLoadPostingDetailPage() {
   const canUse = approved && Boolean(organization)
   const [posting, setPosting] = useState<LoadPosting | null>(null)
   const [offers, setOffers] = useState<LoadMatchOffer[]>([])
+  const [legs, setLegs] = useState<ShipmentLeg[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -26,6 +28,7 @@ export function CorporateLoadPostingDetailPage() {
       .then((r) => {
         setPosting({ ...r.data.loadPosting, offersSummary: r.data.offersSummary })
         setOffers(r.data.offers || [])
+        setLegs(r.data.legs || [])
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load posting'))
       .finally(() => setLoading(false))
@@ -99,6 +102,8 @@ export function CorporateLoadPostingDetailPage() {
           <p className="mt-4 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">{posting.notes}</p>
         )}
       </Card>
+
+      <PodPhotos legs={legs} />
 
       {posting.pricingQuote && <JobPricingCard quote={posting.pricingQuote} />}
 

@@ -122,7 +122,12 @@ export function listLoadPostings() {
 
 export function getLoadPosting(id: string) {
   return api<{
-    data: { loadPosting: LoadPosting; offers?: LoadMatchOffer[]; offersSummary?: { total: number } }
+    data: {
+      loadPosting: LoadPosting
+      offers?: LoadMatchOffer[]
+      offersSummary?: { total: number }
+      legs?: ShipmentLeg[]
+    }
   }>(`/api/importer/load-postings/${id}`)
 }
 

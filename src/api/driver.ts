@@ -95,6 +95,15 @@ export function startDriverLeg(id: string) {
   )
 }
 
+export function uploadDriverLegPod(legId: string, file: File) {
+  const form = new FormData()
+  form.append('pod', file)
+  return api<{ data: { currentLeg: import('../types').ShipmentLeg } }>(
+    `/api/driver/legs/${legId}/pod`,
+    { method: 'POST', body: form }
+  )
+}
+
 export function completeDriverLeg(id: string) {
   return api<{
     data: {

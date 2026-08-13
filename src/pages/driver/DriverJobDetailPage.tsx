@@ -5,13 +5,16 @@ import {
   getDriverJob,
   respondToJobRequest,
   startDriverLeg,
+  uploadDriverLegPod,
 } from '../../api/driver'
 import { DriverMap } from '../../components/driver/DriverMap'
 import { DriverJobProgress } from '../../components/jobs/DriverJobProgress'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+import { Field, Input } from '../../components/ui/Input'
 import { Modal, ModalFooter } from '../../components/ui/Modal'
+import { fileUrl } from '../../utils/fileUrl'
 import { formatDate, refName } from '../../utils/format'
 import { jobRouteLocations, legRouteLocations } from '../../utils/jobMap'
 import type { Job, JobRequest, ShipmentLeg } from '../../types'
@@ -30,6 +33,8 @@ export function DriverJobDetailPage() {
   const [error, setError] = useState('')
   const [acting, setActing] = useState(false)
   const [legCompleteOpen, setLegCompleteOpen] = useState(false)
+  const [podFile, setPodFile] = useState<File | null>(null)
+  const [podPreview, setPodPreview] = useState('')
 
   const load = () => {
     if (!id) return
@@ -45,6 +50,12 @@ export function DriverJobDetailPage() {
   }
 
   useEffect(() => { load() }, [id])
+
+  useEffect(() => {
+    return () => {
+      if (podPreview.startsWith('blob:')) URL.revokeObjectURL(podPreview)
+    }
+  }, [podPreview])
 
   const handleRespond = async (accept: boolean) => {
     if (!request) return
@@ -75,11 +86,27 @@ export function DriverJobDetailPage() {
     }
   }
 
+  const handlePodChange = (file: File | null) => {
+    setPodPreview((prev) => {
+      if (prev.startsWith('blob:')) URL.revokeObjectURL(prev)
+      return file ? URL.createObjectURL(file) : ''
+    })
+    setPodFile(file)
+  }
+
   const handleComplete = async () => {
     if (!currentLeg) return
+    if (!podFile && !currentLeg.podPhotoUrl) {
+      setError('A delivery photo is required to complete this leg')
+      return
+    }
     setActing(true)
     setError('')
     try {
+      if (podFile) {
+        const uploaded = await uploadDriverLegPod(currentLeg.id, podFile)
+        setCurrentLeg(uploaded.data.currentLeg)
+      }
       const r = await completeDriverLeg(currentLeg.id)
       if (r.data.released) {
         setLegCompleteOpen(true)
@@ -186,9 +213,40 @@ export function DriverJobDetailPage() {
       )}
 
       {currentLeg?.status === 'IN_TRANSIT' && (
-        <Button className="w-full py-3.5" disabled={acting} onClick={handleComplete}>
-          {acting ? 'Submitting...' : 'Complete this leg'}
-        </Button>
+        <div className="rounded-3xl border border-korecha-border bg-white p-5 shadow-sm">
+          <h3 className="font-bold text-slate-900">Delivery photo required</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Take a photo of the delivery. You cannot finish this trip without a photo.
+          </p>
+          <div className="mt-4">
+            <Field label="Take or choose a photo">
+              <Input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                capture="environment"
+                className="cursor-pointer py-3"
+                onChange={(e) => handlePodChange(e.target.files?.[0] || null)}
+              />
+            </Field>
+          </div>
+          {(podPreview || currentLeg.podPhotoUrl) && (
+            <a
+              href={podPreview || fileUrl(currentLeg.podPhotoUrl)}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 block overflow-hidden rounded-2xl border border-korecha-border"
+            >
+              <img
+                src={podPreview || fileUrl(currentLeg.podPhotoUrl)}
+                alt="Delivery photo preview"
+                className="h-56 w-full object-cover"
+              />
+            </a>
+          )}
+          <Button className="mt-4 w-full py-3.5" disabled={acting} onClick={handleComplete}>
+            {acting ? 'Submitting...' : 'Complete this leg'}
+          </Button>
+        </div>
       )}
 
       {legCompleteOpen && (
