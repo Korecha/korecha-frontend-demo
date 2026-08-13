@@ -11,6 +11,7 @@ import type {
   User,
   Shipment,
   ShipmentLeg,
+  TrackingEvent,
 } from '../types'
 
 export function getFleetProfile() {
@@ -97,6 +98,12 @@ export function listFleetShipments() {
 
 export function getFleetShipment(id: string) {
   return api<{ data: Shipment }>(`/api/fleet-manager/shipments/${id}`)
+}
+
+export function getShipmentLegTracking(shipmentId: string, legId: string) {
+  return api<{ data: { events: TrackingEvent[] } }>(
+    `/api/fleet-manager/shipments/${shipmentId}/legs/${legId}/tracking`
+  )
 }
 
 export function addFleetShipmentLeg(

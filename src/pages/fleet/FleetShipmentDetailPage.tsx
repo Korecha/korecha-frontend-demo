@@ -3,11 +3,13 @@ import { Link, useParams } from 'react-router-dom'
 import {
   addFleetShipmentLeg,
   getFleetShipment,
+  getShipmentLegTracking,
   listFleetDrivers,
   listFleetLocations,
   listFleetTrucks,
 } from '../../api/fleet'
 import { isApproved, useAuth } from '../../auth/AuthContext'
+import { DriverMap } from '../../components/driver/DriverMap'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
@@ -15,6 +17,7 @@ import { Field, Select } from '../../components/ui/Input'
 import { LocationAutocomplete } from '../../components/ui/LocationAutocomplete'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { refName } from '../../utils/format'
+import { jobRouteLocations, trackingPath } from '../../utils/jobMap'
 import type { DriverProfile, FleetProfile, Job, Location, Shipment, ShipmentLeg, Truck, User } from '../../types'
 
 function locName(value: ShipmentLeg['fromLocationId']): string {
@@ -44,6 +47,7 @@ export function FleetShipmentDetailPage() {
   const [toLocationId, setToLocationId] = useState('')
   const [truckId, setTruckId] = useState('')
   const [driverId, setDriverId] = useState('')
+  const [track, setTrack] = useState<{ lat: number; lng: number }[]>([])
 
   const load = () => {
     if (!id || !approved) {
@@ -64,6 +68,31 @@ export function FleetShipmentDetailPage() {
     listFleetDrivers().then((r) => setDrivers(r.data)).catch(() => {})
     listFleetTrucks().then((r) => setTrucks(r.data)).catch(() => {})
   }, [id, approved])
+
+  useEffect(() => {
+    if (!id || !shipment) {
+      setTrack([])
+      return
+    }
+    const shipmentLegs = shipment.legs || []
+    if (shipmentLegs.length === 0) {
+      setTrack([])
+      return
+    }
+    let cancelled = false
+    Promise.all(
+      shipmentLegs.map((leg) =>
+        getShipmentLegTracking(id, leg.id)
+          .then((r) => r.data.events ?? [])
+          .catch(() => leg.tracking ?? [])
+      )
+    ).then((all) => {
+      if (!cancelled) setTrack(trackingPath(all.flat()))
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [id, shipment])
 
   const approvedTrucks = useMemo(() => trucks.filter((t) => t.status === 'APPROVED'), [trucks])
   const approvedDrivers = useMemo(
@@ -121,6 +150,15 @@ export function FleetShipmentDetailPage() {
         action={<Badge status={shipment.status} />}
       />
       {error && <div className="mb-4"><Alert>{error}</Alert></div>}
+
+      <div className="relative mb-6 overflow-hidden rounded-3xl border border-white/60 shadow-xl shadow-blue-900/10">
+        <DriverMap
+          className="h-[36vh] min-h-[220px]"
+          routeLocations={job ? jobRouteLocations(job) : []}
+          track={track}
+          interactive
+        />
+      </div>
 
       <div className="rounded-2xl border border-korecha-border bg-white p-5 shadow-sm">
         <h3 className="font-bold text-slate-900">Legs</h3>

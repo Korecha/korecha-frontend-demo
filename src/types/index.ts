@@ -237,6 +237,14 @@ export interface JobRequest {
   createdAt?: string
 }
 
+export interface TrackingEvent {
+  id: string
+  lat: number
+  lng: number
+  accuracy?: number
+  recordedAt: string
+}
+
 export interface ShipmentLeg {
   id: string
   shipmentId: string
@@ -249,6 +257,7 @@ export interface ShipmentLeg {
   startedAt?: string | null
   completedAt?: string | null
   podPhotoUrl?: string
+  tracking?: TrackingEvent[]
 }
 
 export interface Shipment {

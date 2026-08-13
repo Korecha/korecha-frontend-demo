@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom'
 import { getDriverProfile } from '../../api/driver'
 import { isApproved, useAuth } from '../../auth/AuthContext'
 import { DriverMap } from '../../components/driver/DriverMap'
+import { useDriverLocationContext } from '../../components/layout/DriverLayout'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
-import { useDriverLocation } from '../../hooks/useDriverLocation'
 import { formatDate } from '../../utils/format'
 import type { DriverAvailability, DriverProfile, Location } from '../../types'
 
@@ -22,7 +22,7 @@ export function DriverHomePage() {
   const [toggling, setToggling] = useState(false)
 
   const isLive = profile?.isLocationLive ?? false
-  const { position, error: geoError, goLive, goOffline, setAvailability } = useDriverLocation(isLive && approved)
+  const { position, error: geoError, goLive, goOffline, setAvailability } = useDriverLocationContext()
 
   const load = () => {
     getDriverProfile()

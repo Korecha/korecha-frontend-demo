@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getJob, getNearbyTrucks, requestTruck, approveJob } from '../../api/importer'
+import { getJob, getJobLegTracking, getNearbyTrucks, requestTruck, approveJob } from '../../api/importer'
 import { isApproved, useAuth } from '../../auth/AuthContext'
 import { DriverMap } from '../../components/driver/DriverMap'
 import { JobPricingCard } from '../../components/importer/JobPricingCard'
@@ -10,7 +10,7 @@ import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { refName, formatDate } from '../../utils/format'
-import { jobRouteLocations } from '../../utils/jobMap'
+import { jobRouteLocations, trackingPath } from '../../utils/jobMap'
 import type { Job, JobRequest, NearbyTruck, ShipmentLeg } from '../../types'
 
 function TruckRequestCard({
@@ -79,6 +79,7 @@ export function ImporterJobDetailPage() {
   const [error, setError] = useState('')
   const [requesting, setRequesting] = useState<string | null>(null)
   const [approving, setApproving] = useState(false)
+  const [track, setTrack] = useState<{ lat: number; lng: number }[]>([])
 
   const load = useCallback(() => {
     if (!id || !canUseJobs) {
@@ -106,6 +107,26 @@ export function ImporterJobDetailPage() {
   useEffect(() => {
     void Promise.resolve().then(load)
   }, [load])
+
+  useEffect(() => {
+    if (!id || legs.length === 0) {
+      setTrack([])
+      return
+    }
+    let cancelled = false
+    Promise.all(
+      legs.map((leg) =>
+        getJobLegTracking(id, leg.id)
+          .then((r) => r.data.events ?? [])
+          .catch(() => leg.tracking ?? [])
+      )
+    ).then((all) => {
+      if (!cancelled) setTrack(trackingPath(all.flat()))
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [id, legs])
 
   const handleRequest = async (truck: NearbyTruck) => {
     if (!id) return
@@ -166,7 +187,7 @@ export function ImporterJobDetailPage() {
 
       {/* Map hero */}
       <div className="relative overflow-hidden rounded-3xl border border-white/60 shadow-xl shadow-blue-900/10">
-        <DriverMap className="h-[36vh] min-h-[220px]" routeLocations={jobRouteLocations(job)} interactive />
+        <DriverMap className="h-[36vh] min-h-[220px]" routeLocations={jobRouteLocations(job)} track={track} interactive />
         <div className="absolute left-4 top-4 rounded-2xl bg-white/95 px-3 py-2 shadow-lg backdrop-blur">
           <Badge status={job.status} />
         </div>
