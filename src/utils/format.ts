@@ -82,6 +82,13 @@ export const SHIPMENT_MODE_LABELS: Record<string, string> = {
   MULTIMODAL: 'Multimodal',
 }
 
+export const SHIPMENT_LEG_STATUS_LABELS: Record<string, string> = {
+  ASSIGNED: 'Assigned',
+  IN_TRANSIT: 'In transit',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled',
+}
+
 export const LOAD_POSTING_STATUS_LABELS: Record<string, string> = {
   OPEN: 'Open',
   MATCHING: 'Matching',

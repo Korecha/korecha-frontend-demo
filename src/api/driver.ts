@@ -64,9 +64,13 @@ export function listDriverJobHistory() {
 }
 
 export function getDriverJob(id: string) {
-  return api<{ data: { job: import('../types').Job; request: import('../types').JobRequest | null } }>(
-    `/api/driver/jobs/${id}`
-  )
+  return api<{
+    data: {
+      job: import('../types').Job
+      request: import('../types').JobRequest | null
+      currentLeg: import('../types').ShipmentLeg | null
+    }
+  }>(`/api/driver/jobs/${id}`)
 }
 
 export function respondToJobRequest(id: string, accept: boolean) {
@@ -82,4 +86,22 @@ export function startDriverJob(id: string) {
 
 export function completeDriverJob(id: string) {
   return api<{ data: import('../types').Job }>(`/api/driver/jobs/${id}/complete`, { method: 'POST' })
+}
+
+export function startDriverLeg(id: string) {
+  return api<{ data: { job: import('../types').Job; currentLeg: import('../types').ShipmentLeg | null } }>(
+    `/api/driver/legs/${id}/start`,
+    { method: 'POST' }
+  )
+}
+
+export function completeDriverLeg(id: string) {
+  return api<{
+    data: {
+      job: import('../types').Job
+      currentLeg: import('../types').ShipmentLeg | null
+      completedLeg?: import('../types').ShipmentLeg | null
+      released?: boolean
+    }
+  }>(`/api/driver/legs/${id}/complete`, { method: 'POST' })
 }

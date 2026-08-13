@@ -24,6 +24,8 @@ import { DriverTrucksPage } from '../pages/driver/DriverTrucksPage'
 import { FleetDashboardPage } from '../pages/fleet/FleetDashboardPage'
 import { FleetDriversPage } from '../pages/fleet/FleetDriversPage'
 import { FleetMatchOffersPage } from '../pages/fleet/FleetMatchOffersPage'
+import { FleetShipmentsPage } from '../pages/fleet/FleetShipmentsPage'
+import { FleetShipmentDetailPage } from '../pages/fleet/FleetShipmentDetailPage'
 import { FleetAvailabilityPage } from '../pages/fleet/FleetAvailabilityPage'
 import { FleetTrucksPage } from '../pages/fleet/FleetTrucksPage'
 import { OrgApplicationsPage } from '../pages/org/OrgApplicationsPage'
@@ -147,6 +149,8 @@ export function AppRoutes() {
           >
             <Route index element={<FleetDashboardPage />} />
             <Route path="match-offers" element={<FleetMatchOffersPage />} />
+            <Route path="shipments" element={<FleetShipmentsPage />} />
+            <Route path="shipments/:id" element={<FleetShipmentDetailPage />} />
             <Route path="availability" element={<FleetAvailabilityPage />} />
             <Route path="drivers" element={<FleetDriversPage />} />
             <Route path="trucks" element={<FleetTrucksPage />} />

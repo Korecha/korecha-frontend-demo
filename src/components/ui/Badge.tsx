@@ -8,6 +8,7 @@ import {
   MATCH_OFFER_STATUS_LABELS,
   ROLE_LABELS,
   SHIPMENT_MODE_LABELS,
+  SHIPMENT_LEG_STATUS_LABELS,
   STATUS_COLORS,
 } from '../../utils/format'
 
@@ -19,6 +20,7 @@ export function Badge({ status }: { status: string }) {
     MATCH_OFFER_STATUS_LABELS[status] ||
     MATCHING_MODE_LABELS[status] ||
     SHIPMENT_MODE_LABELS[status] ||
+    SHIPMENT_LEG_STATUS_LABELS[status] ||
     AVAILABILITY_POSTING_STATUS_LABELS[status] ||
     AVAILABILITY_LABELS[status] ||
     APPROVAL_LABELS[status] ||

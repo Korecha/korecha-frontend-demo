@@ -11,6 +11,7 @@ import type {
   Location,
   MatchingMode,
   NearbyTruck,
+  ShipmentLeg,
   User,
 } from '../types'
 
@@ -79,7 +80,7 @@ export function listJobs() {
 }
 
 export function getJob(id: string) {
-  return api<{ data: { job: Job; requests: JobRequest[] } }>(`/api/importer/jobs/${id}`)
+  return api<{ data: { job: Job; requests: JobRequest[]; legs: ShipmentLeg[] } }>(`/api/importer/jobs/${id}`)
 }
 
 export interface NearbyTrucksResult {
