@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  completeDriverJob,
+  completeDriverLeg,
   listDriverActiveJobs,
   listDriverJobHistory,
   listDriverJobRequests,
   respondToJobRequest,
-  startDriverJob,
+  startDriverLeg,
 } from '../../api/driver'
 import { isApproved, useAuth } from '../../auth/AuthContext'
 import { DriverMap } from '../../components/driver/DriverMap'
@@ -15,8 +15,12 @@ import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { formatDate, refName } from '../../utils/format'
-import { jobRouteLocations } from '../../utils/jobMap'
-import type { Job, JobRequest } from '../../types'
+import { jobRouteLocations, legRouteLocations } from '../../utils/jobMap'
+import type { Job, JobRequest, ShipmentLeg } from '../../types'
+
+function locName(value: ShipmentLeg['fromLocationId']): string {
+  return refName(value as string | { name?: string } | null | undefined)
+}
 
 type Tab = 'requests' | 'active' | 'history'
 
@@ -62,10 +66,12 @@ export function DriverJobsPage() {
     }
   }
 
-  const handleStart = async (id: string) => {
-    setActing(id)
+  const handleStart = async (job: Job) => {
+    const leg = job.currentLeg
+    if (!leg) return
+    setActing(job.id)
     try {
-      await startDriverJob(id)
+      await startDriverLeg(leg.id)
       load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed')
@@ -74,10 +80,12 @@ export function DriverJobsPage() {
     }
   }
 
-  const handleComplete = async (id: string) => {
-    setActing(id)
+  const handleComplete = async (job: Job) => {
+    const leg = job.currentLeg
+    if (!leg) return
+    setActing(job.id)
     try {
-      await completeDriverJob(id)
+      await completeDriverLeg(leg.id)
       load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed')
@@ -213,25 +221,31 @@ export function DriverJobsPage() {
           <p className="rounded-2xl bg-slate-50 p-6 text-center text-sm text-slate-500">No active jobs right now</p>
         ) : (
           <div className="space-y-4">
-            {activeJobs.map((job) => (
+            {activeJobs.map((job) => {
+              const leg = job.currentLeg
+              const route = leg ? legRouteLocations(leg) : jobRouteLocations(job)
+              const routeLabel = leg
+                ? `Leg ${leg.sequenceNo}: ${locName(leg.fromLocationId)} → ${locName(leg.toLocationId)}`
+                : `${job.pickup.label} → ${job.delivery.label}`
+              return (
               <div key={job.id} className="overflow-hidden rounded-3xl border bg-white shadow-sm">
-                <DriverMap className="h-[24vh] min-h-[140px] rounded-none border-0" routeLocations={jobRouteLocations(job)} interactive={false} />
+                <DriverMap className="h-[24vh] min-h-[140px] rounded-none border-0" routeLocations={route.length ? route : jobRouteLocations(job)} interactive={false} />
                 <div className="p-4">
                   <div className="flex items-start justify-between">
                     <p className="font-bold text-slate-900">{refName(job.itemTypeId)} × {job.quantity}</p>
-                    <Badge status={job.status} />
+                    <Badge status={leg?.status || job.status} />
                   </div>
-                  <p className="mt-1 text-sm text-slate-600">{job.pickup.label} → {job.delivery.label}</p>
-                  <div className="mt-3"><DriverJobProgress status={job.status} /></div>
+                  <p className="mt-1 text-sm text-slate-600">{routeLabel}</p>
+                  <div className="mt-3"><DriverJobProgress status={job.status} currentLeg={leg} /></div>
                   <div className="mt-4 flex gap-2">
-                    {job.status === 'ASSIGNED' && (
-                      <Button className="flex-1" disabled={acting === job.id} onClick={() => handleStart(job.id)}>
-                        Start trip
+                    {leg?.status === 'ASSIGNED' && (
+                      <Button className="flex-1" disabled={acting === job.id} onClick={() => handleStart(job)}>
+                        Start leg
                       </Button>
                     )}
-                    {job.status === 'IN_TRANSIT' && (
-                      <Button className="flex-1" disabled={acting === job.id} onClick={() => handleComplete(job.id)}>
-                        Mark completed
+                    {leg?.status === 'IN_TRANSIT' && (
+                      <Button className="flex-1" disabled={acting === job.id} onClick={() => handleComplete(job)}>
+                        Complete leg
                       </Button>
                     )}
                     <Link to={`/driver/jobs/${job.id}`} className="flex-1">
@@ -240,7 +254,8 @@ export function DriverJobsPage() {
                   </div>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
         )
       )}

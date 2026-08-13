@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
-  completeDriverJob,
+  completeDriverLeg,
   getDriverJob,
   respondToJobRequest,
-  startDriverJob,
+  startDriverLeg,
 } from '../../api/driver'
 import { DriverMap } from '../../components/driver/DriverMap'
 import { DriverJobProgress } from '../../components/jobs/DriverJobProgress'
@@ -12,14 +12,19 @@ import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { formatDate, refName } from '../../utils/format'
-import { jobRouteLocations } from '../../utils/jobMap'
-import type { Job, JobRequest } from '../../types'
+import { jobRouteLocations, legRouteLocations } from '../../utils/jobMap'
+import type { Job, JobRequest, ShipmentLeg } from '../../types'
+
+function locName(value: ShipmentLeg['fromLocationId']): string {
+  return refName(value as string | { name?: string } | null | undefined)
+}
 
 export function DriverJobDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [job, setJob] = useState<Job | null>(null)
   const [request, setRequest] = useState<JobRequest | null>(null)
+  const [currentLeg, setCurrentLeg] = useState<ShipmentLeg | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [acting, setActing] = useState(false)
@@ -31,6 +36,7 @@ export function DriverJobDetailPage() {
       .then((r) => {
         setJob(r.data.job)
         setRequest(r.data.request)
+        setCurrentLeg(r.data.currentLeg || r.data.job.currentLeg || null)
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
@@ -54,11 +60,12 @@ export function DriverJobDetailPage() {
   }
 
   const handleStart = async () => {
-    if (!id) return
+    if (!currentLeg) return
     setActing(true)
     try {
-      await startDriverJob(id)
-      load()
+      const r = await startDriverLeg(currentLeg.id)
+      setJob(r.data.job)
+      setCurrentLeg(r.data.currentLeg)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed')
     } finally {
@@ -67,11 +74,12 @@ export function DriverJobDetailPage() {
   }
 
   const handleComplete = async () => {
-    if (!id) return
+    if (!currentLeg) return
     setActing(true)
     try {
-      await completeDriverJob(id)
-      load()
+      const r = await completeDriverLeg(currentLeg.id)
+      setJob(r.data.job)
+      setCurrentLeg(r.data.currentLeg)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed')
     } finally {
@@ -85,6 +93,10 @@ export function DriverJobDetailPage() {
   const importer = typeof job.importerId === 'object' ? job.importerId : null
   const showRequestActions = !!request && ['OPEN', 'REQUESTED'].includes(job.status)
   const showDriverProgress = ['ASSIGNED', 'IN_TRANSIT', 'PENDING_APPROVAL', 'COMPLETED'].includes(job.status)
+  const route = currentLeg ? legRouteLocations(currentLeg) : jobRouteLocations(job)
+  const routeLabel = currentLeg
+    ? `${locName(currentLeg.fromLocationId)} → ${locName(currentLeg.toLocationId)}`
+    : `${job.pickup.label} → ${job.delivery.label}`
 
   return (
     <div className="space-y-4">
@@ -98,9 +110,15 @@ export function DriverJobDetailPage() {
             <h2 className="text-xl font-bold text-slate-900">
               {refName(job.itemTypeId)} × {job.quantity}
             </h2>
-            <p className="mt-1 text-sm text-slate-600">{job.pickup.label} → {job.delivery.label}</p>
+            {currentLeg ? (
+              <p className="mt-1 text-sm text-slate-600">
+                Leg {currentLeg.sequenceNo}: {routeLabel}
+              </p>
+            ) : (
+              <p className="mt-1 text-sm text-slate-600">{routeLabel}</p>
+            )}
           </div>
-          <Badge status={job.status} />
+          <Badge status={currentLeg?.status || job.status} />
         </div>
 
         {job.notes && (
@@ -124,13 +142,17 @@ export function DriverJobDetailPage() {
           </div>
         )}
 
-        {showDriverProgress && <div className="mt-4"><DriverJobProgress status={job.status} /></div>}
+        {showDriverProgress && (
+          <div className="mt-4">
+            <DriverJobProgress status={job.status} currentLeg={currentLeg} />
+          </div>
+        )}
         {job.completedAt && (
           <p className="mt-2 text-xs text-slate-500">Completed {formatDate(job.completedAt)}</p>
         )}
       </div>
 
-      <DriverMap className="h-[36vh] min-h-[220px]" routeLocations={jobRouteLocations(job)} interactive />
+      <DriverMap className="h-[36vh] min-h-[220px]" routeLocations={route.length ? route : jobRouteLocations(job)} interactive />
 
       {error && <Alert>{error}</Alert>}
 
@@ -151,16 +173,23 @@ export function DriverJobDetailPage() {
         </div>
       )}
 
-      {job.status === 'ASSIGNED' && (
+      {currentLeg?.status === 'ASSIGNED' && (
         <Button className="w-full py-3.5" disabled={acting} onClick={handleStart}>
-          {acting ? 'Starting...' : 'Start trip — head to pickup'}
+          {acting ? 'Starting...' : 'Start this leg'}
         </Button>
       )}
 
-      {job.status === 'IN_TRANSIT' && (
+      {currentLeg?.status === 'IN_TRANSIT' && (
         <Button className="w-full py-3.5" disabled={acting} onClick={handleComplete}>
-          {acting ? 'Submitting...' : 'Mark delivered — submit for importer approval'}
+          {acting ? 'Submitting...' : 'Complete this leg'}
         </Button>
+      )}
+
+      {!currentLeg && job.status === 'IN_TRANSIT' && (
+        <div className="rounded-2xl bg-slate-50 p-4 text-center">
+          <p className="font-semibold text-slate-800">Waiting on the previous leg</p>
+          <p className="mt-1 text-sm text-slate-600">Your assigned leg will unlock when the previous one is completed.</p>
+        </div>
       )}
 
       {job.status === 'PENDING_APPROVAL' && (
