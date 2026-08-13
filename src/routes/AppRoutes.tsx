@@ -40,6 +40,10 @@ import { TruckOwnerHomePage } from '../pages/truckOwner/TruckOwnerHomePage'
 import { TruckOwnerAvailabilityPage } from '../pages/truckOwner/TruckOwnerAvailabilityPage'
 import { TruckOwnerLayout } from '../components/layout/TruckOwnerLayout'
 import { CorporateHomePage } from '../pages/corporate/CorporateHomePage'
+import { CorporatePostLoadPage } from '../pages/corporate/CorporatePostLoadPage'
+import { CorporateLoadPostingsPage } from '../pages/corporate/CorporateLoadPostingsPage'
+import { CorporateLoadPostingDetailPage } from '../pages/corporate/CorporateLoadPostingDetailPage'
+import { CorporateLayout } from '../components/layout/CorporateLayout'
 import { ImporterLayout } from '../components/layout/ImporterLayout'
 import { ImporterHomePage } from '../pages/importer/ImporterHomePage'
 import { ImporterJobsPage } from '../pages/importer/ImporterJobsPage'
@@ -162,10 +166,15 @@ export function AppRoutes() {
             path="/corporate"
             element={
               <ProtectedRoute roles={['CORPORATE_CUSTOMER']}>
-                <CorporateHomePage />
+                <CorporateLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<CorporateHomePage />} />
+            <Route path="loads" element={<CorporateLoadPostingsPage />} />
+            <Route path="loads/new" element={<CorporatePostLoadPage />} />
+            <Route path="loads/:id" element={<CorporateLoadPostingDetailPage />} />
+          </Route>
           <Route path="*" element={<HomeRedirect />} />
         </Routes>
       </AuthProvider>
