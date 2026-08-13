@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getDriverProfile } from '../../api/driver'
+import { getDriverProfile, listDriverActiveJobs } from '../../api/driver'
 import { isApproved, useAuth } from '../../auth/AuthContext'
 import { DriverMap } from '../../components/driver/DriverMap'
 import { useDriverLocationContext } from '../../components/layout/DriverLayout'
@@ -20,6 +20,7 @@ export function DriverHomePage() {
     activeJobCount: 0,
   })
   const [toggling, setToggling] = useState(false)
+  const [inTransit, setInTransit] = useState(false)
 
   const isLive = profile?.isLocationLive ?? false
   const { position, error: geoError, goLive, goOffline, setAvailability } = useDriverLocationContext()
@@ -34,6 +35,13 @@ export function DriverHomePage() {
   }
 
   useEffect(() => { load() }, [])
+
+  useEffect(() => {
+    if (!approved) return
+    listDriverActiveJobs()
+      .then((r) => setInTransit(r.data.some((job) => job.currentLeg?.status === 'IN_TRANSIT')))
+      .catch(() => {})
+  }, [approved, stats.activeJobCount])
 
   const routeLocations = (profile?.preferredRouteIds || []).filter(
     (r): r is Location => typeof r === 'object' && r != null && 'coordinates' in r
@@ -203,7 +211,7 @@ export function DriverHomePage() {
                   : 'Importers send requests when you are live and available'}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              {profile?.availability && <Badge status={profile.availability} />}
+              {inTransit ? <Badge status="IN_TRANSIT" /> : profile?.availability && <Badge status={profile.availability} />}
               <span className="text-xs font-semibold text-korecha-primary">Open jobs →</span>
             </div>
           </div>
