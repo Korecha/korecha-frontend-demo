@@ -1,6 +1,7 @@
 import {
   APPROVAL_LABELS,
   AVAILABILITY_LABELS,
+  AVAILABILITY_POSTING_STATUS_LABELS,
   JOB_STATUS_LABELS,
   LOAD_POSTING_STATUS_LABELS,
   MATCHING_MODE_LABELS,
@@ -18,6 +19,7 @@ export function Badge({ status }: { status: string }) {
     MATCH_OFFER_STATUS_LABELS[status] ||
     MATCHING_MODE_LABELS[status] ||
     SHIPMENT_MODE_LABELS[status] ||
+    AVAILABILITY_POSTING_STATUS_LABELS[status] ||
     AVAILABILITY_LABELS[status] ||
     APPROVAL_LABELS[status] ||
     ROLE_LABELS[status] ||

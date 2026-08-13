@@ -1,5 +1,6 @@
 import { api } from './client'
 import type {
+  AvailabilityPosting,
   ImporterProfile,
   ItemType,
   Job,
@@ -119,4 +120,15 @@ export function getLoadPosting(id: string) {
   return api<{ data: { posting: LoadPosting; offers?: LoadMatchOffer[] } }>(
     `/api/importer/load-postings/${id}`
   )
+}
+
+export type NearbyAvailabilityPosting = AvailabilityPosting & { distanceKm: number }
+
+export function listNearbyAvailabilityPostings(params: { lat: number; lng: number; radiusKm?: number }) {
+  const qs = new URLSearchParams({
+    lat: String(params.lat),
+    lng: String(params.lng),
+    ...(params.radiusKm ? { radiusKm: String(params.radiusKm) } : {}),
+  })
+  return api<{ data: NearbyAvailabilityPosting[] }>(`/api/importer/availability-postings/nearby?${qs}`)
 }

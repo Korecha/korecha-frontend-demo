@@ -98,6 +98,12 @@ export const MATCH_OFFER_STATUS_LABELS: Record<string, string> = {
   EXPIRED: 'Expired',
 }
 
+export const AVAILABILITY_POSTING_STATUS_LABELS: Record<string, string> = {
+  OPEN: 'Open',
+  CLOSED: 'Closed',
+  EXPIRED: 'Expired',
+}
+
 export const AVAILABILITY_LABELS: Record<string, string> = {
   AVAILABLE: 'Available for jobs',
   ON_JOB: 'On a job',

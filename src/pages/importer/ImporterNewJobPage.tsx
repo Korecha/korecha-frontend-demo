@@ -5,7 +5,9 @@ import {
   listImporterGateEntrances,
   listImporterItemTypes,
   listImporterLocations,
+  listNearbyAvailabilityPostings,
   previewJobPricing,
+  type NearbyAvailabilityPosting,
 } from '../../api/importer'
 import { isApproved, useAuth } from '../../auth/AuthContext'
 import { JobPricingCard } from '../../components/importer/JobPricingCard'
@@ -14,6 +16,7 @@ import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { Field, Input, Select } from '../../components/ui/Input'
 import { LocationAutocomplete } from '../../components/ui/LocationAutocomplete'
+import { refName } from '../../utils/format'
 import type { GateEntrance, ItemType, Location, MatchingMode, ShipmentMode } from '../../types'
 
 function deriveShipmentModePreview(fxFinanced: boolean, bankPermitNo: string): ShipmentMode {
@@ -51,6 +54,8 @@ export function ImporterNewJobPage() {
   })
   const [priceQuote, setPriceQuote] = useState<import('../../types').JobPricingQuote | null>(null)
   const [priceLoading, setPriceLoading] = useState(false)
+  const [nearbyAvailability, setNearbyAvailability] = useState<NearbyAvailabilityPosting[]>([])
+  const [nearbyLoading, setNearbyLoading] = useState(false)
 
   useEffect(() => {
     if (!canUseJobs) return
@@ -78,6 +83,21 @@ export function ImporterNewJobPage() {
     form.quantity >= 1
 
   const modePreview = deriveShipmentModePreview(form.fxFinanced, form.bankPermitNo)
+
+  useEffect(() => {
+    if (!pickupLocation?.coordinates) {
+      setNearbyAvailability([])
+      return
+    }
+    setNearbyLoading(true)
+    listNearbyAvailabilityPostings({
+      lat: pickupLocation.coordinates.lat,
+      lng: pickupLocation.coordinates.lng,
+    })
+      .then((r) => setNearbyAvailability(r.data))
+      .catch(() => setNearbyAvailability([]))
+      .finally(() => setNearbyLoading(false))
+  }, [pickupLocation?.id])
 
   useEffect(() => {
     if (!canPreview) {
@@ -342,6 +362,30 @@ export function ImporterNewJobPage() {
               <p className="text-[10px] font-bold uppercase tracking-wide text-amber-600">Delivery</p>
               <p className="mt-0.5 font-medium text-slate-800">{deliveryLocation?.name || 'Not set'}</p>
             </div>
+          </div>
+        )}
+
+        {pickupLocation && (
+          <div className="rounded-2xl border border-korecha-border bg-slate-50/60 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Trucks posted as available near {pickupLocation.name}
+            </p>
+            {nearbyLoading ? (
+              <p className="mt-2 text-sm text-slate-500">Checking nearby availability...</p>
+            ) : nearbyAvailability.length === 0 ? (
+              <p className="mt-2 text-sm text-slate-500">
+                No fleet or truck owner has posted availability near this pickup yet.
+              </p>
+            ) : (
+              <ul className="mt-2 space-y-1.5">
+                {nearbyAvailability.slice(0, 5).map((posting) => (
+                  <li key={posting.id} className="flex items-center justify-between text-sm text-slate-700">
+                    <span>{refName(posting.originLocationId)}</span>
+                    <span className="text-xs text-slate-500">{posting.distanceKm} km away</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 

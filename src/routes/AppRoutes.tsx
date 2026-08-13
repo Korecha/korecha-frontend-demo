@@ -24,6 +24,7 @@ import { DriverTrucksPage } from '../pages/driver/DriverTrucksPage'
 import { FleetDashboardPage } from '../pages/fleet/FleetDashboardPage'
 import { FleetDriversPage } from '../pages/fleet/FleetDriversPage'
 import { FleetMatchOffersPage } from '../pages/fleet/FleetMatchOffersPage'
+import { FleetAvailabilityPage } from '../pages/fleet/FleetAvailabilityPage'
 import { FleetTrucksPage } from '../pages/fleet/FleetTrucksPage'
 import { OrgApplicationsPage } from '../pages/org/OrgApplicationsPage'
 import { OrgDashboardPage } from '../pages/org/OrgDashboardPage'
@@ -36,6 +37,8 @@ import { RegisterImporterPage } from '../pages/register/RegisterImporterPage'
 import { RegisterTruckOwnerPage } from '../pages/register/RegisterTruckOwnerPage'
 import { RegisterCorporateCustomerPage } from '../pages/register/RegisterCorporateCustomerPage'
 import { TruckOwnerHomePage } from '../pages/truckOwner/TruckOwnerHomePage'
+import { TruckOwnerAvailabilityPage } from '../pages/truckOwner/TruckOwnerAvailabilityPage'
+import { TruckOwnerLayout } from '../components/layout/TruckOwnerLayout'
 import { CorporateHomePage } from '../pages/corporate/CorporateHomePage'
 import { ImporterLayout } from '../components/layout/ImporterLayout'
 import { ImporterHomePage } from '../pages/importer/ImporterHomePage'
@@ -140,6 +143,7 @@ export function AppRoutes() {
           >
             <Route index element={<FleetDashboardPage />} />
             <Route path="match-offers" element={<FleetMatchOffersPage />} />
+            <Route path="availability" element={<FleetAvailabilityPage />} />
             <Route path="drivers" element={<FleetDriversPage />} />
             <Route path="trucks" element={<FleetTrucksPage />} />
           </Route>
@@ -147,10 +151,13 @@ export function AppRoutes() {
             path="/truck-owner"
             element={
               <ProtectedRoute roles={['TRUCK_OWNER']}>
-                <TruckOwnerHomePage />
+                <TruckOwnerLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<TruckOwnerHomePage />} />
+            <Route path="availability" element={<TruckOwnerAvailabilityPage />} />
+          </Route>
           <Route
             path="/corporate"
             element={
