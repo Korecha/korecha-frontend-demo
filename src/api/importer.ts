@@ -106,10 +106,13 @@ export function approveJob(jobId: string) {
 }
 
 export function createLoadPosting(body: CreateLoadPostingBody) {
-  return api<{ data: LoadPosting }>('/api/importer/load-postings', {
-    method: 'POST',
-    body: JSON.stringify(body),
-  })
+  return api<{ data: { loadPosting: LoadPosting; offers: LoadMatchOffer[] } }>(
+    '/api/importer/load-postings',
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }
+  )
 }
 
 export function listLoadPostings() {
@@ -117,9 +120,9 @@ export function listLoadPostings() {
 }
 
 export function getLoadPosting(id: string) {
-  return api<{ data: { posting: LoadPosting; offers?: LoadMatchOffer[] } }>(
-    `/api/importer/load-postings/${id}`
-  )
+  return api<{
+    data: { loadPosting: LoadPosting; offers?: LoadMatchOffer[]; offersSummary?: { total: number } }
+  }>(`/api/importer/load-postings/${id}`)
 }
 
 export type NearbyAvailabilityPosting = AvailabilityPosting & { distanceKm: number }

@@ -159,7 +159,7 @@ export function ImporterNewJobPage() {
         bankPermitNo: form.fxFinanced ? form.bankPermitNo.trim() : undefined,
         matchingMode: form.matchingMode,
       })
-      const posting = res.data
+      const posting = res.data.loadPosting
       if (posting.matchingMode === 'MANUAL_REQUEST') {
         const jobId = linkedJobIdOf(posting.linkedJobId)
         navigate(jobId ? `/importer/jobs/${jobId}` : `/importer/load-postings/${posting.id}`)

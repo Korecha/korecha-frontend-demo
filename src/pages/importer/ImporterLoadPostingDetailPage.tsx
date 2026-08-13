@@ -30,7 +30,7 @@ export function ImporterLoadPostingDetailPage() {
     setLoading(true)
     getLoadPosting(id)
       .then((r) => {
-        setPosting(r.data.posting)
+        setPosting({ ...r.data.loadPosting, offersSummary: r.data.offersSummary })
         setOffers(r.data.offers || [])
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load posting'))
