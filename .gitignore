@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Personal agent memory files (not tracked in git)
+.github/SYSTEM_OVERVIEW.md
+.github/korecha-state.md
+korecha-frontend-engineer.agent.md
