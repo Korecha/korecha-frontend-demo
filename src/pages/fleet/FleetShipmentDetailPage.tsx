@@ -80,44 +80,43 @@ export function FleetShipmentDetailPage() {
       .finally(() => setLoading(false))
   }
 
-  const cleastTrack = () => {
-    setTrack([]);
-  }
-
   useEffect(() => {
     void Promise.resolve().then(load)
     if (!approved) return
     listFleetLocations()
       .then((r) => setLocations(r.data))
-      .catch(() => { })
+      .catch(() => {})
     listFleetDrivers()
       .then((r) => setDrivers(r.data))
-      .catch(() => { })
+      .catch(() => {})
     listFleetTrucks()
       .then((r) => setTrucks(r.data))
-      .catch(() => { })
+      .catch(() => {})
   }, [id, approved])
 
   useEffect(() => {
-    if (!id || !shipment) {
-      Promise.resolve().then(cleastTrack);
-      return
-    }
-    const shipmentLegs = shipment.legs || []
-    if (shipmentLegs.length === 0) {
-      Promise.resolve().then(cleastTrack);
-      return
-    }
     let cancelled = false
-    Promise.all(
-      shipmentLegs.map((leg) =>
-        getShipmentLegTracking(id, leg.id)
-          .then((r) => r.data.events ?? [])
-          .catch(() => leg.tracking ?? []),
-      ),
-    ).then((all) => {
-      if (!cancelled) setTrack(trackingPath(all.flat()))
+
+    const loadTracking = async () => {
+      if (!id || !shipment) return []
+
+      const shipmentLegs = shipment.legs || []
+      if (shipmentLegs.length === 0) return []
+
+      const all = await Promise.all(
+        shipmentLegs.map((leg) =>
+          getShipmentLegTracking(id, leg.id)
+            .then((r) => r.data.events ?? [])
+            .catch(() => leg.tracking ?? []),
+        ),
+      )
+      return trackingPath(all.flat())
+    }
+
+    loadTracking().then((track) => {
+      if (!cancelled) setTrack(track)
     })
+
     return () => {
       cancelled = true
     }
