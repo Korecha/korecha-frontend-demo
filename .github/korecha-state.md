@@ -68,6 +68,7 @@
 - ✅ Live location tracking hook (`useDriverLocation` with ~15s interval)
 - ✅ Container detail page (KAN-61) — admin view with linked shipment, legs, and POD photos
 - ✅ Fleet manager container link/unlink (KAN-61) — PATCH /api/fleet-manager/shipments/:id/container
+- ✅ Fleet container control by container number (KAN-85) — input/display containerNumber instead of ObjectId
 
 **In Progress**:
 - 🚧 Fleet manager "Add Leg" form validation (prevent adding legs when `PENDING_APPROVAL`)
@@ -82,16 +83,16 @@
 
 ## Recently Completed (Last ~10 Items)
 
-1. ✅ Container detail page with linked shipment display (KAN-61)
-2. ✅ Fleet manager container link/unlink controls (KAN-61)
-3. ✅ `DriverMap` component — Leaflet integration with marker + polyline
-4. ✅ `useDriverLocation` hook — geolocation API with permission handling
-5. ✅ POD upload API integration (`POST /api/driver/legs/:id/pod` with FormData)
-6. ✅ Driver active jobs filtering (only shows jobs with `IN_TRANSIT` leg)
-7. ✅ Fleet manager shipment list with leg count badges
-8. ✅ Leg status badges (color-coded: gray/blue/green for ASSIGNED/IN_TRANSIT/COMPLETED)
-9. ✅ "Start Leg" and "Complete Leg" button states (disabled when inappropriate status)
-10. ✅ Camera photo capture flow on mobile (uses `capture="environment"` attribute)
+1. ✅ Fleet container control by container number (KAN-85) — input/display containerNumber, shows size/type/status
+2. ✅ Container detail page with linked shipment display (KAN-61)
+3. ✅ Fleet manager container link/unlink controls (KAN-61)
+4. ✅ `DriverMap` component — Leaflet integration with marker + polyline
+5. ✅ `useDriverLocation` hook — geolocation API with permission handling
+6. ✅ POD upload API integration (`POST /api/driver/legs/:id/pod` with FormData)
+7. ✅ Driver active jobs filtering (only shows jobs with `IN_TRANSIT` leg)
+8. ✅ Fleet manager shipment list with leg count badges
+9. ✅ Leg status badges (color-coded: gray/blue/green for ASSIGNED/IN_TRANSIT/COMPLETED)
+10. ✅ "Start Leg" and "Complete Leg" button states (disabled when inappropriate status)
 
 ---
 
@@ -103,6 +104,7 @@
 - **Strict TypeScript** — all components use typed props, no `any` allowed
 - **API clients per role** — `src/api/driverApi.ts`, `importerApi.ts`, etc. with typed axios wrappers
 - **Layout hierarchy** — `{Role}Layout` wraps `<Outlet />` for role-specific nav + context providers
+- **Formatting-only commits** — when editing files with divergent formatting, do a separate `npx prettier --write` commit FIRST, then the content commit, to keep diffs reviewable
 
 ### Code Organization
 
@@ -134,6 +136,13 @@
 - **Backend filter**: Only sends pings when driver has an active `IN_TRANSIT` leg
 - **Error handling**: Show friendly message for permission denied, no GPS signal, etc.
 - **Battery**: Uses `enableHighAccuracy: true` only when leg is active; stops when leg completes
+
+### Container Linkage
+
+- **API pattern**: Backend adds sibling fields (`container` alongside `containerId`) instead of populating in place, avoiding "Objects are not valid as a React child" crashes when existing code renders the raw id
+- **Input**: Fleet managers enter containerNumber (case-insensitive, server uppercases/trims)
+- **Display**: Show `shipment.container?.containerNumber` with size/type/status badges, not the raw ObjectId
+- **Validation**: Backend returns 404 for unknown container numbers with the number echoed in the error message
 
 ---
 
