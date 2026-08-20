@@ -7,6 +7,7 @@ import {
   listFleetDrivers,
   listFleetLocations,
   listFleetTrucks,
+  updateShipmentContainer,
 } from '../../api/fleet'
 import { isApproved, useAuth } from '../../auth/AuthContext'
 import { DriverMap } from '../../components/driver/DriverMap'
@@ -48,6 +49,9 @@ export function FleetShipmentDetailPage() {
   const [truckId, setTruckId] = useState('')
   const [driverId, setDriverId] = useState('')
   const [track, setTrack] = useState<{ lat: number; lng: number }[]>([])
+  const [containerInput, setContainerInput] = useState('')
+  const [containerError, setContainerError] = useState('')
+  const [linkingSaving, setLinkingSaving] = useState(false)
 
   const load = () => {
     if (!id || !approved) {
@@ -124,6 +128,35 @@ export function FleetShipmentDetailPage() {
     }
   }
 
+  const handleLinkContainer = async () => {
+    if (!id || !containerInput.trim()) return
+    setLinkingSaving(true)
+    setContainerError('')
+    try {
+      const r = await updateShipmentContainer(id, { containerId: containerInput.trim() })
+      setShipment(r.data)
+      setContainerInput('')
+    } catch (err) {
+      setContainerError(err instanceof Error ? err.message : 'Failed to link container')
+    } finally {
+      setLinkingSaving(false)
+    }
+  }
+
+  const handleUnlinkContainer = async () => {
+    if (!id) return
+    setLinkingSaving(true)
+    setContainerError('')
+    try {
+      const r = await updateShipmentContainer(id, { containerId: null })
+      setShipment(r.data)
+    } catch (err) {
+      setContainerError(err instanceof Error ? err.message : 'Failed to unlink container')
+    } finally {
+      setLinkingSaving(false)
+    }
+  }
+
   if (!approved) {
     return (
       <div>
@@ -179,6 +212,47 @@ export function FleetShipmentDetailPage() {
           ))}
         </ol>
       </div>
+
+      {!['COMPLETED', 'CANCELLED'].includes(shipment.status) && (
+        <div className="mt-6 rounded-2xl border border-korecha-border bg-white p-5 shadow-sm">
+          <h3 className="font-bold text-slate-900">Container</h3>
+          {containerError && <Alert className="mt-3">{containerError}</Alert>}
+          {shipment.containerId ? (
+            <div className="mt-3">
+              <p className="text-sm text-slate-500">Currently linked container:</p>
+              <p className="mt-1 font-mono text-base font-semibold text-slate-900">{shipment.containerId}</p>
+              <Button
+                className="mt-3"
+                variant="secondary"
+                disabled={linkingSaving}
+                onClick={handleUnlinkContainer}
+              >
+                {linkingSaving ? 'Unlinking...' : 'Unlink container'}
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-3">
+              <p className="mb-3 text-sm text-slate-500">Link a container to this shipment (optional).</p>
+              <Field label="Container ID">
+                <input
+                  type="text"
+                  value={containerInput}
+                  onChange={(e) => setContainerInput(e.target.value)}
+                  placeholder="Enter container ID"
+                  className="w-full rounded-lg border border-korecha-border bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-korecha-primary focus:outline-none focus:ring-2 focus:ring-korecha-primary/20"
+                />
+              </Field>
+              <Button
+                className="mt-3"
+                disabled={linkingSaving || !containerInput.trim()}
+                onClick={handleLinkContainer}
+              >
+                {linkingSaving ? 'Linking...' : 'Link container'}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {canAdd && canAssign && (
         <div className="mt-6 rounded-2xl border border-korecha-border bg-white p-5 shadow-sm">

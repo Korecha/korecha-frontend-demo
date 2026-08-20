@@ -268,6 +268,7 @@ export interface Shipment {
   mode: ShipmentMode
   status: ShipmentStatus
   fleetManagerId?: string | null
+  containerId?: string | null
   legs: ShipmentLeg[]
   completedAt?: string | null
   createdAt?: string
@@ -406,6 +407,7 @@ export interface Container {
   lastFreeDay?: string
   emptyReadyAt?: string
   notes?: string
+  linkedShipment?: Shipment | null
 }
 
 export interface Location {

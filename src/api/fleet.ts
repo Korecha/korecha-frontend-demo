@@ -115,3 +115,10 @@ export function addFleetShipmentLeg(
     body: JSON.stringify(body),
   })
 }
+
+export function updateShipmentContainer(id: string, body: { containerId: string | null }) {
+  return api<{ data: Shipment }>(`/api/fleet-manager/shipments/${id}/container`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
+}

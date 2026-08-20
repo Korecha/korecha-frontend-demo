@@ -7,6 +7,7 @@ import { FleetLayout } from '../components/layout/FleetLayout'
 import { OrgLayout } from '../components/layout/OrgLayout'
 import { LoginPage } from '../pages/LoginPage'
 import { ContainerBulkUploadPage } from '../pages/admin/ContainerBulkUploadPage'
+import { ContainerDetailPage } from '../pages/admin/ContainerDetailPage'
 import { ContainersPage } from '../pages/admin/ContainersPage'
 import { DashboardPage } from '../pages/admin/DashboardPage'
 import { LocationsPage } from '../pages/admin/LocationsPage'
@@ -90,6 +91,7 @@ export function AppRoutes() {
             <Route path="item-types" element={<AdminItemTypesPage />} />
             <Route path="containers" element={<ContainersPage />} />
             <Route path="containers/upload" element={<ContainerBulkUploadPage />} />
+            <Route path="containers/:id" element={<ContainerDetailPage />} />
             <Route path="locations" element={<LocationsPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>

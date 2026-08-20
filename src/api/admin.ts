@@ -130,6 +130,10 @@ export function listContainers(params?: {
   )
 }
 
+export function getContainer(id: string) {
+  return api<{ data: Container }>(`/api/admin/containers/${id}`)
+}
+
 export function createContainer(body: {
   containerNumber: string
   size: ContainerSize

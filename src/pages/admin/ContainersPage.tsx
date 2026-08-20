@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import {
   createContainer,
   deleteContainer,
@@ -220,7 +221,11 @@ export function ContainersPage() {
             ) : (
               containers.map((c) => (
                 <TableRow key={c.id}>
-                  <Td className="font-mono font-semibold text-slate-900">{c.containerNumber}</Td>
+                  <Td className="font-mono font-semibold text-slate-900">
+                    <Link to={`/admin/containers/${c.id}`} className="text-korecha-primary hover:underline">
+                      {c.containerNumber}
+                    </Link>
+                  </Td>
                   <Td>{SIZE_LABELS[c.size] || c.size}</Td>
                   <Td>{c.type}</Td>
                   <Td><Badge status={c.status} /></Td>
