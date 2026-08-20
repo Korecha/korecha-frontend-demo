@@ -270,6 +270,13 @@ export interface Shipment {
   status: ShipmentStatus
   fleetManagerId?: string | null
   containerId?: string | null
+  container?: {
+    id: string
+    containerNumber: string
+    size: ContainerSize
+    type: ContainerType
+    status: ContainerStatus
+  } | null
   legs: ShipmentLeg[]
   completedAt?: string | null
   createdAt?: string

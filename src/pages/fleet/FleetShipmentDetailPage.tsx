@@ -14,10 +14,10 @@ import { DriverMap } from '../../components/driver/DriverMap'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
-import { Field, Select } from '../../components/ui/Input'
+import { Field, Input, Select } from '../../components/ui/Input'
 import { LocationAutocomplete } from '../../components/ui/LocationAutocomplete'
 import { PageHeader } from '../../components/ui/PageHeader'
-import { refName } from '../../utils/format'
+import { refName, SIZE_LABELS } from '../../utils/format'
 import { jobRouteLocations, trackingPath } from '../../utils/jobMap'
 import type {
   DriverProfile,
@@ -149,7 +149,7 @@ export function FleetShipmentDetailPage() {
     setLinkingSaving(true)
     setContainerError('')
     try {
-      const r = await updateShipmentContainer(id, { containerId: containerInput.trim() })
+      const r = await updateShipmentContainer(id, { containerNumber: containerInput.trim() })
       setShipment(r.data)
       setContainerInput('')
     } catch (err) {
@@ -249,12 +249,19 @@ export function FleetShipmentDetailPage() {
         <div className="mt-6 rounded-2xl border border-korecha-border bg-white p-5 shadow-sm">
           <h3 className="font-bold text-slate-900">Container</h3>
           {containerError && <Alert className="mt-3">{containerError}</Alert>}
-          {shipment.containerId ? (
+          {shipment.container ? (
             <div className="mt-3">
               <p className="text-sm text-slate-500">Currently linked container:</p>
               <p className="mt-1 font-mono text-base font-semibold text-slate-900">
-                {shipment.containerId}
+                {shipment.container.containerNumber}
               </p>
+              <div className="mt-2 flex gap-2">
+                <Badge status={shipment.container.status} />
+                <span className="text-sm text-slate-600">
+                  {SIZE_LABELS[shipment.container.size] || shipment.container.size} ·{' '}
+                  {shipment.container.type}
+                </span>
+              </div>
               <Button
                 className="mt-3"
                 variant="secondary"
@@ -269,13 +276,12 @@ export function FleetShipmentDetailPage() {
               <p className="mb-3 text-sm text-slate-500">
                 Link a container to this shipment (optional).
               </p>
-              <Field label="Container ID">
-                <input
+              <Field label="Container number">
+                <Input
                   type="text"
                   value={containerInput}
                   onChange={(e) => setContainerInput(e.target.value)}
-                  placeholder="Enter container ID"
-                  className="w-full rounded-lg border border-korecha-border bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-korecha-primary focus:outline-none focus:ring-2 focus:ring-korecha-primary/20"
+                  placeholder="e.g. MSCU1234567"
                 />
               </Field>
               <Button
