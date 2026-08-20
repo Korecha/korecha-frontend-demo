@@ -23,7 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# Personal agent memory files (not tracked in git)
-.github/SYSTEM_OVERVIEW.md
-.github/korecha-state.md
-korecha-frontend-engineer.agent.md
+# Personal workspace files (not tracked in git)
+# Note: .github/korecha-state.md IS tracked to share work state across team
