@@ -17,7 +17,7 @@
 > **This file is tracked in Git** — commit it with your feature changes so the team stays aligned.
 
 **Last Updated**: 2026-08-20  
-**Current Branch**: `feat/shipment-excution-ui` (note spelling)  
+**Current Branch**: `feat/payment-rating-logic-ui` (Phase 4: Payment & Rating — branched from main)  
 **Jira Board**: [KAN](https://korecha12.atlassian.net)
 
 ---
@@ -57,7 +57,21 @@
 
 ## Current Sprint / In Progress
 
-### Phase 3: Shipment Execution UI (Epic: KAN-6)
+### Phase 4: Payment & Rating Logic (Epic: KAN-7)
+
+**Completed Frontend Features**:
+- ✅ Admin commission rate history UI (KAN-87) — dedicated page with effective rate display, history table, and append form
+
+**In Progress**:
+- (none yet)
+
+**Next Up** (Priority Order):
+1. Payment UI (KAN-89)
+2. Rating UI (KAN-91 / KAN-93)
+
+---
+
+### Phase 3: Shipment Execution UI (Epic: KAN-6) — COMPLETED & MERGED TO MAIN
 
 **Completed Frontend Features**:
 - ✅ Multi-leg shipment display (leg-by-leg progress cards)
@@ -70,29 +84,20 @@
 - ✅ Fleet manager container link/unlink (KAN-61) — PATCH /api/fleet-manager/shipments/:id/container
 - ✅ Fleet container control by container number (KAN-85) — input/display containerNumber instead of ObjectId
 
-**In Progress**:
-- 🚧 Fleet manager "Add Leg" form validation (prevent adding legs when `PENDING_APPROVAL`)
-
-**Next Up** (Priority Order):
-1. Container selection dropdown on load posting form (optional field)
-2. Container status display badge on shipment cards
-3. Add leg button state management (disabled after `PENDING_APPROVAL`)
-4. POD photo gallery component for importer approval screen
-
 ---
 
 ## Recently Completed (Last ~10 Items)
 
-1. ✅ Fleet container control by container number (KAN-85) — input/display containerNumber, shows size/type/status
-2. ✅ Container detail page with linked shipment display (KAN-61)
-3. ✅ Fleet manager container link/unlink controls (KAN-61)
-4. ✅ `DriverMap` component — Leaflet integration with marker + polyline
-5. ✅ `useDriverLocation` hook — geolocation API with permission handling
-6. ✅ POD upload API integration (`POST /api/driver/legs/:id/pod` with FormData)
-7. ✅ Driver active jobs filtering (only shows jobs with `IN_TRANSIT` leg)
-8. ✅ Fleet manager shipment list with leg count badges
-9. ✅ Leg status badges (color-coded: gray/blue/green for ASSIGNED/IN_TRANSIT/COMPLETED)
-10. ✅ "Start Leg" and "Complete Leg" button states (disabled when inappropriate status)
+1. ✅ Admin commission settings page (KAN-87) — dedicated UI for commission rate history and rules
+2. ✅ Fleet container control by container number (KAN-85) — input/display containerNumber, shows size/type/status
+3. ✅ Container detail page with linked shipment display (KAN-61)
+4. ✅ Fleet manager container link/unlink controls (KAN-61)
+5. ✅ `DriverMap` component — Leaflet integration with marker + polyline
+6. ✅ `useDriverLocation` hook — geolocation API with permission handling
+7. ✅ POD upload API integration (`POST /api/driver/legs/:id/pod` with FormData)
+8. ✅ Driver active jobs filtering (only shows jobs with `IN_TRANSIT` leg)
+9. ✅ Fleet manager shipment list with leg count badges
+10. ✅ Leg status badges (color-coded: gray/blue/green for ASSIGNED/IN_TRANSIT/COMPLETED)
 
 ---
 
@@ -143,6 +148,14 @@
 - **Input**: Fleet managers enter containerNumber (case-insensitive, server uppercases/trims)
 - **Display**: Show `shipment.container?.containerNumber` with size/type/status badges, not the raw ObjectId
 - **Validation**: Backend returns 404 for unknown container numbers with the number echoed in the error message
+
+### Commission Settings (Phase 4)
+
+- **Dedicated page pattern**: Complex historical data with append-only rules gets its own admin page (CommissionSettingsPage) rather than cramming into SettingsPage
+- **Pagination response**: Backend uses `pagination` sibling key (not `meta`) for append-only history endpoints
+- **Effective rate display**: Always show provenance — distinguish between active SETTING rules and FALLBACK to platform defaults
+- **Scope types**: GLOBAL (no value), MODE (requires UNIMODAL/MULTIMODAL), TIER (requires STANDARD/PRIORITY/PREFERRED) — conditional form fields based on type
+- **History immutability**: No edit/delete controls — commission rules are append-only by design; backend has no PATCH/DELETE for them
 
 ---
 
