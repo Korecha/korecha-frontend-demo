@@ -107,9 +107,10 @@ export function AdminLayout() {
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${isActive
-                  ? 'bg-white/15 text-white shadow-lg shadow-black/10 backdrop-blur'
-                  : 'text-blue-100/70 hover:bg-white/10 hover:text-white'
+                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                  isActive
+                    ? 'bg-white/15 text-white shadow-lg shadow-black/10 backdrop-blur'
+                    : 'text-blue-100/70 hover:bg-white/10 hover:text-white'
                 }`
               }
             >
