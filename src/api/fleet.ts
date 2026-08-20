@@ -147,3 +147,9 @@ export function updateShipmentContainer(
     body: JSON.stringify(body),
   })
 }
+
+export function getShipmentPayment(shipmentId: string) {
+  return api<{ data: import('../types').Payment }>(
+    `/api/fleet-manager/shipments/${shipmentId}/payment`,
+  )
+}

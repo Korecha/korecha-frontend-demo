@@ -30,6 +30,8 @@ export type JobRequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED'
 export type ShipmentStatus =
   'ASSIGNED' | 'IN_TRANSIT' | 'PENDING_APPROVAL' | 'COMPLETED' | 'CANCELLED'
 export type ShipmentLegStatus = 'ASSIGNED' | 'IN_TRANSIT' | 'COMPLETED' | 'CANCELLED'
+export type PaymentStatus = 'HELD' | 'RELEASED' | 'DISPUTED'
+export type PaymentProvider = 'TELE_BIRR' | 'CBE_BIRR' | 'NATIONAL_IPS' | 'MANUAL'
 
 export interface LiveLocation {
   lat: number
@@ -280,6 +282,20 @@ export interface Shipment {
   legs: ShipmentLeg[]
   completedAt?: string | null
   createdAt?: string
+}
+
+export interface Payment {
+  id: string
+  shipmentId: string | { id: string; mode: ShipmentMode; customerType: string }
+  grossAmountEtb: number
+  commissionPctSnapshot: number
+  commissionAmountEtb: number
+  netAmountEtb: number
+  provider: PaymentProvider
+  providerReference: string | null
+  status: PaymentStatus
+  createdAt: string
+  updatedAt: string
 }
 
 export interface LoadPostingOffersSummary {

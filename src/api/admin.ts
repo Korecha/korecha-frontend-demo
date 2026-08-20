@@ -354,3 +354,21 @@ export function getEffectiveCommission(params?: { mode?: string; tier?: string; 
     `/api/admin/commission-settings/effective${qs ? `?${qs}` : ''}`,
   )
 }
+
+export function listPayments(params?: { page?: number; limit?: number; status?: string }) {
+  const q = new URLSearchParams()
+  if (params?.page) q.set('page', String(params.page))
+  if (params?.limit) q.set('limit', String(params.limit))
+  if (params?.status) q.set('status', params.status)
+  const qs = q.toString()
+  return api<{ data: import('../types').Payment[]; pagination: PaginatedMeta }>(
+    `/api/admin/payments${qs ? `?${qs}` : ''}`,
+  )
+}
+
+export function updatePaymentStatus(id: string, status: string) {
+  return api<{ data: import('../types').Payment }>(`/api/admin/payments/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  })
+}

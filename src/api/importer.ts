@@ -156,3 +156,7 @@ export function listNearbyAvailabilityPostings(params: {
     `/api/importer/availability-postings/nearby?${qs}`,
   )
 }
+
+export function getJobPayment(jobId: string) {
+  return api<{ data: import('../types').Payment }>(`/api/importer/jobs/${jobId}/payment`)
+}

@@ -126,6 +126,12 @@ export const APPROVAL_LABELS: Record<string, string> = {
   REJECTED: 'Rejected',
 }
 
+export const PAYMENT_STATUS_LABELS: Record<string, string> = {
+  HELD: 'Held',
+  RELEASED: 'Released',
+  DISPUTED: 'Disputed',
+}
+
 export const STATUS_COLORS: Record<string, string> = {
   AVAILABLE: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
   ON_JOB: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200',
@@ -161,4 +167,7 @@ export const STATUS_COLORS: Record<string, string> = {
   UNIMODAL: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200',
   MULTIMODAL: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200',
   CLOSED: 'bg-slate-100 text-slate-600 ring-1 ring-slate-200',
+  HELD: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
+  RELEASED: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
+  DISPUTED: 'bg-red-50 text-red-700 ring-1 ring-red-200',
 }
