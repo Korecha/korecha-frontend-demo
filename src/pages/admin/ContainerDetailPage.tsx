@@ -8,13 +8,24 @@ import { Card } from '../../components/ui/Card'
 import { Loading } from '../../components/ui/Loading'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Table, TableHead, TableRow, TableWrapper, Td, Th } from '../../components/ui/Table'
-import type { Container } from '../../types'
+import type { Container, ShipmentLeg } from '../../types'
 import { formatDate, refName, SIZE_LABELS, TYPE_LABELS } from '../../utils/format'
+
+/** Legs populate driverId as a User (fullName) and truckId as a Truck (plateNumber), not { name }. */
+function driverName(value: ShipmentLeg['driverId']): string {
+    if (value && typeof value === 'object' && value.fullName) return value.fullName
+    return '—'
+}
+
+function truckName(value: ShipmentLeg['truckId']): string {
+    if (value && typeof value === 'object' && value.plateNumber) return value.plateNumber
+    return '—'
+}
 
 export function ContainerDetailPage() {
     const { id } = useParams<{ id: string }>()
     const [container, setContainer] = useState<Container | null>(null)
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(Boolean(id))
     const [error, setError] = useState('')
 
     useEffect(() => {
@@ -189,8 +200,8 @@ export function ContainerDetailPage() {
                                                 <Td>
                                                     <Badge status={leg.status} />
                                                 </Td>
-                                                <Td>{refName(leg.driverId as string | { name?: string } | null | undefined)}</Td>
-                                                <Td>{refName(leg.truckId as string | { name?: string } | null | undefined)}</Td>
+                                                <Td>{driverName(leg.driverId)}</Td>
+                                                <Td>{truckName(leg.truckId)}</Td>
                                             </TableRow>
                                         ))}
                                     </tbody>
