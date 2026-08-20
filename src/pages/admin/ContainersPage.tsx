@@ -90,8 +90,8 @@ export function ContainersPage() {
   }, [statusFilter, search])
 
   useEffect(() => {
-    listOrganizations().then((res) => setOrgs(res.data)).catch(() => {})
-    listLocations().then((res) => setLocations(res.data.filter((loc) => loc.isActive))).catch(() => {})
+    listOrganizations().then((res) => setOrgs(res.data)).catch(() => { })
+    listLocations().then((res) => setLocations(res.data.filter((loc) => loc.isActive))).catch(() => { })
   }, [])
 
   const openCreate = () => {

@@ -68,9 +68,9 @@ export function FleetShipmentDetailPage() {
   useEffect(() => {
     load()
     if (!approved) return
-    listFleetLocations().then((r) => setLocations(r.data)).catch(() => {})
-    listFleetDrivers().then((r) => setDrivers(r.data)).catch(() => {})
-    listFleetTrucks().then((r) => setTrucks(r.data)).catch(() => {})
+    listFleetLocations().then((r) => setLocations(r.data)).catch(() => { })
+    listFleetDrivers().then((r) => setDrivers(r.data)).catch(() => { })
+    listFleetTrucks().then((r) => setTrucks(r.data)).catch(() => { })
   }, [id, approved])
 
   useEffect(() => {
