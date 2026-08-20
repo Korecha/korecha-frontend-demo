@@ -80,28 +80,32 @@ export function FleetShipmentDetailPage() {
       .finally(() => setLoading(false))
   }
 
+  const cleastTrack = () => {
+    setTrack([]);
+  }
+
   useEffect(() => {
     void Promise.resolve().then(load)
     if (!approved) return
     listFleetLocations()
       .then((r) => setLocations(r.data))
-      .catch(() => {})
+      .catch(() => { })
     listFleetDrivers()
       .then((r) => setDrivers(r.data))
-      .catch(() => {})
+      .catch(() => { })
     listFleetTrucks()
       .then((r) => setTrucks(r.data))
-      .catch(() => {})
+      .catch(() => { })
   }, [id, approved])
 
   useEffect(() => {
     if (!id || !shipment) {
-      setTrack([])
+      Promise.resolve().then(cleastTrack);
       return
     }
     const shipmentLegs = shipment.legs || []
     if (shipmentLegs.length === 0) {
-      setTrack([])
+      Promise.resolve().then(cleastTrack);
       return
     }
     let cancelled = false
