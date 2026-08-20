@@ -81,7 +81,7 @@ export function FleetShipmentDetailPage() {
   }
 
   useEffect(() => {
-    load()
+    void Promise.resolve().then(load)
     if (!approved) return
     listFleetLocations()
       .then((r) => setLocations(r.data))
