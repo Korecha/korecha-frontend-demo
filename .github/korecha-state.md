@@ -61,13 +61,13 @@
 
 **Completed Frontend Features**:
 - ✅ Admin commission rate history UI (KAN-87) — dedicated page with effective rate display, history table, and append form
+- ✅ Payment summary display + admin release/dispute controls (KAN-89) — read-only display on importer/fleet pages, admin list with status filter and transition controls
 
 **In Progress**:
 - (none yet)
 
 **Next Up** (Priority Order):
-1. Payment UI (KAN-89)
-2. Rating UI (KAN-91 / KAN-93)
+1. Rating UI (KAN-91 / KAN-93)
 
 ---
 
@@ -88,16 +88,16 @@
 
 ## Recently Completed (Last ~10 Items)
 
-1. ✅ Admin commission settings page (KAN-87) — dedicated UI for commission rate history and rules
-2. ✅ Fleet container control by container number (KAN-85) — input/display containerNumber, shows size/type/status
-3. ✅ Container detail page with linked shipment display (KAN-61)
-4. ✅ Fleet manager container link/unlink controls (KAN-61)
-5. ✅ `DriverMap` component — Leaflet integration with marker + polyline
-6. ✅ `useDriverLocation` hook — geolocation API with permission handling
-7. ✅ POD upload API integration (`POST /api/driver/legs/:id/pod` with FormData)
-8. ✅ Driver active jobs filtering (only shows jobs with `IN_TRANSIT` leg)
-9. ✅ Fleet manager shipment list with leg count badges
-10. ✅ Leg status badges (color-coded: gray/blue/green for ASSIGNED/IN_TRANSIT/COMPLETED)
+1. ✅ Payment summary display + admin controls (KAN-89) — read-only payment cards on importer/fleet pages, admin payments list with release/dispute
+2. ✅ Admin commission settings page (KAN-87) — dedicated UI for commission rate history and rules
+3. ✅ Fleet container control by container number (KAN-85) — input/display containerNumber, shows size/type/status
+4. ✅ Container detail page with linked shipment display (KAN-61)
+5. ✅ Fleet manager container link/unlink controls (KAN-61)
+6. ✅ `DriverMap` component — Leaflet integration with marker + polyline
+7. ✅ `useDriverLocation` hook — geolocation API with permission handling
+8. ✅ POD upload API integration (`POST /api/driver/legs/:id/pod` with FormData)
+9. ✅ Driver active jobs filtering (only shows jobs with `IN_TRANSIT` leg)
+10. ✅ Fleet manager shipment list with leg count badges
 
 ---
 
@@ -156,6 +156,15 @@
 - **Effective rate display**: Always show provenance — distinguish between active SETTING rules and FALLBACK to platform defaults
 - **Scope types**: GLOBAL (no value), MODE (requires UNIMODAL/MULTIMODAL), TIER (requires STANDARD/PRIORITY/PREFERRED) — conditional form fields based on type
 - **History immutability**: No edit/delete controls — commission rules are append-only by design; backend has no PATCH/DELETE for them
+
+### Payment Display & Controls (Phase 4)
+
+- **404 is normal**: Shipments without importer approval have no payment yet — 404 from GET endpoints renders neutral empty state, NOT an error Alert
+- **Dual shipmentId shape**: In admin list, `shipmentId` is populated to `{ id, mode, customerType }`; in single-payment endpoints it's a raw string — type as `string | { ... }` union
+- **Read-only for non-admin**: Importer and fleet manager see payment summary cards (gross, commission %, net, provider, status badge) — no controls
+- **Admin transitions**: Only HELD → RELEASED and HELD → DISPUTED are valid — backend enforces state machine, frontend disables buttons for non-HELD statuses
+- **No payment gateway UI**: No card forms, wallet connect, redirects, or provider logos — `provider` is just a label + reference string displayed as plain text
+- **Status labels reusable**: `PAYMENT_STATUS_LABELS` and payment entries in `STATUS_COLORS` in format.ts — KAN-93 will reuse for manual payment recording
 
 ---
 
