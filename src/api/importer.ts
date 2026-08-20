@@ -31,7 +31,7 @@ export type CreateLoadPostingBody = {
 
 export function getImporterProfile() {
   return api<{ data: { user: User; profile: ImporterProfile; stats: Record<string, number> } }>(
-    '/api/importer/profile'
+    '/api/importer/profile',
   )
 }
 
@@ -81,11 +81,15 @@ export function listJobs() {
 }
 
 export function getJob(id: string) {
-  return api<{ data: { job: Job; requests: JobRequest[]; legs: ShipmentLeg[] } }>(`/api/importer/jobs/${id}`)
+  return api<{ data: { job: Job; requests: JobRequest[]; legs: ShipmentLeg[] } }>(
+    `/api/importer/jobs/${id}`,
+  )
 }
 
 export function getJobLegTracking(jobId: string, legId: string) {
-  return api<{ data: { events: TrackingEvent[] } }>(`/api/importer/jobs/${jobId}/legs/${legId}/tracking`)
+  return api<{ data: { events: TrackingEvent[] } }>(
+    `/api/importer/jobs/${jobId}/legs/${legId}/tracking`,
+  )
 }
 
 export interface NearbyTrucksResult {
@@ -117,7 +121,7 @@ export function createLoadPosting(body: CreateLoadPostingBody) {
     {
       method: 'POST',
       body: JSON.stringify(body),
-    }
+    },
   )
 }
 
@@ -138,11 +142,17 @@ export function getLoadPosting(id: string) {
 
 export type NearbyAvailabilityPosting = AvailabilityPosting & { distanceKm: number }
 
-export function listNearbyAvailabilityPostings(params: { lat: number; lng: number; radiusKm?: number }) {
+export function listNearbyAvailabilityPostings(params: {
+  lat: number
+  lng: number
+  radiusKm?: number
+}) {
   const qs = new URLSearchParams({
     lat: String(params.lat),
     lng: String(params.lng),
     ...(params.radiusKm ? { radiusKm: String(params.radiusKm) } : {}),
   })
-  return api<{ data: NearbyAvailabilityPosting[] }>(`/api/importer/availability-postings/nearby?${qs}`)
+  return api<{ data: NearbyAvailabilityPosting[] }>(
+    `/api/importer/availability-postings/nearby?${qs}`,
+  )
 }

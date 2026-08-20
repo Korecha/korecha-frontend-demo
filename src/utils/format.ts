@@ -1,4 +1,7 @@
-export function refName(ref: string | { name?: string } | null | undefined, fallback = '—'): string {
+export function refName(
+  ref: string | { name?: string } | null | undefined,
+  fallback = '—',
+): string {
   if (ref == null) return fallback
   if (typeof ref === 'string') return ref
   return ref.name || fallback
