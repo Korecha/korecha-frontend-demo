@@ -50,7 +50,6 @@ export function CommissionSettingsPage() {
     })
 
     const load = useCallback(() => {
-        setLoading(true)
         Promise.all([listCommissionSettings({ page, limit: 50 }), getEffectiveCommission()])
             .then(([settingsRes, effectiveRes]) => {
                 setSettings(settingsRes.data)
