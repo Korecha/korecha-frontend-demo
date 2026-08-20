@@ -24,7 +24,7 @@ export function FleetDashboardPage() {
   useEffect(() => {
     if (!approved) return
     listMatchOffers()
-      .then((r) => setOffers(r.data))
+      .then((r) => setOffers(r.data.offers))
       .catch(() => setOffers([]))
   }, [approved])
 

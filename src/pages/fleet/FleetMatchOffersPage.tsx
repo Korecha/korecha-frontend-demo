@@ -57,7 +57,7 @@ export function FleetMatchOffersPage() {
     }
     setLoading(true)
     listMatchOffers()
-      .then((r) => setOffers(r.data))
+      .then((r) => setOffers(r.data.offers))
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load offers'))
       .finally(() => setLoading(false))
   }

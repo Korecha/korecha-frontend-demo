@@ -52,9 +52,9 @@ export function reviewFleetTruck(id: string, body: { status: 'APPROVED' | 'REJEC
 
 export function listMatchOffers(params?: { status?: LoadMatchOfferStatus | string }) {
   const qs = params?.status ? `?status=${encodeURIComponent(params.status)}` : ''
-  return api<{ data: LoadMatchOffer[]; meta?: { trucksNeededTotal?: number; activeCount?: number } }>(
-    `/api/fleet/match-offers${qs}`
-  )
+  return api<{
+    data: { offers: LoadMatchOffer[]; aggregation?: { count?: number; trucksNeededTotal?: number } }
+  }>(`/api/fleet/match-offers${qs}`)
 }
 
 export function viewMatchOffer(id: string) {
