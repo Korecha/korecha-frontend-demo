@@ -85,13 +85,13 @@ export function FleetShipmentDetailPage() {
     if (!approved) return
     listFleetLocations()
       .then((r) => setLocations(r.data))
-      .catch(() => {})
+      .catch(() => { })
     listFleetDrivers()
       .then((r) => setDrivers(r.data))
-      .catch(() => {})
+      .catch(() => { })
     listFleetTrucks()
       .then((r) => setTrucks(r.data))
-      .catch(() => {})
+      .catch(() => { })
   }, [id, approved])
 
   useEffect(() => {
