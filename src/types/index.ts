@@ -33,7 +33,12 @@ export type JobStatus =
   | 'COMPLETED'
   | 'CANCELLED'
 export type JobRequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED'
-export type ShipmentStatus = 'ASSIGNED' | 'IN_TRANSIT' | 'PENDING_APPROVAL' | 'COMPLETED' | 'CANCELLED'
+export type ShipmentStatus =
+  | 'ASSIGNED'
+  | 'IN_TRANSIT'
+  | 'PENDING_APPROVAL'
+  | 'COMPLETED'
+  | 'CANCELLED'
 export type ShipmentLegStatus = 'ASSIGNED' | 'IN_TRANSIT' | 'COMPLETED' | 'CANCELLED'
 
 export interface LiveLocation {
@@ -64,7 +69,11 @@ export interface User {
   organizationId: string | null
   phone?: string
   isVerified?: boolean
-  memberProfile?: (DriverProfile | FleetProfile | ImporterProfile) & { type?: 'driver' | 'fleet' | 'importer' } | null
+  memberProfile?:
+    | ((DriverProfile | FleetProfile | ImporterProfile) & {
+        type?: 'driver' | 'fleet' | 'importer'
+      })
+    | null
 }
 
 export interface TruckType {
@@ -95,7 +104,14 @@ export interface DriverProfile {
   truckTypeId?: string | TruckType
   /** @deprecated Prefer fleetManagerId from Phase 1 DRIVERS table */
   fleetOwnerId?: string | { id: string; fullName: string; email: string }
-  fleetManagerId?: string | { id: string; fleetName: string; status: ApprovalStatus; providerType?: FleetProviderType }
+  fleetManagerId?:
+    | string
+    | {
+        id: string
+        fleetName: string
+        status: ApprovalStatus
+        providerType?: FleetProviderType
+      }
   truckOwnerId?: string | { id: string; displayName?: string; status: ApprovalStatus }
   status: ApprovalStatus
   rejectionReason?: string
@@ -125,7 +141,10 @@ export interface TruckOwnerProfile {
   id: string
   userId: string
   organizationId: string | null
-  fleetManagerId?: string | { id: string; fleetName: string; providerType?: FleetProviderType } | null
+  fleetManagerId?:
+    | string
+    | { id: string; fleetName: string; providerType?: FleetProviderType }
+    | null
   ownerType: TruckOwnerType
   displayName?: string
   canPostAvailability: boolean
@@ -237,6 +256,14 @@ export interface JobRequest {
   createdAt?: string
 }
 
+export interface TrackingEvent {
+  id: string
+  lat: number
+  lng: number
+  accuracy?: number
+  recordedAt: string
+}
+
 export interface ShipmentLeg {
   id: string
   shipmentId: string
@@ -249,6 +276,7 @@ export interface ShipmentLeg {
   startedAt?: string | null
   completedAt?: string | null
   podPhotoUrl?: string
+  tracking?: TrackingEvent[]
 }
 
 export interface Shipment {
@@ -259,6 +287,14 @@ export interface Shipment {
   mode: ShipmentMode
   status: ShipmentStatus
   fleetManagerId?: string | null
+  containerId?: string | null
+  container?: {
+    id: string
+    containerNumber: string
+    size: ContainerSize
+    type: ContainerType
+    status: ContainerStatus
+  } | null
   legs: ShipmentLeg[]
   completedAt?: string | null
   createdAt?: string
@@ -397,6 +433,7 @@ export interface Container {
   lastFreeDay?: string
   emptyReadyAt?: string
   notes?: string
+  linkedShipment?: Shipment | null
 }
 
 export interface Location {

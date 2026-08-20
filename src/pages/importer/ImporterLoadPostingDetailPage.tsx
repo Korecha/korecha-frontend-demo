@@ -3,12 +3,15 @@ import { Link, useParams } from 'react-router-dom'
 import { getLoadPosting } from '../../api/importer'
 import { isApproved, useAuth } from '../../auth/AuthContext'
 import { JobPricingCard } from '../../components/importer/JobPricingCard'
+import { DriverMap } from '../../components/driver/DriverMap'
+import { PodPhotos } from '../../components/jobs/PodPhotos'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { formatDate, refName } from '../../utils/format'
-import type { LoadMatchOffer, LoadPosting } from '../../types'
+import { jobRouteLocations, legsTrackingPath } from '../../utils/jobMap'
+import type { LoadMatchOffer, LoadPosting, ShipmentLeg } from '../../types'
 
 function linkedJobIdOf(linked: string | { id: string } | null | undefined): string | null {
   if (!linked) return null
@@ -22,6 +25,7 @@ export function ImporterLoadPostingDetailPage() {
   const canUse = approved && Boolean(organization)
   const [posting, setPosting] = useState<LoadPosting | null>(null)
   const [offers, setOffers] = useState<LoadMatchOffer[]>([])
+  const [legs, setLegs] = useState<ShipmentLeg[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -32,6 +36,7 @@ export function ImporterLoadPostingDetailPage() {
       .then((r) => {
         setPosting({ ...r.data.loadPosting, offersSummary: r.data.offersSummary })
         setOffers(r.data.offers || [])
+        setLegs(r.data.legs || [])
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load posting'))
       .finally(() => setLoading(false))
@@ -60,6 +65,15 @@ export function ImporterLoadPostingDetailPage() {
       <Link to="/importer/jobs" className="inline-flex items-center gap-1 text-sm font-medium text-korecha-primary hover:underline">
         ← Back to loads
       </Link>
+
+      <div className="relative overflow-hidden rounded-3xl border border-white/60 shadow-xl shadow-blue-900/10">
+        <DriverMap
+          className="h-[36vh] min-h-[220px]"
+          routeLocations={jobRouteLocations(posting)}
+          track={legsTrackingPath(legs)}
+          interactive
+        />
+      </div>
 
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -115,6 +129,8 @@ export function ImporterLoadPostingDetailPage() {
           </div>
         )}
       </Card>
+
+      <PodPhotos legs={legs} />
 
       {posting.pricingQuote && <JobPricingCard quote={posting.pricingQuote} />}
 

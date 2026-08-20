@@ -11,12 +11,18 @@ import type {
   User,
   Shipment,
   ShipmentLeg,
+  TrackingEvent,
 } from '../types'
 
 export function getFleetProfile() {
-  return api<{ data: { user: User; profile: FleetProfile; driverCount: number; truckCount: number } }>(
-    '/api/fleet/profile'
-  )
+  return api<{
+    data: {
+      user: User
+      profile: FleetProfile
+      driverCount: number
+      truckCount: number
+    }
+  }>('/api/fleet/profile')
 }
 
 export function listFleetLocations() {
@@ -32,17 +38,23 @@ export function listFleetDrivers() {
 }
 
 export function createFleetDriver(form: FormData) {
-  return api<{ data: { user: User; profile: DriverProfile & { user: User } } }>('/api/fleet/drivers', {
-    method: 'POST',
-    body: form,
-  })
+  return api<{ data: { user: User; profile: DriverProfile & { user: User } } }>(
+    '/api/fleet/drivers',
+    {
+      method: 'POST',
+      body: form,
+    },
+  )
 }
 
 export function listFleetTrucks() {
   return api<{ data: Truck[] }>('/api/fleet/trucks')
 }
 
-export function reviewFleetTruck(id: string, body: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string }) {
+export function reviewFleetTruck(
+  id: string,
+  body: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string },
+) {
   return api<{ data: Truck }>(`/api/fleet/trucks/${id}/review`, {
     method: 'POST',
     body: JSON.stringify(body),
@@ -52,7 +64,10 @@ export function reviewFleetTruck(id: string, body: { status: 'APPROVED' | 'REJEC
 export function listMatchOffers(params?: { status?: LoadMatchOfferStatus | string }) {
   const qs = params?.status ? `?status=${encodeURIComponent(params.status)}` : ''
   return api<{
-    data: { offers: LoadMatchOffer[]; aggregation?: { count?: number; trucksNeededTotal?: number } }
+    data: {
+      offers: LoadMatchOffer[]
+      aggregation?: { count?: number; trucksNeededTotal?: number }
+    }
   }>(`/api/fleet/match-offers${qs}`)
 }
 
@@ -99,12 +114,36 @@ export function getFleetShipment(id: string) {
   return api<{ data: Shipment }>(`/api/fleet-manager/shipments/${id}`)
 }
 
+export function getShipmentLegTracking(shipmentId: string, legId: string) {
+  return api<{ data: { events: TrackingEvent[] } }>(
+    `/api/fleet-manager/shipments/${shipmentId}/legs/${legId}/tracking`,
+  )
+}
+
 export function addFleetShipmentLeg(
   id: string,
-  body: { fromLocationId?: string; toLocationId: string; truckId: string; driverId: string }
+  body: {
+    fromLocationId?: string
+    toLocationId: string
+    truckId: string
+    driverId: string
+  },
 ) {
-  return api<{ data: { leg: ShipmentLeg; shipment: Shipment } }>(`/api/fleet-manager/shipments/${id}/legs`, {
-    method: 'POST',
+  return api<{ data: { leg: ShipmentLeg; shipment: Shipment } }>(
+    `/api/fleet-manager/shipments/${id}/legs`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+  )
+}
+
+export function updateShipmentContainer(
+  id: string,
+  body: { containerId: string | null } | { containerNumber: string },
+) {
+  return api<{ data: Shipment }>(`/api/fleet-manager/shipments/${id}/container`, {
+    method: 'PATCH',
     body: JSON.stringify(body),
   })
 }

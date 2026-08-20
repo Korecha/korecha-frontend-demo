@@ -1,6 +1,6 @@
-import type { Job, Location, ShipmentLeg } from '../types'
+import type { JobPoint, Location, ShipmentLeg, TrackingEvent } from '../types'
 
-export function jobRouteLocations(job: Job): Location[] {
+export function jobRouteLocations(job: { pickup: JobPoint; delivery: JobPoint }): Location[] {
   return [
     {
       id: 'pickup',
@@ -19,6 +19,14 @@ export function jobRouteLocations(job: Job): Location[] {
       isActive: true,
     },
   ]
+}
+
+export function trackingPath(events: TrackingEvent[] | undefined | null): { lat: number; lng: number }[] {
+  return (events ?? []).map((e) => ({ lat: e.lat, lng: e.lng }))
+}
+
+export function legsTrackingPath(legs: ShipmentLeg[]): { lat: number; lng: number }[] {
+  return legs.flatMap((leg) => trackingPath(leg.tracking))
 }
 
 export function legRouteLocations(leg: ShipmentLeg): Location[] {

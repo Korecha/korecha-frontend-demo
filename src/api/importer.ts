@@ -12,6 +12,7 @@ import type {
   MatchingMode,
   NearbyTruck,
   ShipmentLeg,
+  TrackingEvent,
   User,
 } from '../types'
 
@@ -83,6 +84,10 @@ export function getJob(id: string) {
   return api<{ data: { job: Job; requests: JobRequest[]; legs: ShipmentLeg[] } }>(`/api/importer/jobs/${id}`)
 }
 
+export function getJobLegTracking(jobId: string, legId: string) {
+  return api<{ data: { events: TrackingEvent[] } }>(`/api/importer/jobs/${jobId}/legs/${legId}/tracking`)
+}
+
 export interface NearbyTrucksResult {
   nearby: NearbyTruck[]
   extended: NearbyTruck[]
@@ -122,7 +127,12 @@ export function listLoadPostings() {
 
 export function getLoadPosting(id: string) {
   return api<{
-    data: { loadPosting: LoadPosting; offers?: LoadMatchOffer[]; offersSummary?: { total: number } }
+    data: {
+      loadPosting: LoadPosting
+      offers?: LoadMatchOffer[]
+      offersSummary?: { total: number }
+      legs?: ShipmentLeg[]
+    }
   }>(`/api/importer/load-postings/${id}`)
 }
 

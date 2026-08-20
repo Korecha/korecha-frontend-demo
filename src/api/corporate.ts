@@ -7,6 +7,7 @@ import type {
   LoadMatchOffer,
   LoadPosting,
   Location,
+  ShipmentLeg,
 } from '../types'
 import type { CreateLoadPostingBody } from './importer'
 
@@ -52,7 +53,12 @@ export function listCorporateLoadPostings() {
 
 export function getCorporateLoadPosting(id: string) {
   return api<{
-    data: { loadPosting: LoadPosting; offers?: LoadMatchOffer[]; offersSummary?: { total: number } }
+    data: {
+      loadPosting: LoadPosting
+      offers?: LoadMatchOffer[]
+      offersSummary?: { total: number }
+      legs?: ShipmentLeg[]
+    }
   }>(`/api/corporate/load-postings/${id}`)
 }
 

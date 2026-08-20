@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import type { Location } from '../../types'
 
@@ -30,6 +30,7 @@ const routeIcon = L.divIcon({
 interface DriverMapProps {
   driverPosition?: { lat: number; lng: number } | null
   routeLocations?: Location[]
+  track?: { lat: number; lng: number }[]
   isLive?: boolean
   className?: string
   interactive?: boolean
@@ -38,6 +39,7 @@ interface DriverMapProps {
 export function DriverMap({
   driverPosition,
   routeLocations = [],
+  track = [],
   isLive = false,
   className = 'h-full w-full',
   interactive = true,
@@ -63,6 +65,12 @@ export function DriverMap({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <MapRecenter center={center} zoom={zoom} />
+        {track.length >= 2 && (
+          <Polyline
+            positions={track.map((p) => [p.lat, p.lng] as [number, number])}
+            pathOptions={{ color: '#2563eb', weight: 4, opacity: 0.75 }}
+          />
+        )}
         {driverPosition && isLive && (
           <Marker position={[driverPosition.lat, driverPosition.lng]} icon={liveIcon}>
             <Popup>You are live on the map</Popup>
