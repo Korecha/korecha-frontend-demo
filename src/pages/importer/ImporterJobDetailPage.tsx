@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { ApiRequestError } from '../../api/client'
 import {
   getJob,
   getJobLegTracking,
@@ -166,8 +167,12 @@ export function ImporterJobDetailPage() {
         if (!cancelled) setPayment(r.data)
       })
       .catch((err) => {
-        if (!cancelled && err instanceof Error && err.message.includes('404')) {
-          setPayment(null)
+        if (!cancelled) {
+          if (err instanceof ApiRequestError && err.status === 404) {
+            setPayment(null)
+          } else {
+            setError(err instanceof Error ? err.message : 'Failed to load payment')
+          }
         }
       })
     return () => {
