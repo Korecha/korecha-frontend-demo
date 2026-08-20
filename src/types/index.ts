@@ -25,20 +25,10 @@ export type LoadMatchOfferStatus = 'SENT' | 'VIEWED' | 'ASSIGNED' | 'DECLINED' |
 export type AvailabilityPosterType = 'FLEET_MANAGER' | 'TRUCK_OWNER'
 export type AvailabilityPostingStatus = 'OPEN' | 'CLOSED' | 'EXPIRED'
 export type JobStatus =
-  | 'OPEN'
-  | 'REQUESTED'
-  | 'ASSIGNED'
-  | 'IN_TRANSIT'
-  | 'PENDING_APPROVAL'
-  | 'COMPLETED'
-  | 'CANCELLED'
+  'OPEN' | 'REQUESTED' | 'ASSIGNED' | 'IN_TRANSIT' | 'PENDING_APPROVAL' | 'COMPLETED' | 'CANCELLED'
 export type JobRequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED'
 export type ShipmentStatus =
-  | 'ASSIGNED'
-  | 'IN_TRANSIT'
-  | 'PENDING_APPROVAL'
-  | 'COMPLETED'
-  | 'CANCELLED'
+  'ASSIGNED' | 'IN_TRANSIT' | 'PENDING_APPROVAL' | 'COMPLETED' | 'CANCELLED'
 export type ShipmentLegStatus = 'ASSIGNED' | 'IN_TRANSIT' | 'COMPLETED' | 'CANCELLED'
 
 export interface LiveLocation {
@@ -52,13 +42,7 @@ export type OrgStatus = 'ACTIVE' | 'SUSPENDED'
 export type ContainerSize = 'TWENTY_FT' | 'FORTY_FT' | 'FORTY_FT_HC'
 export type ContainerType = 'DRY' | 'REEFER' | 'OPEN_TOP' | 'FLAT_RACK'
 export type ContainerStatus =
-  | 'AVAILABLE'
-  | 'IN_TRANSIT'
-  | 'EMPTY'
-  | 'LOADED'
-  | 'DISCHARGED'
-  | 'AT_PORT'
-  | 'MAINTENANCE'
+  'AVAILABLE' | 'IN_TRANSIT' | 'EMPTY' | 'LOADED' | 'DISCHARGED' | 'AT_PORT' | 'MAINTENANCE'
 export type LocationType = 'PORT' | 'DRY_PORT' | 'WAREHOUSE' | 'CITY' | 'BORDER' | 'TRUCK_STOP'
 
 export interface User {
@@ -142,9 +126,7 @@ export interface TruckOwnerProfile {
   userId: string
   organizationId: string | null
   fleetManagerId?:
-    | string
-    | { id: string; fleetName: string; providerType?: FleetProviderType }
-    | null
+    string | { id: string; fleetName: string; providerType?: FleetProviderType } | null
   ownerType: TruckOwnerType
   displayName?: string
   canPostAvailability: boolean
@@ -373,11 +355,7 @@ export interface NearbyTruck {
 export interface MemberProfileResponse {
   type: 'driver' | 'fleet' | 'importer' | 'truckOwner' | 'corporate'
   profile:
-    | DriverProfile
-    | FleetProfile
-    | ImporterProfile
-    | TruckOwnerProfile
-    | CorporateCustomerProfile
+    DriverProfile | FleetProfile | ImporterProfile | TruckOwnerProfile | CorporateCustomerProfile
 }
 
 export interface Pricing {
@@ -453,6 +431,32 @@ export interface PlatformSettings {
   minTripPriceEtb: number
   demurrageAlertHours: number
   corridorDistanceKm: { djibouti_to_addis: number }
+}
+
+export type CommissionScopeType = 'GLOBAL' | 'MODE' | 'TIER'
+
+export interface CommissionSetting {
+  id: string
+  ratePct: number
+  scopeType: CommissionScopeType
+  scopeValue: string | null
+  effectiveFrom: string
+  createdBy: { id: string; fullName: string; email: string }
+  createdAt: string
+  updatedAt: string
+}
+
+export interface EffectiveCommission {
+  effectiveRatePct: number
+  source: {
+    type: 'SETTING' | 'FALLBACK'
+    setting: CommissionSetting | null
+  }
+  context: {
+    mode: string | null
+    tier: string | null
+    at: string
+  }
 }
 
 export interface DashboardStats {

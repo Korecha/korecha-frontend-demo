@@ -9,6 +9,7 @@ import { LoginPage } from '../pages/LoginPage'
 import { ContainerBulkUploadPage } from '../pages/admin/ContainerBulkUploadPage'
 import { ContainerDetailPage } from '../pages/admin/ContainerDetailPage'
 import { ContainersPage } from '../pages/admin/ContainersPage'
+import { CommissionSettingsPage } from '../pages/admin/CommissionSettingsPage'
 import { DashboardPage } from '../pages/admin/DashboardPage'
 import { LocationsPage } from '../pages/admin/LocationsPage'
 import { OrganizationDetailPage } from '../pages/admin/OrganizationDetailPage'
@@ -94,6 +95,7 @@ export function AppRoutes() {
             <Route path="containers/:id" element={<ContainerDetailPage />} />
             <Route path="locations" element={<LocationsPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="commission-settings" element={<CommissionSettingsPage />} />
           </Route>
           <Route
             path="/org"
