@@ -35,11 +35,10 @@ function TruckRequestCard({
 }) {
   return (
     <div
-      className={`flex items-center gap-3 rounded-2xl border bg-white p-4 shadow-sm ${
-        extended
+      className={`flex items-center gap-3 rounded-2xl border bg-white p-4 shadow-sm ${extended
           ? 'border-amber-200 bg-gradient-to-r from-amber-50/50 to-white'
           : 'border-korecha-border'
-      }`}
+        }`}
     >
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-korecha-primary">
         <svg
@@ -127,7 +126,7 @@ export function ImporterJobDetailPage() {
               setExtended(t.data.extended)
               setNearbyRadiusKm(t.data.radiusKm)
             })
-            .catch(() => {})
+            .catch(() => { })
         }
       })
       .catch((err) => setError(err.message))
