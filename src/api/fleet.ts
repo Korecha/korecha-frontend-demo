@@ -107,16 +107,16 @@ export function createAvailabilityPosting(body: {
 }
 
 export function listFleetShipments() {
-  return api<{ data: Shipment[] }>('/api/fleet/shipments')
+  return api<{ data: Shipment[] }>('/api/fleet-manager/shipments')
 }
 
 export function getFleetShipment(id: string) {
-  return api<{ data: Shipment }>(`/api/fleet/shipments/${id}`)
+  return api<{ data: Shipment }>(`/api/fleet-manager/shipments/${id}`)
 }
 
 export function getShipmentLegTracking(shipmentId: string, legId: string) {
   return api<{ data: { events: TrackingEvent[] } }>(
-    `/api/fleet/shipments/${shipmentId}/legs/${legId}/tracking`,
+    `/api/fleet-manager/shipments/${shipmentId}/legs/${legId}/tracking`,
   )
 }
 
@@ -130,7 +130,7 @@ export function addFleetShipmentLeg(
   },
 ) {
   return api<{ data: { leg: ShipmentLeg; shipment: Shipment } }>(
-    `/api/fleet/shipments/${id}/legs`,
+    `/api/fleet-manager/shipments/${id}/legs`,
     {
       method: 'POST',
       body: JSON.stringify(body),
@@ -142,7 +142,7 @@ export function updateShipmentContainer(
   id: string,
   body: { containerId: string | null } | { containerNumber: string },
 ) {
-  return api<{ data: Shipment }>(`/api/fleet/shipments/${id}/container`, {
+  return api<{ data: Shipment }>(`/api/fleet-manager/shipments/${id}/container`, {
     method: 'PATCH',
     body: JSON.stringify(body),
   })
@@ -150,6 +150,6 @@ export function updateShipmentContainer(
 
 export function getShipmentPayment(shipmentId: string) {
   return api<{ data: import('../types').Payment }>(
-    `/api/fleet/shipments/${shipmentId}/payment`,
+    `/api/fleet-manager/shipments/${shipmentId}/payment`,
   )
 }
