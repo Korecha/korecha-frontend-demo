@@ -8,7 +8,7 @@
       ],
       "env": {
         "ATLASSIAN_USERNAME": "arsanyos1600@gmail.com",
-        "ATLASSIAN_API_TOKEN": "",
+        "ATLASSIAN_API_TOKEN": "$COPILOT_MCP_ATLASSIAN_API_TOKEN",
         "ATLASSIAN_URL": "https://korecha12.atlassian.net/"
       }
     }
