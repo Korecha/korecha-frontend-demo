@@ -11,6 +11,7 @@ import type {
   Location,
   MatchingMode,
   NearbyTruck,
+  Rating,
   ShipmentLeg,
   TrackingEvent,
   User,
@@ -30,9 +31,15 @@ export type CreateLoadPostingBody = {
 }
 
 export function getImporterProfile() {
-  return api<{ data: { user: User; profile: ImporterProfile; stats: Record<string, number> } }>(
-    '/api/importer/profile',
-  )
+  return api<{
+    data: {
+      user: User
+      profile: ImporterProfile
+      stats: Record<string, number>
+      averageRating: number | null
+      ratingCount: number
+    }
+  }>('/api/importer/profile')
 }
 
 export function listImporterLocations() {
@@ -159,4 +166,18 @@ export function listNearbyAvailabilityPostings(params: {
 
 export function getJobPayment(jobId: string) {
   return api<{ data: import('../types').Payment }>(`/api/importer/jobs/${jobId}/payment`)
+}
+
+export function submitJobRating(
+  jobId: string,
+  body: { rateeUserId: string; score: number; comment?: string },
+) {
+  return api<{ data: Rating }>(`/api/importer/jobs/${jobId}/ratings`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+export function listJobRatings(jobId: string) {
+  return api<{ data: Rating[] }>(`/api/importer/jobs/${jobId}/ratings`)
 }

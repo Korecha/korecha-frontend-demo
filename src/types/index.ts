@@ -284,6 +284,22 @@ export interface Shipment {
   createdAt?: string
 }
 
+export interface Rating {
+  id: string
+  shipmentId: string
+  raterUserId: string
+  rateeUserId: string
+  score: number
+  comment?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface RatingSummary {
+  averageRating: number | null
+  ratingCount: number
+}
+
 export interface Payment {
   id: string
   shipmentId: string | { id: string; mode: ShipmentMode; customerType: string }

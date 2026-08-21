@@ -6,21 +6,24 @@ import {
   getJobLegTracking,
   getJobPayment,
   getNearbyTrucks,
+  listJobRatings,
   requestTruck,
   approveJob,
+  submitJobRating,
 } from '../../api/importer'
 import { isApproved, useAuth } from '../../auth/AuthContext'
 import { DriverMap } from '../../components/driver/DriverMap'
 import { JobPricingCard } from '../../components/importer/JobPricingCard'
 import { JobStatusTimeline } from '../../components/importer/JobStatusTimeline'
 import { PodPhotos } from '../../components/jobs/PodPhotos'
+import { RatingCard, type RatingCounterpart } from '../../components/jobs/RatingCard'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { refName, formatDate, formatEtb } from '../../utils/format'
 import { jobRouteLocations, trackingPath } from '../../utils/jobMap'
-import type { Job, JobRequest, NearbyTruck, ShipmentLeg, Payment } from '../../types'
+import type { Job, JobRequest, NearbyTruck, Rating, ShipmentLeg, Payment, User } from '../../types'
 
 function TruckRequestCard({
   truck,
@@ -35,10 +38,11 @@ function TruckRequestCard({
 }) {
   return (
     <div
-      className={`flex items-center gap-3 rounded-2xl border bg-white p-4 shadow-sm ${extended
+      className={`flex items-center gap-3 rounded-2xl border bg-white p-4 shadow-sm ${
+        extended
           ? 'border-amber-200 bg-gradient-to-r from-amber-50/50 to-white'
           : 'border-korecha-border'
-        }`}
+      }`}
     >
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-korecha-primary">
         <svg
@@ -92,7 +96,7 @@ function TruckRequestCard({
 
 export function ImporterJobDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { memberProfile, organization } = useAuth()
+  const { user, memberProfile, organization } = useAuth()
   const approved = isApproved(memberProfile)
   const canUseJobs = approved && Boolean(organization)
   const [job, setJob] = useState<Job | null>(null)
@@ -107,6 +111,7 @@ export function ImporterJobDetailPage() {
   const [approving, setApproving] = useState(false)
   const [track, setTrack] = useState<{ lat: number; lng: number }[]>([])
   const [payment, setPayment] = useState<Payment | null>(null)
+  const [ratings, setRatings] = useState<Rating[]>([])
 
   const load = useCallback(() => {
     if (!id || !canUseJobs) {
@@ -126,7 +131,7 @@ export function ImporterJobDetailPage() {
               setExtended(t.data.extended)
               setNearbyRadiusKm(t.data.radiusKm)
             })
-            .catch(() => { })
+            .catch(() => {})
         }
       })
       .catch((err) => setError(err.message))
@@ -178,6 +183,17 @@ export function ImporterJobDetailPage() {
       cancelled = true
     }
   }, [id, job])
+
+  const loadRatings = useCallback(() => {
+    if (!id || !job || job.status !== 'COMPLETED') return
+    listJobRatings(id)
+      .then((r) => setRatings(r.data))
+      .catch(() => {})
+  }, [id, job])
+
+  useEffect(() => {
+    loadRatings()
+  }, [loadRatings])
 
   const handleRequest = async (truck: NearbyTruck) => {
     if (!id) return
@@ -232,6 +248,19 @@ export function ImporterJobDetailPage() {
   const deliveryGate = typeof job.deliveryGateId === 'object' ? job.deliveryGateId : null
   const driver = typeof job.assignedDriverId === 'object' ? job.assignedDriverId : null
   const truck = typeof job.assignedTruckId === 'object' ? job.assignedTruckId : null
+
+  const driverCounterparts: RatingCounterpart[] = Array.from(
+    new Map(
+      legs
+        .map((leg) => leg.driverId)
+        .filter((driverRef): driverRef is string | User => Boolean(driverRef))
+        .map((driverRef) => {
+          const driverId = typeof driverRef === 'object' ? driverRef.id : driverRef
+          const label = typeof driverRef === 'object' ? driverRef.fullName : 'Driver'
+          return [driverId, { userId: driverId, label }] as const
+        }),
+    ).values(),
+  )
 
   return (
     <div className="space-y-4">
@@ -306,6 +335,18 @@ export function ImporterJobDetailPage() {
       </div>
 
       <PodPhotos legs={legs} />
+
+      {job.status === 'COMPLETED' && user && (
+        <RatingCard
+          counterparts={driverCounterparts}
+          ratings={ratings}
+          currentUserId={user.id}
+          onSubmit={async (rateeUserId, score, comment) => {
+            await submitJobRating(id!, { rateeUserId, score, comment: comment || undefined })
+            loadRatings()
+          }}
+        />
+      )}
 
       {error && <Alert>{error}</Alert>}
 
