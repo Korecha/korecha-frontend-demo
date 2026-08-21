@@ -1,15 +1,16 @@
 {
   "mcpServers": {
     "jira": {
-      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-atlassian"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-atlassian"
+      ],
       "env": {
-        "ATLASSIAN_SITE": "https://korecha12.atlassian.net/",
-        "ATLASSIAN_USER_EMAIL": "arsanyos1600@gmail.com",
-        "ATLASSIAN_API_TOKEN": "$COPILOT_MCP_ATLASSIAN_API_TOKEN"
-      },
-      "tools": ["*"]
+        "ATLASSIAN_USERNAME": "arsanyos1600@gmail.com",
+        "ATLASSIAN_API_TOKEN": "ATCTT3xFfGN0GTP1G3svAOZgFh-rN7Io6yh42QCITFR2SMpme71TQWJJeLkQnPjOM0AWa2y7TZVItOPfo1CniwFjpKEwLHETpgrzHE_X5VGNlvm5zWfkvy2EZcC_gvStyTpLDuU676dMD_iLVoaH02feN09zDFJp_cICiIbG3HdcGIgjJseOQC4=31B736F4",
+        "ATLASSIAN_URL": "https://korecha12.atlassian.net/"
+      }
     }
   }
 }
