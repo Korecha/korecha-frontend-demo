@@ -8,7 +8,7 @@
       ],
       "env": {
         "ATLASSIAN_USERNAME": "arsanyos1600@gmail.com",
-        "ATLASSIAN_API_TOKEN": "ATCTT3xFfGN0GTP1G3svAOZgFh-rN7Io6yh42QCITFR2SMpme71TQWJJeLkQnPjOM0AWa2y7TZVItOPfo1CniwFjpKEwLHETpgrzHE_X5VGNlvm5zWfkvy2EZcC_gvStyTpLDuU676dMD_iLVoaH02feN09zDFJp_cICiIbG3HdcGIgjJseOQC4=31B736F4",
+        "ATLASSIAN_API_TOKEN": "",
         "ATLASSIAN_URL": "https://korecha12.atlassian.net/"
       }
     }
