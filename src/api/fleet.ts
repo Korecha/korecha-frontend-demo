@@ -61,6 +61,13 @@ export function reviewFleetTruck(
   })
 }
 
+export function setFleetTruckAvailability(id: string, available: boolean) {
+  return api<{ data: Truck }>(`/api/fleet/trucks/${id}/availability`, {
+    method: 'PATCH',
+    body: JSON.stringify({ available }),
+  })
+}
+
 export function listMatchOffers(params?: { status?: LoadMatchOfferStatus | string }) {
   const qs = params?.status ? `?status=${encodeURIComponent(params.status)}` : ''
   return api<{

@@ -1,22 +1,38 @@
 import { useEffect, useState } from 'react'
-import { listFleetTrucks, reviewFleetTruck } from '../../api/fleet'
+import { listFleetTrucks, reviewFleetTruck, setFleetTruckAvailability } from '../../api/fleet'
 import { isApproved, useAuth } from '../../auth/AuthContext'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { PageHeader } from '../../components/ui/PageHeader'
-import { Table, TableEmpty, TableHead, TableRow, TableWrapper, Td, Th } from '../../components/ui/Table'
+import {
+  Table,
+  TableEmpty,
+  TableHead,
+  TableRow,
+  TableWrapper,
+  Td,
+  Th,
+} from '../../components/ui/Table'
 import { refName } from '../../utils/format'
-import type { Truck } from '../../types'
+import type { FleetProfile, Truck } from '../../types'
 
 export function FleetTrucksPage() {
   const { memberProfile } = useAuth()
   const [trucks, setTrucks] = useState<Truck[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [togglingId, setTogglingId] = useState<string | null>(null)
   const approved = isApproved(memberProfile)
+  const fleetProfile =
+    memberProfile?.type === 'fleet' ? (memberProfile.profile as FleetProfile) : null
+  const canToggleAvailability =
+    !fleetProfile?.staff || fleetProfile.staff.canToggleTruckAvailability
 
   const load = () => {
-    if (!approved) { setLoading(false); return }
+    if (!approved) {
+      setLoading(false)
+      return
+    }
     setLoading(true)
     listFleetTrucks()
       .then((r) => setTrucks(r.data))
@@ -24,7 +40,9 @@ export function FleetTrucksPage() {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [approved])
+  useEffect(() => {
+    load()
+  }, [approved])
 
   const handleReview = async (truck: Truck, status: 'APPROVED' | 'REJECTED') => {
     try {
@@ -35,11 +53,26 @@ export function FleetTrucksPage() {
     }
   }
 
+  const handleToggleAvailability = async (truck: Truck) => {
+    setTogglingId(truck.id)
+    setError('')
+    try {
+      const result = await setFleetTruckAvailability(truck.id, !truck.available)
+      setTrucks((prev) => prev.map((t) => (t.id === truck.id ? result.data : t)))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update truck availability')
+    } finally {
+      setTogglingId(null)
+    }
+  }
+
   if (!approved) {
     return (
       <div>
         <PageHeader title="Fleet Trucks" />
-        <Alert variant="warning" className="mt-6">Available after your fleet account is approved.</Alert>
+        <Alert variant="warning" className="mt-6">
+          Available after your fleet account is approved.
+        </Alert>
       </div>
     )
   }
@@ -50,29 +83,85 @@ export function FleetTrucksPage() {
         title="Fleet Trucks"
         description="Review trucks registered by your drivers — you cannot add trucks directly"
       />
-      {error && <div className="mb-4"><Alert>{error}</Alert></div>}
+      {error && (
+        <div className="mb-4">
+          <Alert>{error}</Alert>
+        </div>
+      )}
       <TableWrapper>
         <Table>
-          <TableHead><tr><Th>Plate</Th><Th>Type</Th><Th>Driver</Th><Th>Status</Th><Th>Actions</Th></tr></TableHead>
+          <TableHead>
+            <tr>
+              <Th>Plate</Th>
+              <Th>Type</Th>
+              <Th>Driver</Th>
+              <Th>Status</Th>
+              <Th>Available</Th>
+              <Th>Actions</Th>
+            </tr>
+          </TableHead>
           <tbody>
-            {loading ? <TableEmpty colSpan={5} message="Loading..." /> : trucks.length === 0 ? (
-              <TableEmpty colSpan={5} message="No trucks yet. Drivers register their own trucks after approval." />
-            ) : trucks.map((t) => (
-              <TableRow key={t.id}>
-                <Td className="font-semibold">{t.plateNumber}</Td>
-                <Td>{refName(t.truckTypeId)}</Td>
-                <Td>{typeof t.driverId === 'object' && t.driverId ? t.driverId.fullName : '—'}</Td>
-                <Td><Badge status={t.status} /></Td>
-                <Td>
-                  {t.status === 'PENDING' && (
-                    <div className="flex gap-2">
-                      <button type="button" onClick={() => handleReview(t, 'APPROVED')} className="text-xs font-medium text-emerald-600 hover:underline">Approve</button>
-                      <button type="button" onClick={() => handleReview(t, 'REJECTED')} className="text-xs font-medium text-red-500 hover:underline">Reject</button>
-                    </div>
-                  )}
-                </Td>
-              </TableRow>
-            ))}
+            {loading ? (
+              <TableEmpty colSpan={6} message="Loading..." />
+            ) : trucks.length === 0 ? (
+              <TableEmpty
+                colSpan={6}
+                message="No trucks yet. Drivers register their own trucks after approval."
+              />
+            ) : (
+              trucks.map((t) => (
+                <TableRow key={t.id}>
+                  <Td className="font-semibold">{t.plateNumber}</Td>
+                  <Td>{refName(t.truckTypeId)}</Td>
+                  <Td>
+                    {typeof t.driverId === 'object' && t.driverId ? t.driverId.fullName : '—'}
+                  </Td>
+                  <Td>
+                    <Badge status={t.status} />
+                  </Td>
+                  <Td>
+                    {canToggleAvailability ? (
+                      <button
+                        type="button"
+                        onClick={() => handleToggleAvailability(t)}
+                        disabled={togglingId === t.id}
+                        className={`text-xs font-medium hover:underline disabled:opacity-50 ${
+                          t.available ? 'text-emerald-600' : 'text-slate-400'
+                        }`}
+                      >
+                        {togglingId === t.id ? '...' : t.available ? 'Available' : 'Unavailable'}
+                      </button>
+                    ) : (
+                      <span
+                        className={`text-xs font-medium ${t.available ? 'text-emerald-600' : 'text-slate-400'}`}
+                      >
+                        {t.available ? 'Available' : 'Unavailable'}
+                      </span>
+                    )}
+                  </Td>
+                  <Td>
+                    {t.status === 'PENDING' && (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleReview(t, 'APPROVED')}
+                          className="text-xs font-medium text-emerald-600 hover:underline"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleReview(t, 'REJECTED')}
+                          className="text-xs font-medium text-red-500 hover:underline"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                  </Td>
+                </TableRow>
+              ))
+            )}
           </tbody>
         </Table>
       </TableWrapper>
