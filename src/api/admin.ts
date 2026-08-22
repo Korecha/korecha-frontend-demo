@@ -21,6 +21,7 @@ import type {
   PlatformSettings,
   Pricing,
   QuotePreview,
+  Truck,
   TruckOwnerProfile,
   User,
 } from '../types'
@@ -285,6 +286,23 @@ export function setTruckOwnerCanPostAvailability(id: string, canPostAvailability
   return api<{ data: TruckOwnerProfile }>(`/api/admin/truck-owners/${id}/can-post-availability`, {
     method: 'POST',
     body: JSON.stringify({ canPostAvailability }),
+  })
+}
+
+export function listPendingTrucks() {
+  return api<{ data: Truck[] }>('/api/admin/trucks/pending')
+}
+
+export function reviewTruck(
+  id: string,
+  body: {
+    status: 'APPROVED' | 'REJECTED'
+    rejectionReason?: string
+  },
+) {
+  return api<{ data: Truck }>(`/api/admin/trucks/${id}/review`, {
+    method: 'POST',
+    body: JSON.stringify(body),
   })
 }
 

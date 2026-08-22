@@ -19,6 +19,7 @@ import { SettingsPage } from '../pages/admin/SettingsPage'
 import { AdminApplicationsPage } from '../pages/admin/ApplicationsPage'
 import { CorporateApplicationsPage } from '../pages/admin/CorporateApplicationsPage'
 import { TruckOwnersPage } from '../pages/admin/TruckOwnersPage'
+import { AdminTruckReviewPage } from '../pages/admin/AdminTruckReviewPage'
 import { AdminItemTypesPage } from '../pages/admin/ItemTypesPage'
 import { DriverHomePage } from '../pages/driver/DriverHomePage'
 import { DriverProfilePage } from '../pages/driver/DriverProfilePage'
@@ -94,6 +95,7 @@ export function AppRoutes() {
             <Route path="applications" element={<AdminApplicationsPage />} />
             <Route path="applications/corporate" element={<CorporateApplicationsPage />} />
             <Route path="truck-owners" element={<TruckOwnersPage />} />
+            <Route path="trucks/pending" element={<AdminTruckReviewPage />} />
             <Route path="item-types" element={<AdminItemTypesPage />} />
             <Route path="containers" element={<ContainersPage />} />
             <Route path="containers/upload" element={<ContainerBulkUploadPage />} />
