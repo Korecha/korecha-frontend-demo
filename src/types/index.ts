@@ -137,6 +137,12 @@ export interface TruckOwnerProfile {
   reviewedBy?: string
   reviewedAt?: string
   rejectionReason?: string
+  /** KAN-66/67: truck owner-initiated request to be granted canPostAvailability. */
+  availabilityRequestStatus?: ApprovalStatus | null
+  availabilityRequestedAt?: string
+  availabilityRequestReviewedBy?: string
+  availabilityRequestReviewedAt?: string
+  availabilityRequestRejectionReason?: string
   user?: User
   createdAt?: string
 }
