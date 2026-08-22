@@ -44,6 +44,9 @@ import { RegisterTruckOwnerPage } from '../pages/register/RegisterTruckOwnerPage
 import { RegisterCorporateCustomerPage } from '../pages/register/RegisterCorporateCustomerPage'
 import { TruckOwnerHomePage } from '../pages/truckOwner/TruckOwnerHomePage'
 import { TruckOwnerAvailabilityPage } from '../pages/truckOwner/TruckOwnerAvailabilityPage'
+import { TruckOwnerTrucksPage } from '../pages/truckOwner/TruckOwnerTrucksPage'
+import { TruckOwnerDriversPage } from '../pages/truckOwner/TruckOwnerDriversPage'
+import { TruckOwnerEarningsPage } from '../pages/truckOwner/TruckOwnerEarningsPage'
 import { TruckOwnerLayout } from '../components/layout/TruckOwnerLayout'
 import { CorporateHomePage } from '../pages/corporate/CorporateHomePage'
 import { CorporatePostLoadPage } from '../pages/corporate/CorporatePostLoadPage'
@@ -172,6 +175,9 @@ export function AppRoutes() {
             }
           >
             <Route index element={<TruckOwnerHomePage />} />
+            <Route path="trucks" element={<TruckOwnerTrucksPage />} />
+            <Route path="drivers" element={<TruckOwnerDriversPage />} />
+            <Route path="earnings" element={<TruckOwnerEarningsPage />} />
             <Route path="availability" element={<TruckOwnerAvailabilityPage />} />
           </Route>
           <Route
