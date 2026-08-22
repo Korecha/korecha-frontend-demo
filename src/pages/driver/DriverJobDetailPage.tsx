@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   completeDriverLeg,
   getDriverJob,
+  listDriverJobRatings,
   respondToJobRequest,
   startDriverLeg,
+  submitDriverJobRating,
   uploadDriverLegPod,
 } from '../../api/driver'
+import { useAuth } from '../../auth/AuthContext'
 import { DriverMap } from '../../components/driver/DriverMap'
 import { DriverJobProgress } from '../../components/jobs/DriverJobProgress'
+import { RatingCard, type RatingCounterpart } from '../../components/jobs/RatingCard'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
@@ -17,7 +21,7 @@ import { Modal, ModalFooter } from '../../components/ui/Modal'
 import { fileUrl } from '../../utils/fileUrl'
 import { formatDate, refName } from '../../utils/format'
 import { jobRouteLocations, legRouteLocations } from '../../utils/jobMap'
-import type { Job, JobRequest, ShipmentLeg } from '../../types'
+import type { Job, JobRequest, Rating, ShipmentLeg } from '../../types'
 
 function locName(value: ShipmentLeg['fromLocationId']): string {
   return refName(value as string | { name?: string } | null | undefined)
@@ -26,6 +30,7 @@ function locName(value: ShipmentLeg['fromLocationId']): string {
 export function DriverJobDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [job, setJob] = useState<Job | null>(null)
   const [request, setRequest] = useState<JobRequest | null>(null)
   const [currentLeg, setCurrentLeg] = useState<ShipmentLeg | null>(null)
@@ -35,6 +40,7 @@ export function DriverJobDetailPage() {
   const [legCompleteOpen, setLegCompleteOpen] = useState(false)
   const [podFile, setPodFile] = useState<File | null>(null)
   const [podPreview, setPodPreview] = useState('')
+  const [ratings, setRatings] = useState<Rating[]>([])
 
   const load = () => {
     if (!id) return
@@ -49,7 +55,20 @@ export function DriverJobDetailPage() {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [id])
+  useEffect(() => {
+    load()
+  }, [id])
+
+  const loadRatings = useCallback(() => {
+    if (!id || !job || job.status !== 'COMPLETED') return
+    listDriverJobRatings(id)
+      .then((r) => setRatings(r.data))
+      .catch(() => {})
+  }, [id, job])
+
+  useEffect(() => {
+    loadRatings()
+  }, [loadRatings])
 
   useEffect(() => {
     return () => {
@@ -124,8 +143,13 @@ export function DriverJobDetailPage() {
   if (!job) return <Alert>Job not found</Alert>
 
   const importer = typeof job.importerId === 'object' ? job.importerId : null
+  const importerCounterparts: RatingCounterpart[] = importer
+    ? [{ userId: importer.id, label: importer.fullName }]
+    : []
   const showRequestActions = !!request && ['OPEN', 'REQUESTED'].includes(job.status)
-  const showDriverProgress = ['ASSIGNED', 'IN_TRANSIT', 'PENDING_APPROVAL', 'COMPLETED'].includes(job.status)
+  const showDriverProgress = ['ASSIGNED', 'IN_TRANSIT', 'PENDING_APPROVAL', 'COMPLETED'].includes(
+    job.status,
+  )
   const route = currentLeg ? legRouteLocations(currentLeg) : jobRouteLocations(job)
   const routeLabel = currentLeg
     ? `${locName(currentLeg.fromLocationId)} → ${locName(currentLeg.toLocationId)}`
@@ -133,7 +157,10 @@ export function DriverJobDetailPage() {
 
   return (
     <div className="space-y-4">
-      <Link to="/driver/jobs" className="inline-flex items-center gap-1 text-sm font-medium text-korecha-primary hover:underline">
+      <Link
+        to="/driver/jobs"
+        className="inline-flex items-center gap-1 text-sm font-medium text-korecha-primary hover:underline"
+      >
         ← Back to jobs
       </Link>
 
@@ -155,13 +182,17 @@ export function DriverJobDetailPage() {
         </div>
 
         {job.notes && (
-          <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">{job.notes}</p>
+          <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
+            {job.notes}
+          </p>
         )}
 
         {importer && (
           <div className="mt-4 flex items-center justify-between rounded-2xl bg-blue-50 px-4 py-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Importer</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
+                Importer
+              </p>
               <p className="font-semibold text-slate-900">{importer.fullName}</p>
             </div>
             {importer.phone && (
@@ -185,7 +216,11 @@ export function DriverJobDetailPage() {
         )}
       </div>
 
-      <DriverMap className="h-[36vh] min-h-[220px]" routeLocations={route.length ? route : jobRouteLocations(job)} interactive />
+      <DriverMap
+        className="h-[36vh] min-h-[220px]"
+        routeLocations={route.length ? route : jobRouteLocations(job)}
+        interactive
+      />
 
       {error && <Alert>{error}</Alert>}
 
@@ -199,7 +234,12 @@ export function DriverJobDetailPage() {
             <Button className="flex-1 py-3" disabled={acting} onClick={() => handleRespond(true)}>
               {acting ? '...' : 'Accept job'}
             </Button>
-            <Button className="flex-1 py-3" variant="secondary" disabled={acting} onClick={() => handleRespond(false)}>
+            <Button
+              className="flex-1 py-3"
+              variant="secondary"
+              disabled={acting}
+              onClick={() => handleRespond(false)}
+            >
               Decline
             </Button>
           </div>
@@ -252,7 +292,8 @@ export function DriverJobDetailPage() {
       {legCompleteOpen && (
         <Modal title="Your leg is complete" onClose={() => navigate('/driver/jobs')}>
           <p className="text-sm text-slate-600">
-            You and your truck are available for another load. The rest of this shipment continues with the next leg.
+            You and your truck are available for another load. The rest of this shipment continues
+            with the next leg.
           </p>
           <ModalFooter>
             <Button onClick={() => navigate('/driver/jobs')}>Back to jobs</Button>
@@ -263,7 +304,9 @@ export function DriverJobDetailPage() {
       {!currentLeg && job.status === 'IN_TRANSIT' && (
         <div className="rounded-2xl bg-slate-50 p-4 text-center">
           <p className="font-semibold text-slate-800">Waiting on the previous leg</p>
-          <p className="mt-1 text-sm text-slate-600">Your assigned leg will unlock when the previous one is completed.</p>
+          <p className="mt-1 text-sm text-slate-600">
+            Your assigned leg will unlock when the previous one is completed.
+          </p>
         </div>
       )}
 
@@ -284,6 +327,18 @@ export function DriverJobDetailPage() {
           <p className="font-semibold text-emerald-800">Job completed successfully</p>
           <p className="mt-1 text-sm text-emerald-700">You are available for new requests</p>
         </div>
+      )}
+
+      {job.status === 'COMPLETED' && user && (
+        <RatingCard
+          counterparts={importerCounterparts}
+          ratings={ratings}
+          currentUserId={user.id}
+          onSubmit={async (_rateeUserId, score, comment) => {
+            await submitDriverJobRating(id!, { score, comment: comment || undefined })
+            loadRatings()
+          }}
+        />
       )}
     </div>
   )

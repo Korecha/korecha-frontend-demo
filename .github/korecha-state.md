@@ -17,7 +17,7 @@
 > **This file is tracked in Git** — commit it with your feature changes so the team stays aligned.
 
 **Last Updated**: 2026-08-20  
-**Current Branch**: `feat/shipment-excution-ui` (note spelling)  
+**Current Branch**: `feat/payment-rating-logic-ui` (Phase 4: Payment & Rating — branched from main)  
 **Jira Board**: [KAN](https://korecha12.atlassian.net)
 
 ---
@@ -57,7 +57,21 @@
 
 ## Current Sprint / In Progress
 
-### Phase 3: Shipment Execution UI (Epic: KAN-6)
+### Phase 4: Payment & Rating Logic (Epic: KAN-7)
+
+**Completed Frontend Features**:
+- ✅ Admin commission rate history UI (KAN-87) — dedicated page with effective rate display, history table, and append form
+- ✅ Payment summary display + admin release/dispute controls (KAN-89) — read-only display on importer/fleet pages, admin list with status filter and transition controls
+
+**In Progress**:
+- (none yet)
+
+**Next Up** (Priority Order):
+1. Rating UI (KAN-91 / KAN-93)
+
+---
+
+### Phase 3: Shipment Execution UI (Epic: KAN-6) — COMPLETED & MERGED TO MAIN
 
 **Completed Frontend Features**:
 - ✅ Multi-leg shipment display (leg-by-leg progress cards)
@@ -70,29 +84,20 @@
 - ✅ Fleet manager container link/unlink (KAN-61) — PATCH /api/fleet-manager/shipments/:id/container
 - ✅ Fleet container control by container number (KAN-85) — input/display containerNumber instead of ObjectId
 
-**In Progress**:
-- 🚧 Fleet manager "Add Leg" form validation (prevent adding legs when `PENDING_APPROVAL`)
-
-**Next Up** (Priority Order):
-1. Container selection dropdown on load posting form (optional field)
-2. Container status display badge on shipment cards
-3. Add leg button state management (disabled after `PENDING_APPROVAL`)
-4. POD photo gallery component for importer approval screen
-
 ---
 
 ## Recently Completed (Last ~10 Items)
 
-1. ✅ Fleet container control by container number (KAN-85) — input/display containerNumber, shows size/type/status
-2. ✅ Container detail page with linked shipment display (KAN-61)
-3. ✅ Fleet manager container link/unlink controls (KAN-61)
-4. ✅ `DriverMap` component — Leaflet integration with marker + polyline
-5. ✅ `useDriverLocation` hook — geolocation API with permission handling
-6. ✅ POD upload API integration (`POST /api/driver/legs/:id/pod` with FormData)
-7. ✅ Driver active jobs filtering (only shows jobs with `IN_TRANSIT` leg)
-8. ✅ Fleet manager shipment list with leg count badges
-9. ✅ Leg status badges (color-coded: gray/blue/green for ASSIGNED/IN_TRANSIT/COMPLETED)
-10. ✅ "Start Leg" and "Complete Leg" button states (disabled when inappropriate status)
+1. ✅ Payment summary display + admin controls (KAN-89) — read-only payment cards on importer/fleet pages, admin payments list with release/dispute
+2. ✅ Admin commission settings page (KAN-87) — dedicated UI for commission rate history and rules
+3. ✅ Fleet container control by container number (KAN-85) — input/display containerNumber, shows size/type/status
+4. ✅ Container detail page with linked shipment display (KAN-61)
+5. ✅ Fleet manager container link/unlink controls (KAN-61)
+6. ✅ `DriverMap` component — Leaflet integration with marker + polyline
+7. ✅ `useDriverLocation` hook — geolocation API with permission handling
+8. ✅ POD upload API integration (`POST /api/driver/legs/:id/pod` with FormData)
+9. ✅ Driver active jobs filtering (only shows jobs with `IN_TRANSIT` leg)
+10. ✅ Fleet manager shipment list with leg count badges
 
 ---
 
@@ -143,6 +148,23 @@
 - **Input**: Fleet managers enter containerNumber (case-insensitive, server uppercases/trims)
 - **Display**: Show `shipment.container?.containerNumber` with size/type/status badges, not the raw ObjectId
 - **Validation**: Backend returns 404 for unknown container numbers with the number echoed in the error message
+
+### Commission Settings (Phase 4)
+
+- **Dedicated page pattern**: Complex historical data with append-only rules gets its own admin page (CommissionSettingsPage) rather than cramming into SettingsPage
+- **Pagination response**: Backend uses `pagination` sibling key (not `meta`) for append-only history endpoints
+- **Effective rate display**: Always show provenance — distinguish between active SETTING rules and FALLBACK to platform defaults
+- **Scope types**: GLOBAL (no value), MODE (requires UNIMODAL/MULTIMODAL), TIER (requires STANDARD/PRIORITY/PREFERRED) — conditional form fields based on type
+- **History immutability**: No edit/delete controls — commission rules are append-only by design; backend has no PATCH/DELETE for them
+
+### Payment Display & Controls (Phase 4)
+
+- **404 is normal**: Shipments without importer approval have no payment yet — 404 from GET endpoints renders neutral empty state, NOT an error Alert
+- **Dual shipmentId shape**: In admin list, `shipmentId` is populated to `{ id, mode, customerType }`; in single-payment endpoints it's a raw string — type as `string | { ... }` union
+- **Read-only for non-admin**: Importer and fleet manager see payment summary cards (gross, commission %, net, provider, status badge) — no controls
+- **Admin transitions**: Only HELD → RELEASED and HELD → DISPUTED are valid — backend enforces state machine, frontend disables buttons for non-HELD statuses
+- **No payment gateway UI**: No card forms, wallet connect, redirects, or provider logos — `provider` is just a label + reference string displayed as plain text
+- **Status labels reusable**: `PAYMENT_STATUS_LABELS` and payment entries in `STATUS_COLORS` in format.ts — KAN-93 will reuse for manual payment recording
 
 ---
 

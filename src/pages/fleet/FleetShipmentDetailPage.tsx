@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { ApiRequestError } from '../../api/client'
 import {
   addFleetShipmentLeg,
   getFleetShipment,
   getShipmentLegTracking,
+  getShipmentPayment,
   listFleetDrivers,
   listFleetLocations,
   listFleetTrucks,
@@ -14,16 +16,18 @@ import { DriverMap } from '../../components/driver/DriverMap'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+import { Card } from '../../components/ui/Card'
 import { Field, Input, Select } from '../../components/ui/Input'
 import { LocationAutocomplete } from '../../components/ui/LocationAutocomplete'
 import { PageHeader } from '../../components/ui/PageHeader'
-import { refName, SIZE_LABELS } from '../../utils/format'
+import { refName, SIZE_LABELS, formatEtb } from '../../utils/format'
 import { jobRouteLocations, trackingPath } from '../../utils/jobMap'
 import type {
   DriverProfile,
   FleetProfile,
   Job,
   Location,
+  Payment,
   Shipment,
   ShipmentLeg,
   Truck,
@@ -62,6 +66,7 @@ export function FleetShipmentDetailPage() {
   const [containerInput, setContainerInput] = useState('')
   const [containerError, setContainerError] = useState('')
   const [linkingSaving, setLinkingSaving] = useState(false)
+  const [payment, setPayment] = useState<Payment | null>(null)
 
   const load = () => {
     if (!id || !approved) {
@@ -76,7 +81,7 @@ export function FleetShipmentDetailPage() {
   }
 
   useEffect(() => {
-    load()
+    void Promise.resolve().then(load)
     if (!approved) return
     listFleetLocations()
       .then((r) => setLocations(r.data))
@@ -90,25 +95,50 @@ export function FleetShipmentDetailPage() {
   }, [id, approved])
 
   useEffect(() => {
-    if (!id || !shipment) {
-      setTrack([])
-      return
-    }
-    const shipmentLegs = shipment.legs || []
-    if (shipmentLegs.length === 0) {
-      setTrack([])
-      return
-    }
     let cancelled = false
-    Promise.all(
-      shipmentLegs.map((leg) =>
-        getShipmentLegTracking(id, leg.id)
-          .then((r) => r.data.events ?? [])
-          .catch(() => leg.tracking ?? []),
-      ),
-    ).then((all) => {
-      if (!cancelled) setTrack(trackingPath(all.flat()))
+
+    const loadTracking = async () => {
+      if (!id || !shipment) return []
+
+      const shipmentLegs = shipment.legs || []
+      if (shipmentLegs.length === 0) return []
+
+      const all = await Promise.all(
+        shipmentLegs.map((leg) =>
+          getShipmentLegTracking(id, leg.id)
+            .then((r) => r.data.events ?? [])
+            .catch(() => leg.tracking ?? []),
+        ),
+      )
+      return trackingPath(all.flat())
+    }
+
+    loadTracking().then((track) => {
+      if (!cancelled) setTrack(track)
     })
+
+    return () => {
+      cancelled = true
+    }
+  }, [id, shipment])
+
+  useEffect(() => {
+    if (!id || !shipment || shipment.status !== 'COMPLETED') return
+
+    let cancelled = false
+    getShipmentPayment(id)
+      .then((r) => {
+        if (!cancelled) setPayment(r.data)
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          if (err instanceof ApiRequestError && err.status === 404) {
+            setPayment(null)
+          } else {
+            setError(err instanceof Error ? err.message : 'Failed to load payment')
+          }
+        }
+      })
     return () => {
       cancelled = true
     }
@@ -295,6 +325,54 @@ export function FleetShipmentDetailPage() {
           )}
         </div>
       )}
+
+      {shipment &&
+        shipment.status === 'COMPLETED' &&
+        (payment ? (
+          <Card className="mt-6 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
+            <h3 className="font-bold text-emerald-900">Payment Summary</h3>
+            <div className="mt-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600">Gross Amount:</span>
+                <span className="font-semibold text-slate-900">
+                  {formatEtb(payment.grossAmountEtb)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600">
+                  Commission ({payment.commissionPctSnapshot}%):
+                </span>
+                <span className="font-medium text-slate-700">
+                  -{formatEtb(payment.commissionAmountEtb)}
+                </span>
+              </div>
+              <div className="flex justify-between border-t border-emerald-200 pt-2">
+                <span className="font-semibold text-emerald-900">Net Amount:</span>
+                <span className="text-lg font-bold text-emerald-700">
+                  {formatEtb(payment.netAmountEtb)}
+                </span>
+              </div>
+              <div className="mt-3 flex items-center justify-between rounded-xl bg-white/60 px-3 py-2">
+                <div>
+                  <p className="text-xs font-medium text-slate-600">Payment Provider</p>
+                  <p className="font-medium text-slate-900">
+                    {payment.provider.replace(/_/g, ' ')}
+                  </p>
+                  {payment.providerReference && (
+                    <p className="text-xs text-slate-500">{payment.providerReference}</p>
+                  )}
+                </div>
+                <Badge status={payment.status} />
+              </div>
+            </div>
+          </Card>
+        ) : (
+          <Card className="mt-6 border-slate-200 bg-slate-50">
+            <p className="text-sm text-slate-600">
+              Payment details will appear here once the shipment is processed.
+            </p>
+          </Card>
+        ))}
 
       {canAdd && canAssign && (
         <div className="mt-6 rounded-2xl border border-korecha-border bg-white p-5 shadow-sm">

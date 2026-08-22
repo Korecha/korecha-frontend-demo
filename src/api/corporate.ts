@@ -3,10 +3,13 @@ import type {
   AvailabilityPosting,
   GateEntrance,
   ItemType,
+  Job,
   JobPricingQuote,
+  JobRequest,
   LoadMatchOffer,
   LoadPosting,
   Location,
+  Rating,
   ShipmentLeg,
 } from '../types'
 import type { CreateLoadPostingBody } from './importer'
@@ -43,7 +46,7 @@ export function createCorporateLoadPosting(body: CreateLoadPostingBody) {
     {
       method: 'POST',
       body: JSON.stringify(body),
-    }
+    },
   )
 }
 
@@ -74,5 +77,30 @@ export function listCorporateNearbyAvailabilityPostings(params: {
     lng: String(params.lng),
     ...(params.radiusKm ? { radiusKm: String(params.radiusKm) } : {}),
   })
-  return api<{ data: NearbyAvailabilityPosting[] }>(`/api/corporate/availability-postings/nearby?${qs}`)
+  return api<{ data: NearbyAvailabilityPosting[] }>(
+    `/api/corporate/availability-postings/nearby?${qs}`,
+  )
+}
+
+// KAN-90/91: Added alongside ratings support so corporate customers have a /jobs/:id route to
+// view their job/shipment (same response shape as the importer getJob endpoint, since the
+// backend reuses importerController.getJob for corporate customers).
+export function getCorporateJob(id: string) {
+  return api<{ data: { job: Job; requests: JobRequest[]; legs: ShipmentLeg[] } }>(
+    `/api/corporate/jobs/${id}`,
+  )
+}
+
+export function submitCorporateJobRating(
+  jobId: string,
+  body: { rateeUserId: string; score: number; comment?: string },
+) {
+  return api<{ data: Rating }>(`/api/corporate/jobs/${jobId}/ratings`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+export function listCorporateJobRatings(jobId: string) {
+  return api<{ data: Rating[] }>(`/api/corporate/jobs/${jobId}/ratings`)
 }

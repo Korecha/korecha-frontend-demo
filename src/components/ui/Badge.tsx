@@ -6,6 +6,7 @@ import {
   LOAD_POSTING_STATUS_LABELS,
   MATCHING_MODE_LABELS,
   MATCH_OFFER_STATUS_LABELS,
+  PAYMENT_STATUS_LABELS,
   ROLE_LABELS,
   SHIPMENT_MODE_LABELS,
   SHIPMENT_LEG_STATUS_LABELS,
@@ -24,6 +25,7 @@ export function Badge({ status }: { status: string }) {
     AVAILABILITY_POSTING_STATUS_LABELS[status] ||
     AVAILABILITY_LABELS[status] ||
     APPROVAL_LABELS[status] ||
+    PAYMENT_STATUS_LABELS[status] ||
     ROLE_LABELS[status] ||
     status.replace(/_/g, ' ').toLowerCase()
   return (

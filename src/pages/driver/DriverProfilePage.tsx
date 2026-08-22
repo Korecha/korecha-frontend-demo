@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { getDriverProfile } from '../../api/driver'
 import { useAuth } from '../../auth/AuthContext'
 import { Badge } from '../../components/ui/Badge'
+import { StarRating } from '../../components/ui/StarRating'
 import { fileUrl } from '../../utils/fileUrl'
 import { refName } from '../../utils/format'
 import type { DriverProfile } from '../../types'
@@ -9,14 +10,20 @@ import type { DriverProfile } from '../../types'
 export function DriverProfilePage() {
   const { user, organization } = useAuth()
   const [profile, setProfile] = useState<DriverProfile | null>(null)
+  const [averageRating, setAverageRating] = useState<number | null>(null)
+  const [ratingCount, setRatingCount] = useState(0)
 
   useEffect(() => {
-    getDriverProfile().then((r) => setProfile(r.data.profile)).catch(() => {})
+    getDriverProfile()
+      .then((r) => {
+        setProfile(r.data.profile)
+        setAverageRating(r.data.averageRating)
+        setRatingCount(r.data.ratingCount)
+      })
+      .catch(() => {})
   }, [])
 
-  const routes = (profile?.preferredRouteIds || [])
-    .map((r) => refName(r, ''))
-    .filter(Boolean)
+  const routes = (profile?.preferredRouteIds || []).map((r) => refName(r, '')).filter(Boolean)
 
   const employer =
     typeof profile?.fleetManagerId === 'object' && profile.fleetManagerId
@@ -56,10 +63,28 @@ export function DriverProfilePage() {
       </div>
 
       <div className="rounded-3xl border border-korecha-border bg-white p-5 shadow-sm">
+        <h3 className="font-bold text-slate-900">Rating</h3>
+        {ratingCount > 0 && averageRating !== null ? (
+          <div className="mt-3 flex items-center gap-3">
+            <StarRating value={averageRating} readOnly size="sm" />
+            <span className="text-sm font-semibold text-slate-800">{averageRating.toFixed(1)}</span>
+            <span className="text-xs text-slate-500">
+              ({ratingCount} rating{ratingCount !== 1 ? 's' : ''})
+            </span>
+          </div>
+        ) : (
+          <p className="mt-2 text-sm text-slate-500">No ratings yet</p>
+        )}
+      </div>
+
+      <div className="rounded-3xl border border-korecha-border bg-white p-5 shadow-sm">
         <h3 className="font-bold text-slate-900">Details</h3>
         <dl className="mt-4 space-y-3">
           {rows.map(([label, value]) => (
-            <div key={label} className="flex justify-between gap-4 border-b border-slate-50 pb-3 last:border-0">
+            <div
+              key={label}
+              className="flex justify-between gap-4 border-b border-slate-50 pb-3 last:border-0"
+            >
               <dt className="text-sm text-korecha-muted">{label}</dt>
               <dd className="max-w-[55%] text-right text-sm font-medium text-slate-800">{value}</dd>
             </div>

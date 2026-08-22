@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { DriverAvailability, DriverProfile, Location, Truck, User } from '../types'
+import type { DriverAvailability, DriverProfile, Location, Rating, Truck, User } from '../types'
 
 export function getDriverProfile() {
   return api<{
@@ -12,6 +12,8 @@ export function getDriverProfile() {
         pendingRequestCount: number
         activeJobCount: number
       }
+      averageRating: number | null
+      ratingCount: number
     }
   }>('/api/driver/profile')
 }
@@ -85,14 +87,15 @@ export function startDriverJob(id: string) {
 }
 
 export function completeDriverJob(id: string) {
-  return api<{ data: import('../types').Job }>(`/api/driver/jobs/${id}/complete`, { method: 'POST' })
+  return api<{ data: import('../types').Job }>(`/api/driver/jobs/${id}/complete`, {
+    method: 'POST',
+  })
 }
 
 export function startDriverLeg(id: string) {
-  return api<{ data: { job: import('../types').Job; currentLeg: import('../types').ShipmentLeg | null } }>(
-    `/api/driver/legs/${id}/start`,
-    { method: 'POST' }
-  )
+  return api<{
+    data: { job: import('../types').Job; currentLeg: import('../types').ShipmentLeg | null }
+  }>(`/api/driver/legs/${id}/start`, { method: 'POST' })
 }
 
 export function uploadDriverLegPod(legId: string, file: File) {
@@ -100,7 +103,7 @@ export function uploadDriverLegPod(legId: string, file: File) {
   form.append('pod', file)
   return api<{ data: { currentLeg: import('../types').ShipmentLeg } }>(
     `/api/driver/legs/${legId}/pod`,
-    { method: 'POST', body: form }
+    { method: 'POST', body: form },
   )
 }
 
@@ -113,4 +116,15 @@ export function completeDriverLeg(id: string) {
       released?: boolean
     }
   }>(`/api/driver/legs/${id}/complete`, { method: 'POST' })
+}
+
+export function submitDriverJobRating(jobId: string, body: { score: number; comment?: string }) {
+  return api<{ data: Rating }>(`/api/driver/jobs/${jobId}/ratings`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+export function listDriverJobRatings(jobId: string) {
+  return api<{ data: Rating[] }>(`/api/driver/jobs/${jobId}/ratings`)
 }

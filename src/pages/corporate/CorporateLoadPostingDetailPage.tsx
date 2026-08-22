@@ -1,20 +1,26 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getCorporateLoadPosting } from '../../api/corporate'
+import {
+  getCorporateJob,
+  getCorporateLoadPosting,
+  listCorporateJobRatings,
+  submitCorporateJobRating,
+} from '../../api/corporate'
 import { isApproved, useAuth } from '../../auth/AuthContext'
 import { JobPricingCard } from '../../components/importer/JobPricingCard'
 import { DriverMap } from '../../components/driver/DriverMap'
 import { PodPhotos } from '../../components/jobs/PodPhotos'
+import { RatingCard, type RatingCounterpart } from '../../components/jobs/RatingCard'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Card } from '../../components/ui/Card'
 import { formatDate, refName } from '../../utils/format'
 import { jobRouteLocations, legsTrackingPath } from '../../utils/jobMap'
-import type { LoadMatchOffer, LoadPosting, ShipmentLeg } from '../../types'
+import type { Job, LoadMatchOffer, LoadPosting, Rating, ShipmentLeg, User } from '../../types'
 
 export function CorporateLoadPostingDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { memberProfile, organization } = useAuth()
+  const { user, memberProfile, organization } = useAuth()
   const approved = isApproved(memberProfile)
   const canUse = approved && Boolean(organization)
   const [posting, setPosting] = useState<LoadPosting | null>(null)
@@ -22,6 +28,8 @@ export function CorporateLoadPostingDetailPage() {
   const [legs, setLegs] = useState<ShipmentLeg[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [ratings, setRatings] = useState<Rating[]>([])
+  const [linkedJob, setLinkedJob] = useState<Job | null>(null)
 
   useEffect(() => {
     if (!canUse || !id) return
@@ -36,8 +44,28 @@ export function CorporateLoadPostingDetailPage() {
       .finally(() => setLoading(false))
   }, [canUse, id])
 
+  const loadRatings = useCallback(() => {
+    const linked =
+      typeof posting?.linkedJobId === 'object' ? posting.linkedJobId?.id : posting?.linkedJobId
+    if (!linked) return
+    getCorporateJob(linked)
+      .then((r) => {
+        setLinkedJob(r.data.job)
+        if (r.data.job.status === 'COMPLETED') {
+          return listCorporateJobRatings(linked).then((ratingsRes) => setRatings(ratingsRes.data))
+        }
+      })
+      .catch(() => {})
+  }, [posting])
+
+  useEffect(() => {
+    loadRatings()
+  }, [loadRatings])
+
   if (!approved) {
-    return <Alert variant="warning">Load postings are available after your account is approved.</Alert>
+    return (
+      <Alert variant="warning">Load postings are available after your account is approved.</Alert>
+    )
   }
 
   if (!organization) {
@@ -52,9 +80,25 @@ export function CorporateLoadPostingDetailPage() {
   if (error) return <Alert>{error}</Alert>
   if (!posting) return <Alert>Load posting not found</Alert>
 
+  const driverCounterparts: RatingCounterpart[] = Array.from(
+    new Map(
+      legs
+        .map((leg) => leg.driverId)
+        .filter((driverRef): driverRef is string | User => Boolean(driverRef))
+        .map((driverRef) => {
+          const driverId = typeof driverRef === 'object' ? driverRef.id : driverRef
+          const label = typeof driverRef === 'object' ? driverRef.fullName : 'Driver'
+          return [driverId, { userId: driverId, label }] as const
+        }),
+    ).values(),
+  )
+
   return (
     <div className="space-y-4">
-      <Link to="/corporate/loads" className="inline-flex items-center gap-1 text-sm font-medium text-korecha-primary hover:underline">
+      <Link
+        to="/corporate/loads"
+        className="inline-flex items-center gap-1 text-sm font-medium text-korecha-primary hover:underline"
+      >
         ← Back to loads
       </Link>
 
@@ -90,31 +134,59 @@ export function CorporateLoadPostingDetailPage() {
 
         <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">Matching</dt>
-            <dd className="mt-1 font-medium text-slate-800">{posting.matchingMode.replace(/_/g, ' ')}</dd>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+              Matching
+            </dt>
+            <dd className="mt-1 font-medium text-slate-800">
+              {posting.matchingMode.replace(/_/g, ' ')}
+            </dd>
           </div>
           <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">Shipment mode</dt>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+              Shipment mode
+            </dt>
             <dd className="mt-1 font-medium text-slate-800">{posting.mode}</dd>
           </div>
           <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">FX financed</dt>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+              FX financed
+            </dt>
             <dd className="mt-1 font-medium text-slate-800">{posting.fxFinanced ? 'Yes' : 'No'}</dd>
           </div>
           {posting.fxFinanced && (
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">Bank permit</dt>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Bank permit
+              </dt>
               <dd className="mt-1 font-medium text-slate-800">{posting.bankPermitNo || '—'}</dd>
             </div>
           )}
         </dl>
 
         {posting.notes && (
-          <p className="mt-4 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">{posting.notes}</p>
+          <p className="mt-4 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
+            {posting.notes}
+          </p>
         )}
       </Card>
 
       <PodPhotos legs={legs} />
+
+      {linkedJob?.status === 'COMPLETED' && user && (
+        <RatingCard
+          counterparts={driverCounterparts}
+          ratings={ratings}
+          currentUserId={user.id}
+          onSubmit={async (rateeUserId, score, comment) => {
+            await submitCorporateJobRating(linkedJob.id, {
+              rateeUserId,
+              score,
+              comment: comment || undefined,
+            })
+            loadRatings()
+          }}
+        />
+      )}
 
       {posting.pricingQuote && <JobPricingCard quote={posting.pricingQuote} />}
 
@@ -123,7 +195,8 @@ export function CorporateLoadPostingDetailPage() {
           <h3 className="font-bold text-slate-900">Match offers</h3>
           {posting.offersSummary && (
             <p className="mt-1 text-sm text-slate-500">
-              {posting.offersSummary.total} offer{posting.offersSummary.total !== 1 ? 's' : ''} sent to fleets
+              {posting.offersSummary.total} offer{posting.offersSummary.total !== 1 ? 's' : ''} sent
+              to fleets
             </p>
           )}
           {offers.length === 0 ? (
@@ -148,8 +221,8 @@ export function CorporateLoadPostingDetailPage() {
 
       {posting.matchingMode === 'MANUAL_REQUEST' && (
         <Alert variant="info">
-          This load was posted for manual matching. A platform admin or your organization can help pair it with a
-          driver until direct driver requests are available for corporate accounts.
+          This load was posted for manual matching. A platform admin or your organization can help
+          pair it with a driver until direct driver requests are available for corporate accounts.
         </Alert>
       )}
     </div>
