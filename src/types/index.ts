@@ -64,7 +64,7 @@ export interface User {
 
 export interface TruckType {
   id: string
-  organizationId: string
+  organizationId: string | null
   name: string
   description?: string
   isActive: boolean
@@ -83,7 +83,7 @@ export interface FleetManagerStaff {
 export interface DriverProfile {
   id: string
   userId: string
-  organizationId: string
+  organizationId: string | null
   nationalIdFile: string
   driversLicenseFile: string
   preferredRouteIds: string[] | Location[]
@@ -159,10 +159,11 @@ export interface CorporateCustomerProfile {
 
 export interface Truck {
   id: string
-  organizationId: string
+  organizationId: string | null
   plateNumber: string
   truckTypeId: string | TruckType
   fleetOwnerId?: string | null
+  truckOwnerId?: string | null
   driverId?: string | User | null
   status: TruckStatus
   available: boolean
