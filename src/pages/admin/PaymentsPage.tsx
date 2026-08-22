@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { listPayments, updatePaymentStatus } from '../../api/admin'
+import { listPayments, recordManualPayment, updatePaymentStatus } from '../../api/admin'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { Loading } from '../../components/ui/Loading'
 import { PageHeader } from '../../components/ui/PageHeader'
-import { Select } from '../../components/ui/Input'
+import { Field, Input, Select } from '../../components/ui/Input'
+import { Modal, ModalFooter } from '../../components/ui/Modal'
 import {
   TableWrapper,
   Table,
@@ -15,8 +16,15 @@ import {
   Td,
   TableEmpty,
 } from '../../components/ui/Table'
-import { formatEtb, formatDate, SHIPMENT_MODE_LABELS } from '../../utils/format'
-import type { Payment, PaymentStatus } from '../../types'
+import {
+  formatEtb,
+  formatDate,
+  PAYMENT_PROVIDER_LABELS,
+  SHIPMENT_MODE_LABELS,
+} from '../../utils/format'
+import type { Payment, PaymentProvider, PaymentStatus } from '../../types'
+
+const PAYMENT_PROVIDER_OPTIONS = Object.keys(PAYMENT_PROVIDER_LABELS) as PaymentProvider[]
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([])
@@ -29,6 +37,11 @@ export default function PaymentsPage() {
   const totalPages = Math.ceil(total / limit)
   const [updating, setUpdating] = useState<string | null>(null)
   const [updateError, setUpdateError] = useState<string | null>(null)
+  const [recordingFor, setRecordingFor] = useState<Payment | null>(null)
+  const [recordProvider, setRecordProvider] = useState<PaymentProvider>('MANUAL')
+  const [recordReference, setRecordReference] = useState('')
+  const [recordSaving, setRecordSaving] = useState(false)
+  const [recordError, setRecordError] = useState('')
 
   const load = useCallback(() => {
     setLoading(true)
@@ -57,6 +70,36 @@ export default function PaymentsPage() {
       setUpdateError(message)
     } finally {
       setUpdating(null)
+    }
+  }
+
+  const openRecordModal = (payment: Payment) => {
+    setRecordingFor(payment)
+    setRecordProvider(payment.provider)
+    setRecordReference(payment.providerReference || '')
+    setRecordError('')
+  }
+
+  const closeRecordModal = () => {
+    setRecordingFor(null)
+    setRecordError('')
+  }
+
+  const handleRecordPayment = async () => {
+    if (!recordingFor) return
+    setRecordSaving(true)
+    setRecordError('')
+    try {
+      const result = await recordManualPayment(recordingFor.id, {
+        provider: recordProvider,
+        providerReference: recordReference.trim() || undefined,
+      })
+      setPayments((prev) => prev.map((p) => (p.id === recordingFor.id ? result.data : p)))
+      setRecordingFor(null)
+    } catch (err) {
+      setRecordError(err instanceof Error ? err.message : 'Failed to record payment')
+    } finally {
+      setRecordSaving(false)
     }
   }
 
@@ -135,10 +178,19 @@ export default function PaymentsPage() {
                         {formatEtb(payment.netAmountEtb)}
                       </Td>
                       <Td className="text-sm">
-                        <div>{payment.provider.replace(/_/g, ' ')}</div>
+                        <div>{PAYMENT_PROVIDER_LABELS[payment.provider] || payment.provider}</div>
                         {payment.providerReference && (
                           <div className="text-xs text-slate-500">{payment.providerReference}</div>
                         )}
+                        <button
+                          type="button"
+                          onClick={() => openRecordModal(payment)}
+                          className="mt-1 text-xs font-medium text-korecha-primary hover:underline"
+                        >
+                          {payment.providerReference || payment.provider !== 'MANUAL'
+                            ? 'Edit'
+                            : 'Record payment'}
+                        </button>
                       </Td>
                       <Td>
                         <Badge status={payment.status} />
@@ -199,6 +251,49 @@ export default function PaymentsPage() {
           </div>
         )}
       </div>
+
+      {recordingFor && (
+        <Modal title="Record payment" onClose={closeRecordModal}>
+          <p className="text-sm text-slate-600">
+            Record a payment that happened out-of-band (no gateway integration). This updates the
+            existing payment for this shipment — it never creates a duplicate.
+          </p>
+          {recordError && (
+            <div className="mt-4">
+              <Alert variant="error">{recordError}</Alert>
+            </div>
+          )}
+          <div className="mt-4 space-y-4">
+            <Field label="Provider">
+              <Select
+                value={recordProvider}
+                onChange={(e) => setRecordProvider(e.target.value as PaymentProvider)}
+              >
+                {PAYMENT_PROVIDER_OPTIONS.map((provider) => (
+                  <option key={provider} value={provider}>
+                    {PAYMENT_PROVIDER_LABELS[provider]}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Reference (optional)">
+              <Input
+                value={recordReference}
+                onChange={(e) => setRecordReference(e.target.value)}
+                placeholder="Transaction reference"
+              />
+            </Field>
+          </div>
+          <ModalFooter>
+            <Button variant="secondary" onClick={closeRecordModal} disabled={recordSaving}>
+              Cancel
+            </Button>
+            <Button onClick={handleRecordPayment} disabled={recordSaving}>
+              {recordSaving ? 'Saving...' : 'Save'}
+            </Button>
+          </ModalFooter>
+        </Modal>
+      )}
     </div>
   )
 }

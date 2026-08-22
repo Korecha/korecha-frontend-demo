@@ -372,3 +372,15 @@ export function updatePaymentStatus(id: string, status: string) {
     body: JSON.stringify({ status }),
   })
 }
+
+// KAN-93: Admin manually records a payment against a shipment's payment record since no real
+// gateway exists yet. Always updates the existing payment (one per shipment), never duplicates.
+export function recordManualPayment(
+  id: string,
+  body: { provider: import('../types').PaymentProvider; providerReference?: string },
+) {
+  return api<{ data: import('../types').Payment }>(`/api/admin/payments/${id}/provider`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
+}

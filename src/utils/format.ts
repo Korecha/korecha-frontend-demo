@@ -132,6 +132,14 @@ export const PAYMENT_STATUS_LABELS: Record<string, string> = {
   DISPUTED: 'Disputed',
 }
 
+// KAN-93: provider is inert data (no real gateway exists yet) — this is display-only.
+export const PAYMENT_PROVIDER_LABELS: Record<string, string> = {
+  TELE_BIRR: 'Tele Birr',
+  CBE_BIRR: 'CBE Birr',
+  NATIONAL_IPS: 'National IPS',
+  MANUAL: 'Manual',
+}
+
 export const STATUS_COLORS: Record<string, string> = {
   AVAILABLE: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
   ON_JOB: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200',
