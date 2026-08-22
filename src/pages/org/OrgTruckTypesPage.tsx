@@ -49,6 +49,7 @@ export function OrgTruckTypesPage() {
   }
 
   const toggleActive = async (t: TruckType) => {
+    if (t.organizationId === null) return
     try {
       await updateTruckType(t.id, { isActive: !t.isActive })
       load()
@@ -75,16 +76,17 @@ export function OrgTruckTypesPage() {
             <tr>
               <Th>Name</Th>
               <Th>Description</Th>
+              <Th>Source</Th>
               <Th>Status</Th>
               <Th>Actions</Th>
             </tr>
           </TableHead>
           <tbody>
             {loading ? (
-              <TableEmpty colSpan={4} message="Loading..." />
+              <TableEmpty colSpan={5} message="Loading..." />
             ) : types.length === 0 ? (
               <TableEmpty
-                colSpan={4}
+                colSpan={5}
                 message="No truck types yet. Add types like Flatbed, Tanker, Reefer."
               />
             ) : (
@@ -93,16 +95,31 @@ export function OrgTruckTypesPage() {
                   <Td className="font-semibold">{t.name}</Td>
                   <Td>{t.description || '—'}</Td>
                   <Td>
+                    {t.organizationId === null ? (
+                      <span className="inline-flex rounded-full bg-indigo-100 px-2.5 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200">
+                        Platform
+                      </span>
+                    ) : (
+                      <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
+                        Org
+                      </span>
+                    )}
+                  </Td>
+                  <Td>
                     <Badge status={t.isActive ? 'ACTIVE' : 'SUSPENDED'} />
                   </Td>
                   <Td>
-                    <button
-                      type="button"
-                      onClick={() => toggleActive(t)}
-                      className="text-sm font-medium text-korecha-primary hover:underline"
-                    >
-                      {t.isActive ? 'Deactivate' : 'Activate'}
-                    </button>
+                    {t.organizationId === null ? (
+                      <span className="text-xs text-slate-500">Read-only</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => toggleActive(t)}
+                        className="text-sm font-medium text-korecha-primary hover:underline"
+                      >
+                        {t.isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                    )}
                   </Td>
                 </TableRow>
               ))
