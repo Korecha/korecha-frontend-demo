@@ -163,7 +163,7 @@ export interface Truck {
   plateNumber: string
   truckTypeId: string | TruckType
   fleetOwnerId?: string | null
-  truckOwnerId?: string | null
+  truckOwnerId?: string | { id: string; displayName?: string } | null
   driverId?: string | User | null
   status: TruckStatus
   available: boolean
