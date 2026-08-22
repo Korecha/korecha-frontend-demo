@@ -165,6 +165,7 @@ export interface Truck {
   fleetOwnerId?: string | null
   driverId?: string | User | null
   status: TruckStatus
+  available: boolean
   rejectionReason?: string
   createdAt?: string
 }
