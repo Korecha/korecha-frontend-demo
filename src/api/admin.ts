@@ -306,6 +306,27 @@ export function reviewTruck(
   })
 }
 
+export function listAvailabilityRequests(status?: ApprovalStatus | 'ALL') {
+  const qs = status ? `?status=${status}` : ''
+  return api<{ data: TruckOwnerProfile[] }>(`/api/admin/truck-owners/availability-requests${qs}`)
+}
+
+export function reviewAvailabilityRequest(
+  id: string,
+  body: {
+    status: 'APPROVED' | 'REJECTED'
+    rejectionReason?: string
+  },
+) {
+  return api<{ data: TruckOwnerProfile }>(
+    `/api/admin/truck-owners/${id}/availability-request/review`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+  )
+}
+
 export function listDefaultItemTypes() {
   return api<{ data: ItemType[] }>('/api/admin/item-types')
 }

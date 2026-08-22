@@ -5,6 +5,7 @@ import type {
   Location,
   Payment,
   Truck,
+  TruckOwnerProfile,
   TruckType,
   User,
 } from '../types'
@@ -78,5 +79,11 @@ export function createTruckOwnerAvailabilityPosting(body: {
   return api<{ data: AvailabilityPosting }>('/api/truck-owner/availability-postings', {
     method: 'POST',
     body: JSON.stringify(body),
+  })
+}
+
+export function requestTruckOwnerAvailabilityPermission() {
+  return api<{ data: TruckOwnerProfile }>('/api/truck-owner/availability-request', {
+    method: 'POST',
   })
 }

@@ -18,12 +18,14 @@ export function ApplicationStatusPage({
   details,
   pendingMessage,
   approvedMessage,
+  children,
 }: {
   title: string
   description: string
   details: DetailRow[]
   pendingMessage: string
   approvedMessage: string
+  children?: React.ReactNode
 }) {
   const { user, memberProfile, loading } = useAuth()
 
@@ -97,6 +99,8 @@ export function ApplicationStatusPage({
           ))}
         </dl>
       </Card>
+
+      {children}
     </div>
   )
 }
