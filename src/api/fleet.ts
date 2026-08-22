@@ -113,6 +113,10 @@ export function createAvailabilityPosting(body: {
   })
 }
 
+export function listFleetContainerStatus() {
+  return api<{ data: Shipment[] }>('/api/fleet/containers/status')
+}
+
 export function listFleetShipments() {
   return api<{ data: Shipment[] }>('/api/fleet-manager/shipments')
 }

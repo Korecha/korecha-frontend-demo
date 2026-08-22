@@ -92,6 +92,16 @@ export const SHIPMENT_LEG_STATUS_LABELS: Record<string, string> = {
   CANCELLED: 'Cancelled',
 }
 
+export const CONTAINER_STATUS_LABELS: Record<string, string> = {
+  AVAILABLE: 'Available',
+  IN_TRANSIT: 'In transit',
+  EMPTY: 'Empty',
+  LOADED: 'Loaded',
+  DISCHARGED: 'Discharged',
+  AT_PORT: 'At port',
+  MAINTENANCE: 'Maintenance',
+}
+
 export const LOAD_POSTING_STATUS_LABELS: Record<string, string> = {
   OPEN: 'Open',
   MATCHING: 'Matching',

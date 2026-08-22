@@ -2,6 +2,7 @@ import {
   APPROVAL_LABELS,
   AVAILABILITY_LABELS,
   AVAILABILITY_POSTING_STATUS_LABELS,
+  CONTAINER_STATUS_LABELS,
   JOB_STATUS_LABELS,
   LOAD_POSTING_STATUS_LABELS,
   MATCHING_MODE_LABELS,
@@ -27,6 +28,7 @@ export function Badge({ status }: { status: string }) {
     APPROVAL_LABELS[status] ||
     PAYMENT_STATUS_LABELS[status] ||
     ROLE_LABELS[status] ||
+    CONTAINER_STATUS_LABELS[status] ||
     status.replace(/_/g, ' ').toLowerCase()
   return (
     <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${color}`}>
