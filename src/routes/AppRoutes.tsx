@@ -31,6 +31,7 @@ import { FleetShipmentsPage } from '../pages/fleet/FleetShipmentsPage'
 import { FleetShipmentDetailPage } from '../pages/fleet/FleetShipmentDetailPage'
 import { FleetAvailabilityPage } from '../pages/fleet/FleetAvailabilityPage'
 import { FleetTrucksPage } from '../pages/fleet/FleetTrucksPage'
+import { FleetContainersPage } from '../pages/fleet/FleetContainersPage'
 import { OrgApplicationsPage } from '../pages/org/OrgApplicationsPage'
 import { OrgDashboardPage } from '../pages/org/OrgDashboardPage'
 import { OrgPricingPage } from '../pages/org/OrgPricingPage'
@@ -160,6 +161,7 @@ export function AppRoutes() {
             <Route path="availability" element={<FleetAvailabilityPage />} />
             <Route path="drivers" element={<FleetDriversPage />} />
             <Route path="trucks" element={<FleetTrucksPage />} />
+            <Route path="containers" element={<FleetContainersPage />} />
           </Route>
           <Route
             path="/truck-owner"
