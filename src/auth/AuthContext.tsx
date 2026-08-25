@@ -9,14 +9,23 @@ import {
 } from 'react'
 import { getMe, login as apiLogin } from '../api/auth'
 import { clearToken, getToken, setToken } from '../api/client'
-import type { DriverProfile, FleetProfile, MemberProfileResponse, Organization, User } from '../types'
+import type {
+  DriverProfile,
+  FleetProfile,
+  MemberProfileResponse,
+  Organization,
+  User,
+} from '../types'
 
 interface AuthContextValue {
   user: User | null
   organization: Organization | null
   memberProfile: MemberProfileResponse | null
   loading: boolean
-  login: (email: string, password: string) => Promise<{ user: User; organization: Organization | null }>
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{ user: User; organization: Organization | null }>
   logout: () => void
   refreshSession: () => Promise<void>
 }
@@ -30,12 +39,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const applySession = useCallback(
-    (res: { user: User; organization?: Organization | null; memberProfile?: MemberProfileResponse | null }) => {
+    (res: {
+      user: User
+      organization?: Organization | null
+      memberProfile?: MemberProfileResponse | null
+    }) => {
       setUser(res.user)
       setOrganization(res.organization ?? null)
       setMemberProfile(res.memberProfile ?? null)
     },
-    []
+    [],
   )
 
   const refreshSession = useCallback(async () => {
@@ -62,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       applySession(res)
       return { user: res.user, organization: res.organization ?? null }
     },
-    [applySession]
+    [applySession],
   )
 
   const logout = useCallback(() => {
@@ -74,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({ user, organization, memberProfile, loading, login, logout, refreshSession }),
-    [user, organization, memberProfile, loading, login, logout, refreshSession]
+    [user, organization, memberProfile, loading, login, logout, refreshSession],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
@@ -105,7 +118,9 @@ export function isApproved(memberProfile: MemberProfileResponse | null): boolean
   return memberProfile?.profile?.status === 'APPROVED'
 }
 
-export function getDriverProfile(memberProfile: MemberProfileResponse | null): DriverProfile | null {
+export function getDriverProfile(
+  memberProfile: MemberProfileResponse | null,
+): DriverProfile | null {
   if (memberProfile?.type === 'driver') return memberProfile.profile as DriverProfile
   return null
 }

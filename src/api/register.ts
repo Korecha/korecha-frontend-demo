@@ -68,7 +68,7 @@ export async function registerCorporateCustomer(form: FormData) {
     {
       method: 'POST',
       body: form,
-    }
+    },
   )
   setToken(res.token)
   return res
