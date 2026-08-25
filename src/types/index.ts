@@ -292,6 +292,42 @@ export interface Shipment {
   createdAt?: string
 }
 
+/** KAN-98: summary monitoring stats for one fleet owner, as returned by GET /api/org/fleet-owners[/:id/summary]. */
+export interface FleetOwnerSummary {
+  id: string
+  fleetName: string
+  status: ApprovalStatus
+  createdAt?: string
+  activeTruckCount: number
+  activeDriverCount: number
+  totalShipments: number
+  completedShipments: number
+  cancelledShipments: number
+  /** Percentage (0-100, one decimal place), or null if the fleet owner has zero shipments. */
+  completionRate: number | null
+  netEarningsEtb: number
+  /** Average of 1-5 driver ratings, one decimal place, or null if no ratings exist yet. */
+  averageRating: number | null
+  ratingCount: number
+}
+
+/**
+ * KAN-98: one row from GET /api/org/fleet-owners/:id/shipments. jobId is populated with only the
+ * fields the backend selects (pickup/delivery/assignedDriverId/assignedTruckId/pricingQuote/
+ * deliveredAt) — treat it as a partial Job, not a full one.
+ */
+export interface FleetOwnerShipment {
+  id: string
+  status: ShipmentStatus
+  mode: ShipmentMode
+  completedAt?: string | null
+  createdAt?: string
+  jobId?: Pick<
+    Job,
+    'pickup' | 'delivery' | 'assignedDriverId' | 'assignedTruckId' | 'pricingQuote' | 'deliveredAt'
+  > | null
+}
+
 export interface Rating {
   id: string
   shipmentId: string

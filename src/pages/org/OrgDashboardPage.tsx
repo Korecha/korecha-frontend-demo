@@ -63,6 +63,16 @@ export function OrgDashboardPage() {
             Configure pricing →
           </Link>
         </Card>
+        <Card>
+          <p className="text-sm text-korecha-muted">Fleet Owners</p>
+          <p className="mt-2 text-xl font-bold text-slate-900">Monitor activity</p>
+          <Link
+            to="/org/fleet-owners"
+            className="mt-2 inline-block text-sm font-semibold text-korecha-primary hover:underline"
+          >
+            View fleet monitoring →
+          </Link>
+        </Card>
       </div>
 
       <div className="mt-8 flex gap-3">

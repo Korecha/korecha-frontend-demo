@@ -3,11 +3,14 @@ import type {
   ApprovalStatus,
   ContainerSize,
   DriverProfile,
+  FleetOwnerShipment,
+  FleetOwnerSummary,
   FleetProfile,
   GateEntrance,
   ItemType,
   Location,
   Organization,
+  PaginatedMeta,
   Pricing,
   QuotePreview,
   Truck,
@@ -199,4 +202,44 @@ export function reviewOrgTruck(
     method: 'POST',
     body: JSON.stringify(body),
   })
+}
+
+/** KAN-98: date-range filter, applied to shipment/earnings figures only (never to truck/driver/rating counts). */
+export interface FleetOwnerDateRange {
+  from?: string
+  to?: string
+}
+
+function dateRangeParams(range?: FleetOwnerDateRange) {
+  const params = new URLSearchParams()
+  if (range?.from) params.set('from', range.from)
+  if (range?.to) params.set('to', range.to)
+  const qs = params.toString()
+  return qs ? `?${qs}` : ''
+}
+
+export function listFleetOwners(range?: FleetOwnerDateRange) {
+  return api<{ data: FleetOwnerSummary[] }>(`/api/org/fleet-owners${dateRangeParams(range)}`)
+}
+
+export function getFleetOwnerSummary(id: string, range?: FleetOwnerDateRange) {
+  return api<{ data: FleetOwnerSummary }>(
+    `/api/org/fleet-owners/${id}/summary${dateRangeParams(range)}`,
+  )
+}
+
+export function listFleetOwnerShipments(
+  id: string,
+  opts?: FleetOwnerDateRange & { page?: number; limit?: number; status?: string },
+) {
+  const params = new URLSearchParams()
+  if (opts?.from) params.set('from', opts.from)
+  if (opts?.to) params.set('to', opts.to)
+  if (opts?.page) params.set('page', String(opts.page))
+  if (opts?.limit) params.set('limit', String(opts.limit))
+  if (opts?.status) params.set('status', opts.status)
+  const qs = params.toString()
+  return api<{ data: FleetOwnerShipment[]; pagination: PaginatedMeta }>(
+    `/api/org/fleet-owners/${id}/shipments${qs ? `?${qs}` : ''}`,
+  )
 }
