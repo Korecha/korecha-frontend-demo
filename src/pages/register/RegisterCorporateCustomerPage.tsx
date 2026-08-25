@@ -87,7 +87,11 @@ export function RegisterCorporateCustomerPage() {
               />
             </Field>
             <Field label="Phone">
-              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
+              <Input
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                required
+              />
             </Field>
             <Field label="Password">
               <Input

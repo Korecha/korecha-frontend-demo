@@ -1,7 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ApiRequestError } from '../../api/client'
-import { listPublicFleetManagers, listPublicOrganizations, type FleetManagerOption } from '../../api/public'
+import {
+  listPublicFleetManagers,
+  listPublicOrganizations,
+  type FleetManagerOption,
+} from '../../api/public'
 import { registerTruckOwner } from '../../api/register'
 import { getHomeRoute, useAuth } from '../../auth/AuthContext'
 import { Alert } from '../../components/ui/Alert'
@@ -101,7 +105,11 @@ export function RegisterTruckOwnerPage() {
               <Input
                 value={form.displayName}
                 onChange={(e) => setForm({ ...form, displayName: e.target.value })}
-                placeholder={form.ownerType === 'COMPANY' ? 'Registered company name' : 'Name shown to dispatchers'}
+                placeholder={
+                  form.ownerType === 'COMPANY'
+                    ? 'Registered company name'
+                    : 'Name shown to dispatchers'
+                }
                 required
               />
             </Field>
@@ -121,7 +129,11 @@ export function RegisterTruckOwnerPage() {
               />
             </Field>
             <Field label="Phone">
-              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
+              <Input
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                required
+              />
             </Field>
             <Field label="Password">
               <Input
@@ -135,7 +147,9 @@ export function RegisterTruckOwnerPage() {
             <Field label="Organization (optional)">
               <Select
                 value={form.organizationId}
-                onChange={(e) => setForm({ ...form, organizationId: e.target.value, fleetManagerId: '' })}
+                onChange={(e) =>
+                  setForm({ ...form, organizationId: e.target.value, fleetManagerId: '' })
+                }
               >
                 <option value="">Operate independently</option>
                 {orgs.map((o) => (

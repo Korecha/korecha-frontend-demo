@@ -6,7 +6,15 @@ import { Button } from '../../components/ui/Button'
 import { Field, Input, Select } from '../../components/ui/Input'
 import { Modal, ModalFooter } from '../../components/ui/Modal'
 import { PageHeader } from '../../components/ui/PageHeader'
-import { Table, TableEmpty, TableHead, TableRow, TableWrapper, Td, Th } from '../../components/ui/Table'
+import {
+  Table,
+  TableEmpty,
+  TableHead,
+  TableRow,
+  TableWrapper,
+  Td,
+  Th,
+} from '../../components/ui/Table'
 import type { Location, OrgMemberRole, TruckType, User } from '../../types'
 
 const MEMBER_ROLES: { value: OrgMemberRole; label: string }[] = [
@@ -52,12 +60,16 @@ export function OrgUsersPage() {
 
   useEffect(() => {
     load()
-    listOrgLocations().then((r) => setLocations(r.data)).catch(() => {})
-    listTruckTypes().then((r) => setTruckTypes(r.data.filter((t) => t.isActive))).catch(() => {})
+    listOrgLocations()
+      .then((r) => setLocations(r.data))
+      .catch(() => {})
+    listTruckTypes()
+      .then((r) => setTruckTypes(r.data.filter((t) => t.isActive)))
+      .catch(() => {})
   }, [])
 
   const fleetOwners = users.filter(
-    (u) => u.role === 'FLEET_OWNER' && u.memberProfile?.status === 'APPROVED'
+    (u) => u.role === 'FLEET_OWNER' && u.memberProfile?.status === 'APPROVED',
   )
 
   const resetForm = () => {
@@ -84,7 +96,7 @@ export function OrgUsersPage() {
 
     if (form.role === 'DRIVER') {
       if (!nationalId || !driversLicense) {
-        setError('National ID and driver\'s license documents are required')
+        setError("National ID and driver's license documents are required")
         setSubmitting(false)
         return
       }
@@ -141,10 +153,23 @@ export function OrgUsersPage() {
       <PageHeader
         title="Team Members"
         description="Create driver, fleet owner, or importer accounts with documents"
-        action={<Button onClick={() => { resetForm(); setShowForm(true) }}>+ Add Member</Button>}
+        action={
+          <Button
+            onClick={() => {
+              resetForm()
+              setShowForm(true)
+            }}
+          >
+            + Add Member
+          </Button>
+        }
       />
 
-      {error && !showForm && <div className="mb-4"><Alert>{error}</Alert></div>}
+      {error && !showForm && (
+        <div className="mb-4">
+          <Alert>{error}</Alert>
+        </div>
+      )}
 
       <TableWrapper>
         <Table>
@@ -161,7 +186,10 @@ export function OrgUsersPage() {
             {loading ? (
               <TableEmpty colSpan={5} message="Loading..." />
             ) : teamMembers.length === 0 ? (
-              <TableEmpty colSpan={5} message="No team members yet. Add your first driver, fleet owner, or importer." />
+              <TableEmpty
+                colSpan={5}
+                message="No team members yet. Add your first driver, fleet owner, or importer."
+              />
             ) : (
               teamMembers.map((u) => (
                 <TableRow key={u.id}>
@@ -173,7 +201,9 @@ export function OrgUsersPage() {
                         : u.fullName}
                   </Td>
                   <Td>{u.email}</Td>
-                  <Td><Badge status={u.role} /></Td>
+                  <Td>
+                    <Badge status={u.role} />
+                  </Td>
                   <Td>
                     {u.memberProfile?.status ? <Badge status={u.memberProfile.status} /> : '—'}
                   </Td>
@@ -196,7 +226,9 @@ export function OrgUsersPage() {
                 onChange={(e) => setForm({ ...form, role: e.target.value as OrgMemberRole })}
               >
                 {MEMBER_ROLES.map((r) => (
-                  <option key={r.value} value={r.value}>{r.label}</option>
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
                 ))}
               </Select>
             </Field>
@@ -245,10 +277,19 @@ export function OrgUsersPage() {
             )}
 
             <Field label="Email">
-              <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+              <Input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                required
+              />
             </Field>
             <Field label="Phone">
-              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
+              <Input
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                required
+              />
             </Field>
             <Field label="Password">
               <Input
@@ -285,7 +326,9 @@ export function OrgUsersPage() {
                   >
                     <option value="">Select truck type</option>
                     {truckTypes.map((t) => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
                     ))}
                   </Select>
                 </Field>
@@ -306,7 +349,10 @@ export function OrgUsersPage() {
                   <Field label="Preferred Routes">
                     <div className="max-h-36 space-y-2 overflow-y-auto rounded-xl border border-korecha-border p-3">
                       {locations.map((l) => (
-                        <label key={l.id} className="flex items-center gap-2 text-sm text-slate-700">
+                        <label
+                          key={l.id}
+                          className="flex items-center gap-2 text-sm text-slate-700"
+                        >
                           <input
                             type="checkbox"
                             checked={form.preferredRouteIds.includes(l.id)}
@@ -350,7 +396,9 @@ export function OrgUsersPage() {
             )}
 
             <ModalFooter>
-              <Button variant="secondary" onClick={() => setShowForm(false)}>Cancel</Button>
+              <Button variant="secondary" onClick={() => setShowForm(false)}>
+                Cancel
+              </Button>
               <Button type="submit" disabled={submitting}>
                 {submitting ? 'Creating...' : 'Create Account'}
               </Button>

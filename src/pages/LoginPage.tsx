@@ -43,8 +43,18 @@ export function LoginPage() {
         <div className="relative">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
-              <svg className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              <svg
+                className="h-7 w-7 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
               </svg>
             </div>
             <span className="text-2xl font-bold text-white">Korecha</span>
@@ -79,7 +89,12 @@ export function LoginPage() {
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-korecha-primary text-white">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
                 </svg>
               </div>
               <span className="text-xl font-bold text-slate-900">Korecha</span>
@@ -89,7 +104,9 @@ export function LoginPage() {
           <div className="rounded-2xl border border-korecha-border bg-white p-8 shadow-xl shadow-blue-900/5">
             <div className="mb-8">
               <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
-              <p className="mt-1.5 text-sm text-korecha-muted">Sign in to your organization or admin account</p>
+              <p className="mt-1.5 text-sm text-korecha-muted">
+                Sign in to your organization or admin account
+              </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -119,11 +136,36 @@ export function LoginPage() {
             <div className="mt-6 border-t border-korecha-border pt-6">
               <p className="text-center text-sm text-korecha-muted">New to Korecha?</p>
               <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                <Link to="/register/driver" className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50">Driver</Link>
-                <Link to="/register/fleet" className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50">Fleet</Link>
-                <Link to="/register/truck-owner" className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50">Truck owner</Link>
-                <Link to="/register/importer" className="rounded-xl border border-emerald-200 py-2.5 text-center text-sm font-semibold text-emerald-700 hover:bg-emerald-50">Importer</Link>
-                <Link to="/register/corporate" className="rounded-xl border border-indigo-200 py-2.5 text-center text-sm font-semibold text-indigo-700 hover:bg-indigo-50 sm:col-span-2">Corporate customer</Link>
+                <Link
+                  to="/register/driver"
+                  className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Driver
+                </Link>
+                <Link
+                  to="/register/fleet"
+                  className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Fleet
+                </Link>
+                <Link
+                  to="/register/truck-owner"
+                  className="rounded-xl border border-korecha-border py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Truck owner
+                </Link>
+                <Link
+                  to="/register/importer"
+                  className="rounded-xl border border-emerald-200 py-2.5 text-center text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
+                >
+                  Importer
+                </Link>
+                <Link
+                  to="/register/corporate"
+                  className="rounded-xl border border-indigo-200 py-2.5 text-center text-sm font-semibold text-indigo-700 hover:bg-indigo-50 sm:col-span-2"
+                >
+                  Corporate customer
+                </Link>
               </div>
             </div>
           </div>
