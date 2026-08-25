@@ -5,7 +5,7 @@ import { registerImporter } from '../../api/register'
 import { getHomeRoute, useAuth } from '../../auth/AuthContext'
 import { Alert } from '../../components/ui/Alert'
 import { Button } from '../../components/ui/Button'
-import { Field, Input } from '../../components/ui/Input'
+import { Field, Input, PasswordInput } from '../../components/ui/Input'
 import { PageHeader } from '../../components/ui/PageHeader'
 
 export function RegisterImporterPage() {
@@ -64,17 +64,29 @@ export function RegisterImporterPage() {
               />
             </Field>
             <Field label="Your full name">
-              <Input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} required />
+              <Input
+                value={form.fullName}
+                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                required
+              />
             </Field>
             <Field label="Email">
-              <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+              <Input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                required
+              />
             </Field>
             <Field label="Phone">
-              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
+              <Input
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                required
+              />
             </Field>
             <Field label="Password">
-              <Input
-                type="password"
+              <PasswordInput
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 minLength={6}
@@ -82,17 +94,29 @@ export function RegisterImporterPage() {
               />
             </Field>
             <Field label="National ID">
-              <Input type="file" accept="image/*,.pdf" onChange={(e) => setNationalId(e.target.files?.[0] || null)} required />
+              <Input
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => setNationalId(e.target.files?.[0] || null)}
+                required
+              />
             </Field>
             <Field label="Import license">
-              <Input type="file" accept="image/*,.pdf" onChange={(e) => setImportLicense(e.target.files?.[0] || null)} required />
+              <Input
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => setImportLicense(e.target.files?.[0] || null)}
+                required
+              />
             </Field>
             <Button type="submit" disabled={submitting} className="w-full">
               {submitting ? 'Submitting...' : 'Submit application'}
             </Button>
           </form>
           <p className="mt-4 text-center text-sm text-slate-500">
-            <Link to="/login" className="font-medium text-emerald-600">Sign in</Link>
+            <Link to="/login" className="font-medium text-emerald-600">
+              Sign in
+            </Link>
           </p>
         </div>
       </div>

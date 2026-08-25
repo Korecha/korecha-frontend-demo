@@ -9,10 +9,18 @@ import {
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
-import { Field, Input, Select } from '../../components/ui/Input'
+import { Field, Input, PasswordInput, Select } from '../../components/ui/Input'
 import { Modal, ModalFooter } from '../../components/ui/Modal'
 import { PageHeader } from '../../components/ui/PageHeader'
-import { Table, TableEmpty, TableHead, TableRow, TableWrapper, Td, Th } from '../../components/ui/Table'
+import {
+  Table,
+  TableEmpty,
+  TableHead,
+  TableRow,
+  TableWrapper,
+  Td,
+  Th,
+} from '../../components/ui/Table'
 import type { Organization, OrgType } from '../../types'
 import { formatEtb, TYPE_LABELS } from '../../utils/format'
 
@@ -115,12 +123,14 @@ export function OrganizationsPage() {
       <PageHeader
         title="Organizations"
         description="Manage organizations and their pricing"
-        action={
-          <Button onClick={openCreate}>+ New Organization</Button>
-        }
+        action={<Button onClick={openCreate}>+ New Organization</Button>}
       />
 
-      {error && <div className="mb-4"><Alert>{error}</Alert></div>}
+      {error && (
+        <div className="mb-4">
+          <Alert>{error}</Alert>
+        </div>
+      )}
 
       <div className="mb-6">
         <Input
@@ -155,26 +165,41 @@ export function OrganizationsPage() {
                 <TableRow key={org.id}>
                   <Td className="font-semibold text-slate-900">{org.name}</Td>
                   <Td>{org.type ? TYPE_LABELS[org.type] : 'Unassigned'}</Td>
-                  <Td><Badge status={org.status} /></Td>
                   <Td>
-                    {org.pricing ? formatEtb(org.pricing.basePricePerKm) : '—'}
+                    <Badge status={org.status} />
                   </Td>
+                  <Td>{org.pricing ? formatEtb(org.pricing.basePricePerKm) : '—'}</Td>
                   <Td className="text-xs">{org.orgAdmin?.email || '—'}</Td>
                   <Td>{org.containerCount ?? 0}</Td>
                   <Td>
                     <div className="flex gap-3">
-                      <Link to={`/admin/organizations/${org.id}`} className="font-medium text-korecha-primary hover:underline">
+                      <Link
+                        to={`/admin/organizations/${org.id}`}
+                        className="font-medium text-korecha-primary hover:underline"
+                      >
                         View
                       </Link>
-                      <button type="button" onClick={() => openEdit(org)} className="font-medium text-slate-500 hover:text-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => openEdit(org)}
+                        className="font-medium text-slate-500 hover:text-slate-800"
+                      >
                         Edit
                       </button>
                       {org.status === 'ACTIVE' ? (
-                        <button type="button" onClick={() => handleSuspend(org)} className="font-medium text-red-500 hover:underline">
+                        <button
+                          type="button"
+                          onClick={() => handleSuspend(org)}
+                          className="font-medium text-red-500 hover:underline"
+                        >
                           Suspend
                         </button>
                       ) : (
-                        <button type="button" onClick={() => handleReactivate(org)} className="font-medium text-emerald-600 hover:underline">
+                        <button
+                          type="button"
+                          onClick={() => handleReactivate(org)}
+                          className="font-medium text-emerald-600 hover:underline"
+                        >
                           Reactivate
                         </button>
                       )}
@@ -188,13 +213,24 @@ export function OrganizationsPage() {
       </TableWrapper>
 
       {showForm && (
-        <Modal title={editing ? 'Edit Organization' : 'New Organization'} onClose={() => setShowForm(false)}>
+        <Modal
+          title={editing ? 'Edit Organization' : 'New Organization'}
+          onClose={() => setShowForm(false)}
+        >
           <form onSubmit={handleSubmit} className="space-y-4">
             <Field label="Name">
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+              <Input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                required
+              />
             </Field>
             <Field label="Organization Type">
-              <Select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as OrgType })} required>
+              <Select
+                value={form.type}
+                onChange={(e) => setForm({ ...form, type: e.target.value as OrgType })}
+                required
+              >
                 <option value="">Select type</option>
                 {ORG_TYPES.map((type) => (
                   <option key={type} value={type}>
@@ -204,13 +240,23 @@ export function OrganizationsPage() {
               </Select>
             </Field>
             <Field label="Contact Email">
-              <Input type="email" value={form.contactEmail} onChange={(e) => setForm({ ...form, contactEmail: e.target.value })} />
+              <Input
+                type="email"
+                value={form.contactEmail}
+                onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
+              />
             </Field>
             <Field label="Phone">
-              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <Input
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
             </Field>
             <Field label="Address">
-              <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+              <Input
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+              />
             </Field>
             <Field label="Base Price per km (ETB)">
               <Input
@@ -224,22 +270,42 @@ export function OrganizationsPage() {
             {!editing && (
               <>
                 <div className="border-t border-korecha-border pt-4">
-                  <p className="mb-3 text-sm font-semibold text-slate-900">Organization Login Credentials</p>
+                  <p className="mb-3 text-sm font-semibold text-slate-900">
+                    Organization Login Credentials
+                  </p>
                 </div>
                 <Field label="Admin Full Name">
-                  <Input value={form.adminFullName} onChange={(e) => setForm({ ...form, adminFullName: e.target.value })} required />
+                  <Input
+                    value={form.adminFullName}
+                    onChange={(e) => setForm({ ...form, adminFullName: e.target.value })}
+                    required
+                  />
                 </Field>
                 <Field label="Admin Email">
-                  <Input type="email" value={form.adminEmail} onChange={(e) => setForm({ ...form, adminEmail: e.target.value })} required />
+                  <Input
+                    type="email"
+                    value={form.adminEmail}
+                    onChange={(e) => setForm({ ...form, adminEmail: e.target.value })}
+                    required
+                  />
                 </Field>
                 <Field label="Admin Password">
-                  <Input type="password" value={form.adminPassword} onChange={(e) => setForm({ ...form, adminPassword: e.target.value })} minLength={6} required />
+                  <PasswordInput
+                    value={form.adminPassword}
+                    onChange={(e) => setForm({ ...form, adminPassword: e.target.value })}
+                    minLength={6}
+                    required
+                  />
                 </Field>
               </>
             )}
             <ModalFooter>
-              <Button variant="secondary" onClick={() => setShowForm(false)}>Cancel</Button>
-              <Button type="submit" disabled={submitting}>{submitting ? 'Saving...' : 'Save'}</Button>
+              <Button variant="secondary" onClick={() => setShowForm(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting ? 'Saving...' : 'Save'}
+              </Button>
             </ModalFooter>
           </form>
         </Modal>

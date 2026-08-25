@@ -1,6 +1,6 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-@import "tailwindcss";
-@import "leaflet/dist/leaflet.css";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+@import 'leaflet/dist/leaflet.css';
 
 @theme {
   --color-korecha-primary: #2563eb;
@@ -13,11 +13,26 @@
   --color-korecha-muted: #64748b;
   --color-korecha-border: #e2e8f0;
   --color-korecha-ring: #93c5fd;
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Force light form-control rendering everywhere. Without this, browsers/OSes with a
+   dark color-scheme preference apply their own dark UA styles (dark background, light
+   text) to native <input>/<select>/<textarea> elements, which can make text invisible
+   even though we set explicit Tailwind bg/text colors (e.g. autofill or caret color can
+   still leak through). Pinning color-scheme: light guarantees consistent contrast. */
+:root {
+  color-scheme: light;
+}
+
+input,
+select,
+textarea {
+  color-scheme: light;
 }
 
 body {
@@ -34,9 +49,18 @@ body {
 
 /* Driver live map marker pulse */
 @keyframes driver-pulse {
-  0% { transform: scale(1); opacity: 0.9; }
-  70% { transform: scale(2.2); opacity: 0; }
-  100% { transform: scale(2.2); opacity: 0; }
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
 }
 
 .driver-live-marker {
@@ -46,7 +70,7 @@ body {
 }
 
 .driver-live-marker::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   border-radius: 9999px;
@@ -55,7 +79,7 @@ body {
 }
 
 .driver-live-marker::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 3px;
   border-radius: 9999px;

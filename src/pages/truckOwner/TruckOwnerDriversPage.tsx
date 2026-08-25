@@ -9,7 +9,7 @@ import { isApproved, useAuth } from '../../auth/AuthContext'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
-import { Field, Input, Select } from '../../components/ui/Input'
+import { Field, Input, PasswordInput, Select } from '../../components/ui/Input'
 import { Modal, ModalFooter } from '../../components/ui/Modal'
 import { PageHeader } from '../../components/ui/PageHeader'
 import {
@@ -225,8 +225,7 @@ export function TruckOwnerDriversPage() {
               />
             </Field>
             <Field label="Password">
-              <Input
-                type="password"
+              <PasswordInput
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 minLength={6}
