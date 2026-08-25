@@ -37,7 +37,7 @@ export function DriverTrucksPage() {
     if (organization?.id) {
       listPublicTruckTypes(organization.id)
         .then((r) => setTruckTypes(r.data))
-        .catch(() => {})
+        .catch(() => { })
     }
   }, [organization?.id, approved])
 
@@ -127,14 +127,14 @@ export function DriverTrucksPage() {
                 value={form.plateNumber}
                 onChange={(e) => setForm({ ...form, plateNumber: e.target.value })}
                 required
-                className="uppercase"
+                className="uppercase border border-1 border-black"
               />
             </Field>
             <Field label="Trailer plate number (optional)">
               <Input
                 value={form.trailerPlateNumber}
                 onChange={(e) => setForm({ ...form, trailerPlateNumber: e.target.value })}
-                className="uppercase"
+                className="uppercase border border-1 border-black"
               />
             </Field>
             <Field label="Truck type">
