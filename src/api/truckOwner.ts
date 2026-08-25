@@ -49,6 +49,7 @@ export function listTruckOwnerTrucks() {
 
 export function createTruckOwnerTruck(body: {
   plateNumber: string
+  trailerPlateNumber?: string
   truckTypeId: string
   driverId?: string
 }) {

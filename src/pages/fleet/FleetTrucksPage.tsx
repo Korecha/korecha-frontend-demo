@@ -111,7 +111,14 @@ export function FleetTrucksPage() {
             ) : (
               trucks.map((t) => (
                 <TableRow key={t.id}>
-                  <Td className="font-semibold">{t.plateNumber}</Td>
+                  <Td className="font-semibold">
+                    {t.plateNumber}
+                    {t.trailerPlateNumber && (
+                      <span className="block text-xs font-normal text-korecha-muted">
+                        Trailer: {t.trailerPlateNumber}
+                      </span>
+                    )}
+                  </Td>
                   <Td>{refName(t.truckTypeId)}</Td>
                   <Td>
                     {typeof t.driverId === 'object' && t.driverId ? t.driverId.fullName : '—'}
