@@ -44,7 +44,10 @@ export function OrgDashboardPage() {
         <Card>
           <p className="text-sm text-korecha-muted">Team Members</p>
           <p className="mt-2 text-xl font-bold text-slate-900">{memberCount}</p>
-          <Link to="/org/users" className="mt-2 inline-block text-sm font-semibold text-korecha-primary hover:underline">
+          <Link
+            to="/org/users"
+            className="mt-2 inline-block text-sm font-semibold text-korecha-primary hover:underline"
+          >
             Manage team →
           </Link>
         </Card>
@@ -53,15 +56,32 @@ export function OrgDashboardPage() {
           <p className="mt-2 text-xl font-bold text-korecha-primary">
             {org?.pricing ? `${formatEtb(org.pricing.basePricePerKm)}/km` : 'Not set'}
           </p>
-          <Link to="/org/pricing" className="mt-2 inline-block text-sm font-semibold text-korecha-primary hover:underline">
+          <Link
+            to="/org/pricing"
+            className="mt-2 inline-block text-sm font-semibold text-korecha-primary hover:underline"
+          >
             Configure pricing →
+          </Link>
+        </Card>
+        <Card>
+          <p className="text-sm text-korecha-muted">Fleet Owners</p>
+          <p className="mt-2 text-xl font-bold text-slate-900">Monitor activity</p>
+          <Link
+            to="/org/fleet-owners"
+            className="mt-2 inline-block text-sm font-semibold text-korecha-primary hover:underline"
+          >
+            View fleet monitoring →
           </Link>
         </Card>
       </div>
 
       <div className="mt-8 flex gap-3">
-        <LinkButton to="/org/users" variant="primary">Add Driver or Fleet Owner</LinkButton>
-        <LinkButton to="/org/pricing" variant="secondary">Pricing Settings</LinkButton>
+        <LinkButton to="/org/users" variant="primary">
+          Add Driver or Fleet Owner
+        </LinkButton>
+        <LinkButton to="/org/pricing" variant="secondary">
+          Pricing Settings
+        </LinkButton>
       </div>
     </div>
   )

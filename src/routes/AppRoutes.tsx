@@ -36,6 +36,8 @@ import { FleetTrucksPage } from '../pages/fleet/FleetTrucksPage'
 import { FleetContainersPage } from '../pages/fleet/FleetContainersPage'
 import { OrgApplicationsPage } from '../pages/org/OrgApplicationsPage'
 import { OrgDashboardPage } from '../pages/org/OrgDashboardPage'
+import { OrgFleetMonitoringPage } from '../pages/org/OrgFleetMonitoringPage'
+import { OrgFleetOwnerDetailPage } from '../pages/org/OrgFleetOwnerDetailPage'
 import { OrgPricingPage } from '../pages/org/OrgPricingPage'
 import { OrgTruckTypesPage } from '../pages/org/OrgTruckTypesPage'
 import { OrgUsersPage } from '../pages/org/OrgUsersPage'
@@ -122,6 +124,8 @@ export function AppRoutes() {
             <Route path="item-types" element={<OrgItemTypesPage />} />
             <Route path="gate-entrances" element={<OrgGateEntrancesPage />} />
             <Route path="pricing" element={<OrgPricingPage />} />
+            <Route path="fleet-owners" element={<OrgFleetMonitoringPage />} />
+            <Route path="fleet-owners/:id" element={<OrgFleetOwnerDetailPage />} />
           </Route>
           <Route
             path="/driver"
