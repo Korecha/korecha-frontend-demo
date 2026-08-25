@@ -46,7 +46,11 @@ export function listDriverTrucks() {
   return api<{ data: Truck[] }>('/api/driver/trucks')
 }
 
-export function createDriverTruck(body: { plateNumber: string; truckTypeId: string }) {
+export function createDriverTruck(body: {
+  plateNumber: string
+  trailerPlateNumber?: string
+  truckTypeId: string
+}) {
   return api<{ data: Truck }>('/api/driver/trucks', {
     method: 'POST',
     body: JSON.stringify(body),

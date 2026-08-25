@@ -131,7 +131,14 @@ export function AdminTruckReviewPage() {
             ) : (
               trucks.map((truck) => (
                 <TableRow key={truck.id}>
-                  <Td className="font-semibold">{truck.plateNumber}</Td>
+                  <Td className="font-semibold">
+                    {truck.plateNumber}
+                    {truck.trailerPlateNumber && (
+                      <span className="block text-xs font-normal text-slate-500">
+                        Trailer: {truck.trailerPlateNumber}
+                      </span>
+                    )}
+                  </Td>
                   <Td>{refName(truck.truckTypeId)}</Td>
                   <Td>{ownerLabel(truck)}</Td>
                   <Td>{truck.createdAt ? new Date(truck.createdAt).toLocaleDateString() : '—'}</Td>

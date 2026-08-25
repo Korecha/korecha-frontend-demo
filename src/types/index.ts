@@ -167,6 +167,8 @@ export interface Truck {
   id: string
   organizationId: string | null
   plateNumber: string
+  /** Optional — only articulated trucks (tractor + detachable trailer) have one. */
+  trailerPlateNumber?: string | null
   truckTypeId: string | TruckType
   fleetOwnerId?: string | null
   truckOwnerId?: string | { id: string; displayName?: string } | null

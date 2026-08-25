@@ -33,7 +33,12 @@ export function TruckOwnerTrucksPage() {
   const [loading, setLoading] = useState(approved)
   const [error, setError] = useState('')
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ plateNumber: '', truckTypeId: '', driverId: '' })
+  const [form, setForm] = useState({
+    plateNumber: '',
+    trailerPlateNumber: '',
+    truckTypeId: '',
+    driverId: '',
+  })
   const [submitting, setSubmitting] = useState(false)
 
   const load = () => {
@@ -76,7 +81,8 @@ export function TruckOwnerTrucksPage() {
     }
   }, [approved])
 
-  const resetForm = () => setForm({ plateNumber: '', truckTypeId: '', driverId: '' })
+  const resetForm = () =>
+    setForm({ plateNumber: '', trailerPlateNumber: '', truckTypeId: '', driverId: '' })
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -85,6 +91,7 @@ export function TruckOwnerTrucksPage() {
     try {
       await createTruckOwnerTruck({
         plateNumber: form.plateNumber,
+        trailerPlateNumber: form.trailerPlateNumber || undefined,
         truckTypeId: form.truckTypeId,
         driverId: form.driverId || undefined,
       })
@@ -151,7 +158,14 @@ export function TruckOwnerTrucksPage() {
             ) : (
               trucks.map((t) => (
                 <TableRow key={t.id}>
-                  <Td className="font-semibold">{t.plateNumber}</Td>
+                  <Td className="font-semibold">
+                    {t.plateNumber}
+                    {t.trailerPlateNumber && (
+                      <span className="block text-xs font-normal text-korecha-muted">
+                        Trailer: {t.trailerPlateNumber}
+                      </span>
+                    )}
+                  </Td>
                   <Td>{refName(t.truckTypeId)}</Td>
                   <Td>
                     {typeof t.driverId === 'object' && t.driverId
@@ -184,6 +198,13 @@ export function TruckOwnerTrucksPage() {
                 value={form.plateNumber}
                 onChange={(e) => setForm({ ...form, plateNumber: e.target.value })}
                 required
+                className="uppercase"
+              />
+            </Field>
+            <Field label="Trailer plate number (optional)">
+              <Input
+                value={form.trailerPlateNumber}
+                onChange={(e) => setForm({ ...form, trailerPlateNumber: e.target.value })}
                 className="uppercase"
               />
             </Field>

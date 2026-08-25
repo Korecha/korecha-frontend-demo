@@ -17,7 +17,7 @@ export function DriverTrucksPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ plateNumber: '', truckTypeId: '' })
+  const [form, setForm] = useState({ plateNumber: '', trailerPlateNumber: '', truckTypeId: '' })
   const approved = isApproved(memberProfile)
 
   const load = () => {
@@ -44,9 +44,12 @@ export function DriverTrucksPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     try {
-      await createDriverTruck(form)
+      await createDriverTruck({
+        ...form,
+        trailerPlateNumber: form.trailerPlateNumber || undefined,
+      })
       setShowForm(false)
-      setForm({ plateNumber: '', truckTypeId: '' })
+      setForm({ plateNumber: '', trailerPlateNumber: '', truckTypeId: '' })
       load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add truck')
@@ -104,6 +107,9 @@ export function DriverTrucksPage() {
                 </div>
                 <div>
                   <p className="font-bold text-slate-900">{t.plateNumber}</p>
+                  {t.trailerPlateNumber && (
+                    <p className="text-xs text-korecha-muted">Trailer: {t.trailerPlateNumber}</p>
+                  )}
                   <p className="text-xs text-korecha-muted">{refName(t.truckTypeId)}</p>
                 </div>
               </div>
@@ -121,6 +127,13 @@ export function DriverTrucksPage() {
                 value={form.plateNumber}
                 onChange={(e) => setForm({ ...form, plateNumber: e.target.value })}
                 required
+                className="uppercase"
+              />
+            </Field>
+            <Field label="Trailer plate number (optional)">
+              <Input
+                value={form.trailerPlateNumber}
+                onChange={(e) => setForm({ ...form, trailerPlateNumber: e.target.value })}
                 className="uppercase"
               />
             </Field>
