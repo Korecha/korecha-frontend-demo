@@ -105,6 +105,7 @@ export function getHomeRoute(role?: string) {
   if (role === 'DRIVER') return '/driver'
   if (role === 'FLEET_OWNER') return '/fleet'
   if (role === 'IMPORTER') return '/importer'
+  if (role === 'EXPORTER') return '/exporter'
   if (role === 'TRUCK_OWNER') return '/truck-owner'
   if (role === 'CORPORATE_CUSTOMER') return '/corporate'
   return '/login'

@@ -44,6 +44,7 @@ import { OrgUsersPage } from '../pages/org/OrgUsersPage'
 import { RegisterDriverPage } from '../pages/register/RegisterDriverPage'
 import { RegisterFleetPage } from '../pages/register/RegisterFleetPage'
 import { RegisterImporterPage } from '../pages/register/RegisterImporterPage'
+import { RegisterExporterPage } from '../pages/register/RegisterExporterPage'
 import { RegisterTruckOwnerPage } from '../pages/register/RegisterTruckOwnerPage'
 import { RegisterCorporateCustomerPage } from '../pages/register/RegisterCorporateCustomerPage'
 import { TruckOwnerHomePage } from '../pages/truckOwner/TruckOwnerHomePage'
@@ -64,6 +65,13 @@ import { ImporterNewJobPage } from '../pages/importer/ImporterNewJobPage'
 import { ImporterJobDetailPage } from '../pages/importer/ImporterJobDetailPage'
 import { ImporterLoadPostingDetailPage } from '../pages/importer/ImporterLoadPostingDetailPage'
 import { ImporterProfilePage } from '../pages/importer/ImporterProfilePage'
+import { ExporterLayout } from '../components/layout/ExporterLayout'
+import { ExporterHomePage } from '../pages/exporter/ExporterHomePage'
+import { ExporterJobsPage } from '../pages/exporter/ExporterJobsPage'
+import { ExporterNewJobPage } from '../pages/exporter/ExporterNewJobPage'
+import { ExporterJobDetailPage } from '../pages/exporter/ExporterJobDetailPage'
+import { ExporterLoadPostingDetailPage } from '../pages/exporter/ExporterLoadPostingDetailPage'
+import { ExporterProfilePage } from '../pages/exporter/ExporterProfilePage'
 import { DriverJobsPage } from '../pages/driver/DriverJobsPage'
 import { DriverJobDetailPage } from '../pages/driver/DriverJobDetailPage'
 import { OrgItemTypesPage } from '../pages/org/OrgItemTypesPage'
@@ -82,6 +90,7 @@ export function AppRoutes() {
           <Route path="/register/driver" element={<RegisterDriverPage />} />
           <Route path="/register/fleet" element={<RegisterFleetPage />} />
           <Route path="/register/importer" element={<RegisterImporterPage />} />
+          <Route path="/register/exporter" element={<RegisterExporterPage />} />
           <Route path="/register/truck-owner" element={<RegisterTruckOwnerPage />} />
           <Route path="/register/corporate" element={<RegisterCorporateCustomerPage />} />
           <Route
@@ -156,6 +165,21 @@ export function AppRoutes() {
             <Route path="jobs/:id" element={<ImporterJobDetailPage />} />
             <Route path="load-postings/:id" element={<ImporterLoadPostingDetailPage />} />
             <Route path="profile" element={<ImporterProfilePage />} />
+          </Route>
+          <Route
+            path="/exporter"
+            element={
+              <ProtectedRoute roles={['EXPORTER']}>
+                <ExporterLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<ExporterHomePage />} />
+            <Route path="jobs" element={<ExporterJobsPage />} />
+            <Route path="jobs/new" element={<ExporterNewJobPage />} />
+            <Route path="jobs/:id" element={<ExporterJobDetailPage />} />
+            <Route path="load-postings/:id" element={<ExporterLoadPostingDetailPage />} />
+            <Route path="profile" element={<ExporterProfilePage />} />
           </Route>
           <Route
             path="/fleet"

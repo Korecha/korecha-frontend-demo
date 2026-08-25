@@ -35,6 +35,15 @@ export async function registerImporter(form: FormData) {
   return res
 }
 
+export async function registerExporter(form: FormData) {
+  const res = await api<RegisterResponse>('/api/auth/register/exporter', {
+    method: 'POST',
+    body: form,
+  })
+  setToken(res.token)
+  return res
+}
+
 export async function registerFleet(form: FormData) {
   const res = await api<RegisterResponse>('/api/auth/register/fleet', {
     method: 'POST',
