@@ -160,8 +160,14 @@ export function LoginPage() {
                   Importer
                 </Link>
                 <Link
+                  to="/register/exporter"
+                  className="rounded-xl border border-emerald-200 py-2.5 text-center text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
+                >
+                  Exporter
+                </Link>
+                <Link
                   to="/register/corporate"
-                  className="rounded-xl border border-indigo-200 py-2.5 text-center text-sm font-semibold text-indigo-700 hover:bg-indigo-50 sm:col-span-2"
+                  className="rounded-xl border border-indigo-200 py-2.5 text-center text-sm font-semibold text-indigo-700 hover:bg-indigo-50 sm:col-span-3"
                 >
                   Corporate customer
                 </Link>
