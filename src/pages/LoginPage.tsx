@@ -4,7 +4,7 @@ import { ApiRequestError } from '../api/client'
 import { getHomeRoute, useAuth } from '../auth/AuthContext'
 import { Alert } from '../components/ui/Alert'
 import { Button } from '../components/ui/Button'
-import { Field, Input } from '../components/ui/Input'
+import { Field, Input, PasswordInput } from '../components/ui/Input'
 
 export function LoginPage() {
   const { user, login, loading } = useAuth()
@@ -121,8 +121,7 @@ export function LoginPage() {
                 />
               </Field>
               <Field label="Password">
-                <Input
-                  type="password"
+                <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"

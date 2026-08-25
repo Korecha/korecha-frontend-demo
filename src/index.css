@@ -20,6 +20,21 @@
   box-sizing: border-box;
 }
 
+/* Force light form-control rendering everywhere. Without this, browsers/OSes with a
+   dark color-scheme preference apply their own dark UA styles (dark background, light
+   text) to native <input>/<select>/<textarea> elements, which can make text invisible
+   even though we set explicit Tailwind bg/text colors (e.g. autofill or caret color can
+   still leak through). Pinning color-scheme: light guarantees consistent contrast. */
+:root {
+  color-scheme: light;
+}
+
+input,
+select,
+textarea {
+  color-scheme: light;
+}
+
 body {
   margin: 0;
   font-family: var(--font-sans);

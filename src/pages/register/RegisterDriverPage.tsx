@@ -11,7 +11,7 @@ import { registerDriver } from '../../api/register'
 import { getHomeRoute, useAuth } from '../../auth/AuthContext'
 import { Alert } from '../../components/ui/Alert'
 import { Button } from '../../components/ui/Button'
-import { Field, Input, Select } from '../../components/ui/Input'
+import { Field, Input, PasswordInput, Select } from '../../components/ui/Input'
 import { PageHeader } from '../../components/ui/PageHeader'
 import type { FleetOwnerOption } from '../../api/public'
 import type { Location, Organization, TruckType } from '../../types'
@@ -145,8 +145,7 @@ export function RegisterDriverPage() {
               />
             </Field>
             <Field label="Password">
-              <Input
-                type="password"
+              <PasswordInput
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 minLength={6}

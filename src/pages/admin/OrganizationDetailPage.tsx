@@ -11,7 +11,7 @@ import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
-import { Field, Input, Select } from '../../components/ui/Input'
+import { Field, Input, PasswordInput, Select } from '../../components/ui/Input'
 import { Loading } from '../../components/ui/Loading'
 import type { ContainerSize, Location, Organization, QuotePreview } from '../../types'
 import { formatEtb, TYPE_LABELS } from '../../utils/format'
@@ -216,8 +216,7 @@ export function OrganizationDetailPage() {
               />
             </Field>
             <Field label="Admin Password">
-              <Input
-                type="password"
+              <PasswordInput
                 value={credForm.adminPassword}
                 onChange={(e) => setCredForm({ ...credForm, adminPassword: e.target.value })}
                 minLength={6}

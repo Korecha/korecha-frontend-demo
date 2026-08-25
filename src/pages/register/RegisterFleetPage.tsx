@@ -6,7 +6,7 @@ import { registerFleet } from '../../api/register'
 import { getHomeRoute, useAuth } from '../../auth/AuthContext'
 import { Alert } from '../../components/ui/Alert'
 import { Button } from '../../components/ui/Button'
-import { Field, Input, Select } from '../../components/ui/Input'
+import { Field, Input, PasswordInput, Select } from '../../components/ui/Input'
 import { PageHeader } from '../../components/ui/PageHeader'
 import type { Organization } from '../../types'
 
@@ -108,8 +108,7 @@ export function RegisterFleetPage() {
               />
             </Field>
             <Field label="Password">
-              <Input
-                type="password"
+              <PasswordInput
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 minLength={6}
