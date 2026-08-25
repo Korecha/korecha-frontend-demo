@@ -127,14 +127,14 @@ export function DriverTrucksPage() {
                 value={form.plateNumber}
                 onChange={(e) => setForm({ ...form, plateNumber: e.target.value })}
                 required
-                className="uppercase border border-1 border-black"
+                className="w-full rounded-xl border border-korecha-border bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm transition-all placeholder:text-slate-400 focus:border-korecha-primary focus:outline-none focus:ring-4 focus:ring-korecha-ring/40 "
               />
             </Field>
             <Field label="Trailer plate number (optional)">
               <Input
                 value={form.trailerPlateNumber}
                 onChange={(e) => setForm({ ...form, trailerPlateNumber: e.target.value })}
-                className="uppercase border border-1 border-black"
+                className="w-full rounded-xl border border-korecha-border bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm transition-all placeholder:text-slate-400 focus:border-korecha-primary focus:outline-none focus:ring-4 focus:ring-korecha-ring/40 "
               />
             </Field>
             <Field label="Truck type">
