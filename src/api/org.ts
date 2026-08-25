@@ -59,26 +59,42 @@ export function previewOrgPricing(body: {
 }
 
 export function listApplications(status: ApprovalStatus = 'PENDING') {
-  return api<{ data: { drivers: DriverProfile[]; fleets: FleetProfile[]; importers: import('../types').ImporterProfile[] } }>(
-    `/api/org/applications?status=${status}`
-  )
+  return api<{
+    data: {
+      drivers: DriverProfile[]
+      fleets: FleetProfile[]
+      importers: import('../types').ImporterProfile[]
+    }
+  }>(`/api/org/applications?status=${status}`)
 }
 
-export function reviewDriverApplication(id: string, body: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string }) {
+export function reviewDriverApplication(
+  id: string,
+  body: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string },
+) {
   return api<{ data: DriverProfile }>(`/api/org/applications/drivers/${id}/review`, {
     method: 'POST',
     body: JSON.stringify(body),
   })
 }
 
-export function reviewImporterApplication(id: string, body: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string }) {
-  return api<{ data: import('../types').ImporterProfile }>(`/api/org/applications/importers/${id}/review`, {
-    method: 'POST',
-    body: JSON.stringify(body),
-  })
+export function reviewImporterApplication(
+  id: string,
+  body: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string },
+) {
+  return api<{ data: import('../types').ImporterProfile }>(
+    `/api/org/applications/importers/${id}/review`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+  )
 }
 
-export function reviewFleetApplication(id: string, body: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string }) {
+export function reviewFleetApplication(
+  id: string,
+  body: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string },
+) {
   return api<{ data: FleetProfile }>(`/api/org/applications/fleets/${id}/review`, {
     method: 'POST',
     body: JSON.stringify(body),
@@ -111,7 +127,7 @@ export function updateItemType(
     pricePerKmEtb: number
     flatFeeEtb: number
     isActive: boolean
-  }>
+  }>,
 ) {
   return api<{ data: ItemType }>(`/api/org/item-types/${id}`, {
     method: 'PUT',
@@ -121,7 +137,7 @@ export function updateItemType(
 
 export function upsertItemTypePricing(
   id: string,
-  body: { pricePerKmEtb: number; flatFeeEtb: number }
+  body: { pricePerKmEtb: number; flatFeeEtb: number },
 ) {
   return api<{ data: ItemType }>(`/api/org/item-types/${id}/pricing`, {
     method: 'PUT',
@@ -133,11 +149,7 @@ export function listGateEntrances() {
   return api<{ data: GateEntrance[] }>('/api/org/gate-entrances')
 }
 
-export function createGateEntrance(body: {
-  name: string
-  locationId?: string
-  feeEtb: number
-}) {
+export function createGateEntrance(body: { name: string; locationId?: string; feeEtb: number }) {
   return api<{ data: GateEntrance }>('/api/org/gate-entrances', {
     method: 'POST',
     body: JSON.stringify(body),
@@ -146,7 +158,7 @@ export function createGateEntrance(body: {
 
 export function updateGateEntrance(
   id: string,
-  body: Partial<{ name: string; locationId: string; feeEtb: number; isActive: boolean }>
+  body: Partial<{ name: string; locationId: string; feeEtb: number; isActive: boolean }>,
 ) {
   return api<{ data: GateEntrance }>(`/api/org/gate-entrances/${id}`, {
     method: 'PUT',
@@ -165,7 +177,10 @@ export function createTruckType(body: { name: string; description?: string }) {
   })
 }
 
-export function updateTruckType(id: string, body: Partial<{ name: string; description: string; isActive: boolean }>) {
+export function updateTruckType(
+  id: string,
+  body: Partial<{ name: string; description: string; isActive: boolean }>,
+) {
   return api<{ data: TruckType }>(`/api/org/truck-types/${id}`, {
     method: 'PUT',
     body: JSON.stringify(body),
@@ -176,7 +191,10 @@ export function listPendingTrucks() {
   return api<{ data: Truck[] }>('/api/org/trucks/pending')
 }
 
-export function reviewOrgTruck(id: string, body: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string }) {
+export function reviewOrgTruck(
+  id: string,
+  body: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string },
+) {
   return api<{ data: Truck }>(`/api/org/trucks/${id}/review`, {
     method: 'POST',
     body: JSON.stringify(body),
