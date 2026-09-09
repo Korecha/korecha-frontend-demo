@@ -95,42 +95,55 @@ export function OrgLayout() {
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-5">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
-                  isActive
-                    ? 'bg-blue-50 text-korecha-primary'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                }`
-              }
-            >
-              <NavIcon d={item.icon} />
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
+        <div className="relative min-h-0 flex-1">
+          <nav className="h-full space-y-1 overflow-y-auto px-3 py-5">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+                    isActive
+                      ? 'bg-blue-50 text-korecha-primary'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  }`
+                }
+              >
+                <NavIcon d={item.icon} />
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white to-transparent" />
+        </div>
 
         <div className="border-t border-korecha-border p-4">
           <div className="rounded-xl bg-slate-50 p-3">
             <p className="truncate text-sm font-semibold text-slate-900">{user?.fullName}</p>
             <p className="truncate text-xs text-korecha-muted">{user?.email}</p>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="mt-3 text-xs font-medium text-korecha-primary hover:underline"
-            >
-              Sign out
-            </button>
           </div>
         </div>
       </aside>
 
       <main className="ml-64 flex-1">
+        <div className="sticky top-0 z-20 flex justify-end border-b border-korecha-border bg-white/90 px-8 py-3 backdrop-blur">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-korecha-primary transition hover:bg-blue-50"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.75}
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+            Sign out
+          </button>
+        </div>
         <div className="min-h-screen px-8 py-8 lg:px-10">
           <Outlet />
         </div>
