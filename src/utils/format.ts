@@ -35,7 +35,8 @@ export const SIZE_LABELS: Record<string, string> = {
 export const TYPE_LABELS: Record<string, string> = {
   IMPORTER: 'Importer',
   EXPORTER: 'Exporter',
-  TRUCKING: 'Trucking',
+  FLEET_MANAGER: 'Fleet Manager',
+  TRUCKING: 'Trucking (legacy)',
   SHIPPING_LINE: 'Shipping Line',
 }
 

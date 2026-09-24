@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { FleetProviderType, Location, Organization, TruckType } from '../types'
+import type { FleetProviderType, Location, ModeScope, Organization, TruckType } from '../types'
 
 export interface FleetOwnerOption {
   id: string
@@ -29,6 +29,7 @@ export interface FleetManagerOption {
   id: string
   fleetName: string
   providerType?: FleetProviderType
+  modeScope?: ModeScope
 }
 
 export function listPublicFleetManagers(orgId: string) {

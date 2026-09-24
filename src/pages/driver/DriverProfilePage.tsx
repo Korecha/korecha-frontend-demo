@@ -20,7 +20,7 @@ export function DriverProfilePage() {
         setAverageRating(r.data.averageRating)
         setRatingCount(r.data.ratingCount)
       })
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   const routes = (profile?.preferredRouteIds || []).map((r) => refName(r, '')).filter(Boolean)
@@ -28,11 +28,9 @@ export function DriverProfilePage() {
   const employer =
     typeof profile?.fleetManagerId === 'object' && profile.fleetManagerId
       ? profile.fleetManagerId.fleetName
-      : typeof profile?.truckOwnerId === 'object' && profile.truckOwnerId
-        ? profile.truckOwnerId.displayName || 'Truck owner'
-        : typeof profile?.fleetOwnerId === 'object' && profile.fleetOwnerId
-          ? profile.fleetOwnerId.fullName
-          : '—'
+      : typeof profile?.fleetOwnerId === 'object' && profile.fleetOwnerId
+        ? profile.fleetOwnerId.fullName
+        : '—'
 
   const rows = [
     ['Email', user?.email],

@@ -264,6 +264,7 @@ export function reviewCorporateCustomerApplication(
   )
 }
 
+/** Rows are licensed_operator fleet managers. isSelfPaired is gone from the payload. */
 export function listTruckOwners(status?: ApprovalStatus) {
   const qs = status ? `?status=${status}` : ''
   return api<{ data: TruckOwnerProfile[] }>(`/api/admin/truck-owners${qs}`)

@@ -132,11 +132,10 @@ export function TruckOwnersPage() {
             key={tab}
             type="button"
             onClick={() => setStatus(tab)}
-            className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition ${
-              status === tab
-                ? 'bg-korecha-primary text-white shadow-sm'
-                : 'bg-white text-slate-600 ring-1 ring-korecha-border hover:bg-slate-50'
-            }`}
+            className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition ${status === tab
+              ? 'bg-korecha-primary text-white shadow-sm'
+              : 'bg-white text-slate-600 ring-1 ring-korecha-border hover:bg-slate-50'
+              }`}
           >
             {tab === 'ALL' ? 'All' : tab.charAt(0) + tab.slice(1).toLowerCase()}
           </button>
@@ -167,30 +166,23 @@ export function TruckOwnersPage() {
                   <Td className="font-semibold">
                     {owner.displayName || owner.user?.fullName || '—'}
                   </Td>
-                  <Td>{TRUCK_OWNER_TYPE_LABELS[owner.ownerType] || owner.ownerType}</Td>
+                  <Td>
+                    {owner.ownerType
+                      ? TRUCK_OWNER_TYPE_LABELS[owner.ownerType] || owner.ownerType
+                      : '—'}
+                  </Td>
                   <Td>
                     <div>{owner.user?.fullName}</div>
                     <div className="text-xs text-slate-500">{owner.user?.email}</div>
                   </Td>
                   <Td>
-                    {owner.isSelfPaired ? (
-                      <div>
-                        <div className="font-medium text-slate-900">Self-owned (Fleet Manager)</div>
-                        <div className="text-xs text-slate-500">{fleetLabel(owner)}</div>
-                      </div>
-                    ) : (
-                      fleetLabel(owner)
-                    )}
+                    {fleetLabel(owner)}
                   </Td>
                   <Td>
                     <Badge status={owner.status} />
                   </Td>
                   <Td>
-                    {owner.isSelfPaired ? (
-                      <span className="text-xs text-slate-500">
-                        Posts availability via its own fleet manager account
-                      </span>
-                    ) : owner.status === 'APPROVED' ? (
+                    {owner.status === 'APPROVED' ? (
                       <Button
                         size="sm"
                         variant={owner.canPostAvailability ? 'secondary' : 'primary'}
@@ -210,9 +202,7 @@ export function TruckOwnersPage() {
                     )}
                   </Td>
                   <Td>
-                    {owner.isSelfPaired ? (
-                      <span className="text-xs text-slate-500">Follows fleet manager review</span>
-                    ) : owner.status === 'PENDING' ? (
+                    {owner.status === 'PENDING' ? (
                       <div className="flex gap-2">
                         <Button size="sm" onClick={() => setApproving(owner)}>
                           Approve

@@ -31,10 +31,20 @@ export type LoadMatchOfferStatus = 'SENT' | 'VIEWED' | 'ASSIGNED' | 'DECLINED' |
 export type AvailabilityPosterType = 'FLEET_MANAGER' | 'TRUCK_OWNER'
 export type AvailabilityPostingStatus = 'OPEN' | 'CLOSED' | 'EXPIRED'
 export type JobStatus =
-  'OPEN' | 'REQUESTED' | 'ASSIGNED' | 'IN_TRANSIT' | 'PENDING_APPROVAL' | 'COMPLETED' | 'CANCELLED'
+  | 'OPEN'
+  | 'REQUESTED'
+  | 'ASSIGNED'
+  | 'IN_TRANSIT'
+  | 'PENDING_APPROVAL'
+  | 'COMPLETED'
+  | 'CANCELLED'
 export type JobRequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED'
 export type ShipmentStatus =
-  'ASSIGNED' | 'IN_TRANSIT' | 'PENDING_APPROVAL' | 'COMPLETED' | 'CANCELLED'
+  | 'ASSIGNED'
+  | 'IN_TRANSIT'
+  | 'PENDING_APPROVAL'
+  | 'COMPLETED'
+  | 'CANCELLED'
 export type ShipmentLegStatus = 'ASSIGNED' | 'IN_TRANSIT' | 'COMPLETED' | 'CANCELLED'
 export type PaymentStatus = 'HELD' | 'RELEASED' | 'DISPUTED' | 'REVERSED'
 export type PaymentProvider = 'TELE_BIRR' | 'CBE_BIRR' | 'NATIONAL_IPS' | 'MANUAL'
@@ -45,12 +55,20 @@ export interface LiveLocation {
   accuracy?: number
   updatedAt?: string
 }
-export type OrgType = 'IMPORTER' | 'EXPORTER' | 'TRUCKING' | 'SHIPPING_LINE'
+export type OrgType = 'IMPORTER' | 'EXPORTER' | 'TRUCKING' | 'SHIPPING_LINE' | 'FLEET_MANAGER'
+export type CreatableOrgType = Exclude<OrgType, 'TRUCKING'>
+export type ModeScope = ShipmentMode
 export type OrgStatus = 'ACTIVE' | 'SUSPENDED'
 export type ContainerSize = 'TWENTY_FT' | 'FORTY_FT' | 'FORTY_FT_HC'
 export type ContainerType = 'DRY' | 'REEFER' | 'OPEN_TOP' | 'FLAT_RACK' | 'TANK'
 export type ContainerStatus =
-  'AVAILABLE' | 'IN_TRANSIT' | 'EMPTY' | 'LOADED' | 'DISCHARGED' | 'AT_PORT' | 'MAINTENANCE'
+  | 'AVAILABLE'
+  | 'IN_TRANSIT'
+  | 'EMPTY'
+  | 'LOADED'
+  | 'DISCHARGED'
+  | 'AT_PORT'
+  | 'MAINTENANCE'
 export type LocationType = 'PORT' | 'DRY_PORT' | 'WAREHOUSE' | 'CITY' | 'BORDER' | 'TRUCK_STOP'
 
 export interface User {
@@ -104,7 +122,6 @@ export interface DriverProfile {
         status: ApprovalStatus
         providerType?: FleetProviderType
       }
-  truckOwnerId?: string | { id: string; displayName?: string; status: ApprovalStatus }
   status: ApprovalStatus
   rejectionReason?: string
   availability?: DriverAvailability
@@ -116,10 +133,21 @@ export interface DriverProfile {
 export interface FleetProfile {
   id: string
   userId: string
-  organizationId: string
+  organizationId: string | null
   fleetName: string
   ceoNationalIdFile: string
   providerType?: FleetProviderType
+  modeScope?: ModeScope
+  ownerType?: TruckOwnerType
+  parentFleetManagerId?:
+    | string
+    | { id: string; _id?: string; fleetName: string; providerType?: FleetProviderType }
+    | null
+  canPostAvailability?: boolean
+  availabilityRequestStatus?: ApprovalStatus | null
+  availabilityRequestedAt?: string
+  availabilityRequestReviewedAt?: string
+  availabilityRequestRejectionReason?: string
   shippingLineId?: string | null
   status: ApprovalStatus
   rejectionReason?: string
@@ -127,30 +155,21 @@ export interface FleetProfile {
   user?: User
   driverCount?: number
   truckCount?: number
-}
-
-export interface TruckOwnerProfile {
-  id: string
-  userId: string
-  organizationId: string | null
-  fleetManagerId?:
-    string | { id: string; fleetName: string; providerType?: FleetProviderType } | null
-  ownerType: TruckOwnerType
-  displayName?: string
-  canPostAvailability: boolean
-  isSelfPaired?: boolean
-  status: ApprovalStatus
   reviewedBy?: string
   reviewedAt?: string
-  rejectionReason?: string
-  /** KAN-66/67: truck owner-initiated request to be granted canPostAvailability. */
-  availabilityRequestStatus?: ApprovalStatus | null
-  availabilityRequestedAt?: string
-  availabilityRequestReviewedBy?: string
-  availabilityRequestReviewedAt?: string
-  availabilityRequestRejectionReason?: string
-  user?: User
   createdAt?: string
+}
+
+/** @deprecated Truck owners are FleetManager rows with providerType licensed_operator. */
+export type TruckOwnerProfile = FleetProfile & {
+  isSelfPaired?: never
+  /** @deprecated use fleetName */
+  displayName?: string
+  /** @deprecated use parentFleetManagerId */
+  fleetManagerId?:
+    | string
+    | { id: string; fleetName: string; providerType?: FleetProviderType }
+    | null
 }
 
 export interface CorporateCustomerProfile {
@@ -177,7 +196,7 @@ export interface Truck {
   trailerPlateNumber?: string | null
   truckTypeId: string | TruckType
   fleetOwnerId?: string | null
-  truckOwnerId?: string | { id: string; displayName?: string } | null
+  fleetManagerId?: string | { id: string; fleetName: string } | null
   driverId?: string | User | null
   status: TruckStatus
   available: boolean
@@ -440,7 +459,11 @@ export interface NearbyTruck {
 export interface MemberProfileResponse {
   type: 'driver' | 'fleet' | 'importer' | 'truckOwner' | 'corporate'
   profile:
-    DriverProfile | FleetProfile | ImporterProfile | TruckOwnerProfile | CorporateCustomerProfile
+    | DriverProfile
+    | FleetProfile
+    | ImporterProfile
+    | TruckOwnerProfile
+    | CorporateCustomerProfile
 }
 
 export interface Pricing {

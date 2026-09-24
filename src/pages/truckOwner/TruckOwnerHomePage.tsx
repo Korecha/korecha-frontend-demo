@@ -25,7 +25,6 @@ export function TruckOwnerHomePage() {
   const requestStatus = profile?.availabilityRequestStatus
   const canRequest =
     profile?.status === 'APPROVED' &&
-    !profile.isSelfPaired &&
     !profile.canPostAvailability &&
     requestStatus !== 'PENDING'
 
@@ -55,7 +54,9 @@ export function TruckOwnerHomePage() {
       details={[
         {
           label: 'Registered as',
-          value: profile ? TRUCK_OWNER_TYPE_LABELS[profile.ownerType] || profile.ownerType : '—',
+          value: profile?.ownerType
+            ? TRUCK_OWNER_TYPE_LABELS[profile.ownerType] || profile.ownerType
+            : '—',
         },
         { label: 'Organization', value: organization?.name || 'Independent' },
         { label: 'Fleet manager', value: affiliation },
@@ -65,7 +66,7 @@ export function TruckOwnerHomePage() {
         },
       ]}
     >
-      {profile?.status === 'APPROVED' && !profile.canPostAvailability && !profile.isSelfPaired && (
+      {profile?.status === 'APPROVED' && !profile.canPostAvailability && (
         <div className="mt-6">
           {error && (
             <div className="mb-4">

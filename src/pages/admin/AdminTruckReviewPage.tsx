@@ -56,9 +56,11 @@ export function AdminTruckReviewPage() {
   }, [])
 
   const ownerLabel = (truck: Truck) => {
-    if (!truck.truckOwnerId) return '—'
-    if (typeof truck.truckOwnerId === 'string') return truck.truckOwnerId
-    return truck.truckOwnerId.displayName || '—'
+    if (typeof truck.fleetManagerId === 'object' && truck.fleetManagerId) {
+      return truck.fleetManagerId.fleetName || '—'
+    }
+    if (typeof truck.fleetManagerId === 'string') return truck.fleetManagerId
+    return truck.fleetOwnerId || '—'
   }
 
   const approve = async () => {
