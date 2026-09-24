@@ -13,8 +13,14 @@ export type OrgMemberRole = 'DRIVER' | 'FLEET_OWNER' | 'IMPORTER'
 export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
 export type TruckStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
 export type DriverAvailability = 'AVAILABLE' | 'ON_JOB' | 'OFFLINE'
-export type FleetProviderType = 'internal_unimodal' | 'transit_company' | 'association' | 'mto'
+export type FleetProviderType =
+  | 'internal_unimodal'
+  | 'transit_company'
+  | 'association'
+  | 'mto'
+  | 'licensed_operator'
 export type CorporateTier = 'STANDARD' | 'PRIORITY' | 'PREFERRED'
+export type ImporterTier = 'NORMAL' | 'PREMIUM'
 export type TruckOwnerType = 'INDIVIDUAL' | 'COMPANY'
 export type TradeSide = 'IMPORTER' | 'EXPORTER'
 export type ShipmentMode = 'UNIMODAL' | 'MULTIMODAL'
@@ -30,7 +36,7 @@ export type JobRequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED'
 export type ShipmentStatus =
   'ASSIGNED' | 'IN_TRANSIT' | 'PENDING_APPROVAL' | 'COMPLETED' | 'CANCELLED'
 export type ShipmentLegStatus = 'ASSIGNED' | 'IN_TRANSIT' | 'COMPLETED' | 'CANCELLED'
-export type PaymentStatus = 'HELD' | 'RELEASED' | 'DISPUTED'
+export type PaymentStatus = 'HELD' | 'RELEASED' | 'DISPUTED' | 'REVERSED'
 export type PaymentProvider = 'TELE_BIRR' | 'CBE_BIRR' | 'NATIONAL_IPS' | 'MANUAL'
 
 export interface LiveLocation {
@@ -42,7 +48,7 @@ export interface LiveLocation {
 export type OrgType = 'IMPORTER' | 'EXPORTER' | 'TRUCKING' | 'SHIPPING_LINE'
 export type OrgStatus = 'ACTIVE' | 'SUSPENDED'
 export type ContainerSize = 'TWENTY_FT' | 'FORTY_FT' | 'FORTY_FT_HC'
-export type ContainerType = 'DRY' | 'REEFER' | 'OPEN_TOP' | 'FLAT_RACK'
+export type ContainerType = 'DRY' | 'REEFER' | 'OPEN_TOP' | 'FLAT_RACK' | 'TANK'
 export type ContainerStatus =
   'AVAILABLE' | 'IN_TRANSIT' | 'EMPTY' | 'LOADED' | 'DISCHARGED' | 'AT_PORT' | 'MAINTENANCE'
 export type LocationType = 'PORT' | 'DRY_PORT' | 'WAREHOUSE' | 'CITY' | 'BORDER' | 'TRUCK_STOP'
@@ -184,6 +190,7 @@ export interface ImporterProfile {
   userId: string
   organizationId: string | null
   tradeSide?: TradeSide
+  tier?: ImporterTier
   companyName?: string
   nationalIdFile: string
   importLicenseFile: string

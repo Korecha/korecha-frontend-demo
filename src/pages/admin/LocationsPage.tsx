@@ -11,7 +11,16 @@ import { Table, TableEmpty, TableHead, TableRow, TableWrapper, Td, Th } from '..
 import type { Location, LocationType } from '../../types'
 
 const LOCATION_TYPES: LocationType[] = ['PORT', 'DRY_PORT', 'WAREHOUSE', 'CITY', 'BORDER', 'TRUCK_STOP']
-const REGIONS = ['DJIBOUTI', 'OROMIA', 'ADDIS_ABABA', 'AFAR', 'SNNPR', 'DIRE_DAWA']
+const REGIONS = [
+  'DJIBOUTI',
+  'OROMIA',
+  'ADDIS_ABABA',
+  'AFAR',
+  'SNNPR',
+  'DIRE_DAWA',
+  'AMHARA',
+  'TIGRAY',
+]
 
 const emptyForm = { name: '', type: 'CITY' as LocationType, region: 'ADDIS_ABABA', lat: 9.03, lng: 38.75 }
 const pickerIcon = L.divIcon({

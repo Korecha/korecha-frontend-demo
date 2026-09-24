@@ -20,7 +20,7 @@ import type { Container, ContainerSize, ContainerStatus, ContainerType, Location
 import { formatDate, isDemurrageRisk, SIZE_LABELS } from '../../utils/format'
 
 const SIZES: ContainerSize[] = ['TWENTY_FT', 'FORTY_FT', 'FORTY_FT_HC']
-const TYPES: ContainerType[] = ['DRY', 'REEFER', 'OPEN_TOP', 'FLAT_RACK']
+const TYPES: ContainerType[] = ['DRY', 'REEFER', 'OPEN_TOP', 'FLAT_RACK', 'TANK']
 const STATUSES: ContainerStatus[] = ['AVAILABLE', 'IN_TRANSIT', 'EMPTY', 'LOADED', 'DISCHARGED', 'AT_PORT', 'MAINTENANCE']
 
 const emptyForm = {

@@ -52,6 +52,7 @@ export const PROVIDER_TYPE_LABELS: Record<string, string> = {
   transit_company: 'Transit company',
   association: 'Association',
   mto: 'MTO',
+  licensed_operator: 'Licensed operator',
 }
 
 export const TRUCK_OWNER_TYPE_LABELS: Record<string, string> = {
@@ -140,6 +141,7 @@ export const PAYMENT_STATUS_LABELS: Record<string, string> = {
   HELD: 'Held',
   RELEASED: 'Released',
   DISPUTED: 'Disputed',
+  REVERSED: 'Reversed',
 }
 
 // KAN-93: provider is inert data (no real gateway exists yet) — this is display-only.
@@ -188,4 +190,5 @@ export const STATUS_COLORS: Record<string, string> = {
   HELD: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
   RELEASED: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
   DISPUTED: 'bg-red-50 text-red-700 ring-1 ring-red-200',
+  REVERSED: 'bg-slate-100 text-slate-700 ring-1 ring-slate-200',
 }

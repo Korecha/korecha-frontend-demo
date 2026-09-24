@@ -129,6 +129,7 @@ export default function PaymentsPage() {
               <option value="HELD">Held</option>
               <option value="RELEASED">Released</option>
               <option value="DISPUTED">Disputed</option>
+              <option value="REVERSED">Reversed</option>
             </Select>
           </div>
         </div>
