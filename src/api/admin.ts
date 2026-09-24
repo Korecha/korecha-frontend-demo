@@ -1,5 +1,8 @@
 import { api } from './client'
 import type {
+  AdminOrgFleetMembers,
+  AdminOrgFleetTree,
+  AdminSearchResults,
   ApprovalStatus,
   CommissionSetting,
   CommissionScopeType,
@@ -13,6 +16,8 @@ import type {
   EffectiveCommission,
   ImporterProfile,
   ItemType,
+  LoadPosting,
+  LoadPostingStatus,
   Location,
   Organization,
   OrgStatus,
@@ -21,6 +26,8 @@ import type {
   PlatformSettings,
   Pricing,
   QuotePreview,
+  Shipment,
+  ShipmentStatus,
   Truck,
   TruckOwnerProfile,
   User,
@@ -423,4 +430,55 @@ export function recordManualPayment(
     method: 'PATCH',
     body: JSON.stringify(body),
   })
+}
+
+export function listOrgTruckOwners(orgId: string, params?: { status?: ApprovalStatus }) {
+  const q = new URLSearchParams()
+  if (params?.status) q.set('status', params.status)
+  const qs = q.toString()
+  return api<{ data: AdminOrgFleetTree }>(
+    `/api/admin/organizations/${orgId}/truck-owners${qs ? `?${qs}` : ''}`,
+  )
+}
+
+export function listOrgTruckOwnerMembers(orgId: string, fleetManagerId: string) {
+  return api<{ data: AdminOrgFleetMembers }>(
+    `/api/admin/organizations/${orgId}/truck-owners/${fleetManagerId}/drivers`,
+  )
+}
+
+export function listOrgShipments(
+  orgId: string,
+  params?: { page?: number; limit?: number; status?: ShipmentStatus },
+) {
+  const q = new URLSearchParams()
+  if (params?.page) q.set('page', String(params.page))
+  if (params?.limit) q.set('limit', String(params.limit))
+  if (params?.status) q.set('status', params.status)
+  const qs = q.toString()
+  return api<{ data: Shipment[]; meta: PaginatedMeta }>(
+    `/api/admin/organizations/${orgId}/shipments${qs ? `?${qs}` : ''}`,
+  )
+}
+
+export function listOrgLoadPostings(
+  orgId: string,
+  params?: { page?: number; limit?: number; status?: LoadPostingStatus },
+) {
+  const q = new URLSearchParams()
+  if (params?.page) q.set('page', String(params.page))
+  if (params?.limit) q.set('limit', String(params.limit))
+  if (params?.status) q.set('status', params.status)
+  const qs = q.toString()
+  return api<{ data: LoadPosting[]; meta: PaginatedMeta }>(
+    `/api/admin/organizations/${orgId}/load-postings${qs ? `?${qs}` : ''}`,
+  )
+}
+
+export function adminSearch(q: string, limit?: number) {
+  const params = new URLSearchParams()
+  if (q) params.set('q', q)
+  if (limit != null) params.set('limit', String(limit))
+  const qs = params.toString()
+  return api<{ data: AdminSearchResults }>(`/api/admin/search${qs ? `?${qs}` : ''}`)
 }

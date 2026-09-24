@@ -21,6 +21,7 @@ export type FleetProviderType =
   | 'licensed_operator'
 export type CorporateTier = 'STANDARD' | 'PRIORITY' | 'PREFERRED'
 export type ImporterTier = 'NORMAL' | 'PREMIUM'
+export type LicenseStatus = ApprovalStatus
 export type TruckOwnerType = 'INDIVIDUAL' | 'COMPANY'
 export type TradeSide = 'IMPORTER' | 'EXPORTER'
 export type ShipmentMode = 'UNIMODAL' | 'MULTIMODAL'
@@ -486,7 +487,79 @@ export interface Pricing {
   updatedAt?: string
 }
 
-export interface Organization {
+export interface OrgFacets {
+  mode?: ModeScope | null
+  tier?: ImporterTier | null
+  licenseStatus?: LicenseStatus | null
+  fleetSubType?: FleetProviderType | 'MIXED' | null
+}
+
+export interface OrgCounts {
+  fleetManagerCount: number
+  truckOwnerCount: number
+  driverCount: number
+  truckCount: number
+  pendingTruckCount: number
+  shipmentCount: number
+  loadPostingCount: number
+}
+
+export interface AdminOrgFleetRow extends FleetProfile {
+  kind: 'OWN_FLEET' | 'TRUCK_OWNER'
+  parentFleetName?: string | null
+  driverCount: number
+  truckCount: number
+  pendingTruckCount: number
+}
+
+export interface AdminOrgFleetTree {
+  ownFleet: AdminOrgFleetRow[]
+  truckOwners: AdminOrgFleetRow[]
+}
+
+export interface AdminOrgFleetMembers {
+  drivers: DriverProfile[]
+  trucks: Truck[]
+}
+
+export interface AdminSearchOrgHit {
+  id: string
+  name: string
+  type?: OrgType
+  status: OrgStatus
+  orgId: string
+}
+
+export interface AdminSearchFleetManagerHit {
+  id: string
+  fleetName: string
+  providerType?: FleetProviderType
+  status: ApprovalStatus
+  isTruckOwner: boolean
+  orgId: string | null
+  orgName?: string | null
+  parentFleetName?: string | null
+}
+
+export interface AdminSearchDriverHit {
+  id: string
+  userId: string
+  fullName?: string | null
+  phone?: string | null
+  status: ApprovalStatus
+  fleetManagerId?: string | null
+  fleetName?: string | null
+  orgId: string | null
+  orgName?: string | null
+}
+
+export interface AdminSearchResults {
+  organizations: AdminSearchOrgHit[]
+  fleetManagers: AdminSearchFleetManagerHit[]
+  drivers: AdminSearchDriverHit[]
+}
+
+export interface Organization extends OrgFacets {
   id: string
   name: string
   type?: OrgType
@@ -498,6 +571,7 @@ export interface Organization {
   pricing?: Pricing
   containerCount?: number
   orgAdmin?: User | null
+  counts?: OrgCounts
   createdAt?: string
 }
 

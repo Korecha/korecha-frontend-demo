@@ -67,6 +67,17 @@ export const CORPORATE_TIER_LABELS: Record<string, string> = {
   PREFERRED: 'Preferred',
 }
 
+export const IMPORTER_TIER_LABELS: Record<string, string> = {
+  NORMAL: 'Normal',
+  PREMIUM: 'Premium',
+}
+
+export function fleetManagerChipLabel(subType?: string | null): string {
+  if (subType == null) return 'Fleet manager'
+  if (subType === 'MIXED') return 'Fleet manager — Mixed'
+  return `Fleet manager — ${PROVIDER_TYPE_LABELS[subType] ?? subType}`
+}
+
 export const JOB_STATUS_LABELS: Record<string, string> = {
   OPEN: 'Open',
   REQUESTED: 'Awaiting driver',
@@ -192,4 +203,6 @@ export const STATUS_COLORS: Record<string, string> = {
   RELEASED: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
   DISPUTED: 'bg-red-50 text-red-700 ring-1 ring-red-200',
   REVERSED: 'bg-slate-100 text-slate-700 ring-1 ring-slate-200',
+  PREMIUM: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
+  NORMAL: 'bg-slate-100 text-slate-600 ring-1 ring-slate-200',
 }

@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
+import { AdminGlobalSearch } from '../admin/AdminGlobalSearch'
 
 const navItems = [
   {
@@ -17,21 +18,6 @@ const navItems = [
     to: '/admin/applications',
     label: 'Applications',
     icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-  },
-  {
-    to: '/admin/truck-owners',
-    label: 'Truck Owners',
-    icon: 'M8 7h8m-8 4h8m-4 8v-4m-6 4h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z',
-  },
-  {
-    to: '/admin/trucks/pending',
-    label: 'Truck Review',
-    icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
-  },
-  {
-    to: '/admin/availability-requests',
-    label: 'Availability Requests',
-    icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
   },
   {
     to: '/admin/item-types',
@@ -118,10 +104,9 @@ export function AdminLayout() {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-                    isActive
-                      ? 'bg-white/15 text-white shadow-lg shadow-black/10 backdrop-blur'
-                      : 'text-blue-100/70 hover:bg-white/10 hover:text-white'
+                  `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${isActive
+                    ? 'bg-white/15 text-white shadow-lg shadow-black/10 backdrop-blur'
+                    : 'text-blue-100/70 hover:bg-white/10 hover:text-white'
                   }`
                 }
               >
@@ -149,7 +134,8 @@ export function AdminLayout() {
       </aside>
 
       <main className="ml-64 flex-1">
-        <div className="sticky top-0 z-20 flex justify-end border-b border-korecha-border bg-white/90 px-8 py-3 backdrop-blur">
+        <div className="sticky top-0 z-20 flex justify-between border-b border-korecha-border bg-white/90 px-8 py-3 backdrop-blur">
+          <AdminGlobalSearch />
           <button
             type="button"
             onClick={handleLogout}

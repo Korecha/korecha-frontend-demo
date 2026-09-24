@@ -12,6 +12,7 @@ import { Button } from '../../components/ui/Button'
 import { Field, Input, PasswordInput, Select } from '../../components/ui/Input'
 import { Modal, ModalFooter } from '../../components/ui/Modal'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { ChipTabs } from '../../components/ui/Tabs'
 import {
   Table,
   TableEmpty,
@@ -21,10 +22,25 @@ import {
   Td,
   Th,
 } from '../../components/ui/Table'
-import type { Organization, OrgType } from '../../types'
-import { formatEtb, TYPE_LABELS } from '../../utils/format'
+import type { CreatableOrgType, Organization, OrgType } from '../../types'
+import { fleetManagerChipLabel, formatEtb, TYPE_LABELS } from '../../utils/format'
 
-const ORG_TYPES: OrgType[] = ['IMPORTER', 'EXPORTER', 'TRUCKING', 'SHIPPING_LINE']
+const ORG_TYPES: CreatableOrgType[] = ['IMPORTER', 'EXPORTER', 'FLEET_MANAGER', 'SHIPPING_LINE']
+
+const TYPE_FILTERS: { key: OrgType | 'ALL'; label: string }[] = [
+  { key: 'ALL', label: 'All' },
+  { key: 'IMPORTER', label: 'Importer' },
+  { key: 'EXPORTER', label: 'Exporter' },
+  { key: 'FLEET_MANAGER', label: 'Fleet manager' },
+  { key: 'SHIPPING_LINE', label: 'Shipping line' },
+]
+
+function orgTypeLabel(org: Organization) {
+  if (org.type === 'FLEET_MANAGER' || org.type === 'TRUCKING') {
+    return fleetManagerChipLabel(org.fleetSubType)
+  }
+  return org.type ? TYPE_LABELS[org.type] : 'Unassigned'
+}
 
 const emptyForm = {
   name: '',
@@ -43,6 +59,7 @@ export function OrganizationsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+  const [typeFilter, setTypeFilter] = useState<OrgType | 'ALL'>('ALL')
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Organization | null>(null)
   const [form, setForm] = useState(emptyForm)
@@ -50,15 +67,38 @@ export function OrganizationsPage() {
 
   const load = () => {
     setLoading(true)
-    listOrganizations({ search: search || undefined })
+    listOrganizations({
+      search: search || undefined,
+      type: typeFilter === 'ALL' ? undefined : typeFilter,
+    })
       .then((res) => setOrgs(res.data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }
 
   useEffect(() => {
-    load()
-  }, [search])
+    let active = true
+    void Promise.resolve()
+      .then(() => {
+        setLoading(true)
+        return listOrganizations({
+          search: search || undefined,
+          type: typeFilter === 'ALL' ? undefined : typeFilter,
+        })
+      })
+      .then((res) => {
+        if (active) setOrgs(res.data)
+      })
+      .catch((err) => {
+        if (active) setError(err.message)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [search, typeFilter])
 
   const openCreate = () => {
     setEditing(null)
@@ -132,6 +172,8 @@ export function OrganizationsPage() {
         </div>
       )}
 
+      <ChipTabs items={TYPE_FILTERS} active={typeFilter} onChange={setTypeFilter} />
+
       <div className="mb-6">
         <Input
           type="search"
@@ -148,6 +190,9 @@ export function OrganizationsPage() {
             <tr>
               <Th>Name</Th>
               <Th>Type</Th>
+              <Th>Mode</Th>
+              <Th>Tier</Th>
+              <Th>License</Th>
               <Th>Status</Th>
               <Th>Price/km</Th>
               <Th>Org Admin</Th>
@@ -157,14 +202,17 @@ export function OrganizationsPage() {
           </TableHead>
           <tbody>
             {loading ? (
-              <TableEmpty colSpan={7} message="Loading..." />
+              <TableEmpty colSpan={10} message="Loading..." />
             ) : orgs.length === 0 ? (
-              <TableEmpty colSpan={7} message="No organizations found" />
+              <TableEmpty colSpan={10} message="No organizations found" />
             ) : (
               orgs.map((org) => (
                 <TableRow key={org.id}>
                   <Td className="font-semibold text-slate-900">{org.name}</Td>
-                  <Td>{org.type ? TYPE_LABELS[org.type] : 'Unassigned'}</Td>
+                  <Td>{orgTypeLabel(org)}</Td>
+                  <Td>{org.mode ? <Badge status={org.mode} /> : '—'}</Td>
+                  <Td>{org.tier ? <Badge status={org.tier} /> : '—'}</Td>
+                  <Td>{org.licenseStatus ? <Badge status={org.licenseStatus} /> : '—'}</Td>
                   <Td>
                     <Badge status={org.status} />
                   </Td>
