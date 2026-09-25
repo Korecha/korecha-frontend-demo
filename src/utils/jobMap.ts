@@ -23,7 +23,9 @@ export function jobRouteLocations(job: { pickup: JobPoint; delivery: JobPoint })
   ]
 }
 
-export function trackingPath(events: TrackingEvent[] | undefined | null): { lat: number; lng: number }[] {
+export function trackingPath(
+  events: TrackingEvent[] | undefined | null,
+): { lat: number; lng: number }[] {
   return (events ?? []).map((e) => ({ lat: e.lat, lng: e.lng }))
 }
 
@@ -32,7 +34,8 @@ export function legsTrackingPath(legs: ShipmentLeg[]): { lat: number; lng: numbe
 }
 
 export function legRouteLocations(leg: ShipmentLeg): Location[] {
-  const from = typeof leg.fromLocationId === 'object' && leg.fromLocationId ? leg.fromLocationId : null
+  const from =
+    typeof leg.fromLocationId === 'object' && leg.fromLocationId ? leg.fromLocationId : null
   const to = typeof leg.toLocationId === 'object' && leg.toLocationId ? leg.toLocationId : null
   if (!from?.coordinates || !to?.coordinates) return []
   return [

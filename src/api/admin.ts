@@ -210,10 +210,14 @@ export function bulkUploadContainers(file: File) {
   }>('/api/admin/containers/bulk', { method: 'POST', body: form })
 }
 
-export function listLocations(params?: { status?: LocationStatus | 'ALL'; isCustomsBranch?: boolean }) {
+export function listLocations(params?: {
+  status?: LocationStatus | 'ALL'
+  isCustomsBranch?: boolean
+}) {
   const q = new URLSearchParams()
   if (params?.status) q.set('status', params.status)
-  if (params?.isCustomsBranch !== undefined) q.set('isCustomsBranch', String(params.isCustomsBranch))
+  if (params?.isCustomsBranch !== undefined)
+    q.set('isCustomsBranch', String(params.isCustomsBranch))
   const qs = q.toString()
   return api<{ data: Location[] }>(`/api/admin/locations${qs ? `?${qs}` : ''}`)
 }

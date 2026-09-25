@@ -125,22 +125,20 @@ export function JobLocationPicker({
         <button
           type="button"
           onClick={() => onModeChange('pickup')}
-          className={`flex-1 rounded-2xl px-3 py-2.5 text-sm font-semibold shadow-md backdrop-blur-md transition ${
-            activeMode === 'pickup'
+          className={`flex-1 rounded-2xl px-3 py-2.5 text-sm font-semibold shadow-md backdrop-blur-md transition ${activeMode === 'pickup'
               ? 'bg-korecha-primary text-white ring-2 ring-blue-300'
               : 'bg-white/90 text-slate-700 hover:bg-white'
-          }`}
+            }`}
         >
           {pickup ? '✓ Pickup' : 'Set pickup'}
         </button>
         <button
           type="button"
           onClick={() => onModeChange('delivery')}
-          className={`flex-1 rounded-2xl px-3 py-2.5 text-sm font-semibold shadow-md backdrop-blur-md transition ${
-            activeMode === 'delivery'
+          className={`flex-1 rounded-2xl px-3 py-2.5 text-sm font-semibold shadow-md backdrop-blur-md transition ${activeMode === 'delivery'
               ? 'bg-amber-500 text-white ring-2 ring-amber-300'
               : 'bg-white/90 text-slate-700 hover:bg-white'
-          }`}
+            }`}
         >
           {delivery ? '✓ Delivery' : 'Set delivery'}
         </button>
@@ -186,24 +184,24 @@ export function JobLocationPicker({
         {presetLocations.map((loc) => {
           if (loc.coordinates?.lat == null || loc.coordinates?.lng == null) return null
           return (
-          <Marker
-            key={loc.id}
-            position={[loc.coordinates.lat, loc.coordinates.lng]}
-            icon={presetIcon}
-            eventHandlers={{ click: () => handlePresetClick(loc) }}
-          >
-            <Popup>
-              <button
-                type="button"
-                className="text-left text-sm font-semibold text-korecha-primary hover:underline"
-                onClick={() => handlePresetClick(loc)}
-              >
-                Use {loc.name}
-              </button>
-              <br />
-              <span className="text-xs text-slate-500">{loc.region}</span>
-            </Popup>
-          </Marker>
+            <Marker
+              key={loc.id}
+              position={[loc.coordinates.lat, loc.coordinates.lng]}
+              icon={presetIcon}
+              eventHandlers={{ click: () => handlePresetClick(loc) }}
+            >
+              <Popup>
+                <button
+                  type="button"
+                  className="text-left text-sm font-semibold text-korecha-primary hover:underline"
+                  onClick={() => handlePresetClick(loc)}
+                >
+                  Use {loc.name}
+                </button>
+                <br />
+                <span className="text-xs text-slate-500">{loc.region}</span>
+              </Popup>
+            </Marker>
           )
         })}
 

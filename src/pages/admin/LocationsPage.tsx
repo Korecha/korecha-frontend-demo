@@ -294,9 +294,8 @@ export function LocationsPage() {
                       : 'Not surveyed'}
                   </Td>
                   <Td>
-                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
-                      loc.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
-                    }`}>
+                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${loc.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
+                      }`}>
                       {loc.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </Td>
@@ -317,9 +316,8 @@ export function LocationsPage() {
                       <button
                         type="button"
                         onClick={() => toggleActive(loc)}
-                        className={`font-medium hover:underline ${
-                          loc.isActive ? 'text-amber-600' : 'text-emerald-600'
-                        }`}
+                        className={`font-medium hover:underline ${loc.isActive ? 'text-amber-600' : 'text-emerald-600'
+                          }`}
                       >
                         {loc.isActive ? 'Deactivate' : 'Reactivate'}
                       </button>

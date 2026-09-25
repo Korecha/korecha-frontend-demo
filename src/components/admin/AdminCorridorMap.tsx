@@ -93,19 +93,19 @@ export function AdminCorridorMap({ containers, locations }: AdminCorridorMapProp
           {activeLocations.map((location) => {
             if (location.coordinates?.lat == null || location.coordinates?.lng == null) return null
             return (
-            <Marker
-              key={location.id}
-              position={[location.coordinates.lat, location.coordinates.lng]}
-              icon={markerIcon(LOCATION_TYPE_COLORS[location.type] || '#64748b')}
-            >
-              <Popup>
-                <span className="font-semibold">{location.name}</span>
-                <br />
-                <span className="text-xs text-slate-500">
-                  {location.type.replace(/_/g, ' ')} · {location.region}
-                </span>
-              </Popup>
-            </Marker>
+              <Marker
+                key={location.id}
+                position={[location.coordinates.lat, location.coordinates.lng]}
+                icon={markerIcon(LOCATION_TYPE_COLORS[location.type] || '#64748b')}
+              >
+                <Popup>
+                  <span className="font-semibold">{location.name}</span>
+                  <br />
+                  <span className="text-xs text-slate-500">
+                    {location.type.replace(/_/g, ' ')} · {location.region}
+                  </span>
+                </Popup>
+              </Marker>
             )
           })}
 

@@ -122,11 +122,10 @@ export function ExporterJobsPage() {
             key={t.key}
             type="button"
             onClick={() => setTab(t.key)}
-            className={`flex-1 rounded-xl px-3 py-2 text-sm font-semibold transition ${
-              tab === t.key
+            className={`flex-1 rounded-xl px-3 py-2 text-sm font-semibold transition ${tab === t.key
                 ? 'bg-korecha-primary text-white shadow-sm'
                 : 'text-slate-600 hover:bg-slate-50'
-            }`}
+              }`}
           >
             {t.label}
           </button>
@@ -144,11 +143,10 @@ export function ExporterJobsPage() {
                   key={f.key}
                   type="button"
                   onClick={() => setFilter(f.key)}
-                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
-                    filter === f.key
+                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${filter === f.key
                       ? 'bg-korecha-primary text-white shadow-sm'
                       : 'bg-white text-slate-600 ring-1 ring-korecha-border hover:bg-slate-50'
-                  }`}
+                    }`}
                 >
                   {f.label}
                   {count > 0 ? ` (${count})` : ''}

@@ -79,17 +79,17 @@ export function DriverMap({
         {routeLocations.map((loc) => {
           if (loc.coordinates?.lat == null || loc.coordinates?.lng == null) return null
           return (
-          <Marker
-            key={loc.id}
-            position={[loc.coordinates.lat, loc.coordinates.lng]}
-            icon={routeIcon}
-          >
-            <Popup>
-              <span className="font-semibold">{loc.name}</span>
-              <br />
-              <span className="text-xs text-slate-500">{loc.region}</span>
-            </Popup>
-          </Marker>
+            <Marker
+              key={loc.id}
+              position={[loc.coordinates.lat, loc.coordinates.lng]}
+              icon={routeIcon}
+            >
+              <Popup>
+                <span className="font-semibold">{loc.name}</span>
+                <br />
+                <span className="text-xs text-slate-500">{loc.region}</span>
+              </Popup>
+            </Marker>
           )
         })}
       </MapContainer>

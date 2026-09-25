@@ -146,9 +146,9 @@ export function CommissionSettingsPage() {
                   ? 'No rule applies; using the platform default from Settings'
                   : effective.source.setting
                     ? `${effective.source.setting.scopeType} rule` +
-                      (effective.source.setting.scopeValue
-                        ? ` (${formatScopeValue(effective.source.setting.scopeType, effective.source.setting.scopeValue)})`
-                        : '')
+                    (effective.source.setting.scopeValue
+                      ? ` (${formatScopeValue(effective.source.setting.scopeType, effective.source.setting.scopeValue)})`
+                      : '')
                     : 'Active rule'}
               </p>
             </div>
