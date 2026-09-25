@@ -111,6 +111,7 @@ export function JobLocationPicker({
   }
 
   const handlePresetClick = (loc: Location) => {
+    if (loc.coordinates?.lat == null || loc.coordinates?.lng == null) return
     onPointSet(activeMode, {
       label: loc.name,
       coordinates: loc.coordinates,
@@ -182,7 +183,9 @@ export function JobLocationPicker({
         <MapClickHandler onClick={handleMapClick} />
         <FitRouteBounds pickup={pickup} delivery={delivery} />
 
-        {presetLocations.map((loc) => (
+        {presetLocations.map((loc) => {
+          if (loc.coordinates?.lat == null || loc.coordinates?.lng == null) return null
+          return (
           <Marker
             key={loc.id}
             position={[loc.coordinates.lat, loc.coordinates.lng]}
@@ -201,7 +204,8 @@ export function JobLocationPicker({
               <span className="text-xs text-slate-500">{loc.region}</span>
             </Popup>
           </Marker>
-        ))}
+          )
+        })}
 
         {pickup && (
           <Marker position={[pickup.coordinates.lat, pickup.coordinates.lng]} icon={pickupIcon}>

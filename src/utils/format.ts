@@ -111,6 +111,11 @@ export const SHIPMENT_LEG_STATUS_LABELS: Record<string, string> = {
   CANCELLED: 'Cancelled',
 }
 
+export const LOCATION_STATUS_LABELS: Record<string, string> = {
+  DRAFT: 'Draft',
+  PUBLISHED: 'Active',
+}
+
 export const CONTAINER_STATUS_LABELS: Record<string, string> = {
   AVAILABLE: 'Available',
   IN_TRANSIT: 'In transit',
@@ -162,6 +167,37 @@ export const PAYMENT_STATUS_LABELS: Record<string, string> = {
   REVERSED: 'Reversed',
 }
 
+export const RELEASE_METHOD_LABELS: Record<string, string> = {
+  CUSTOMER_CONFIRMED: 'Customer confirmed',
+  AUTO_TIMEOUT: 'Auto timeout',
+  ADMIN_OVERRIDE: 'Admin override',
+}
+
+export const DISPUTE_REASON_LABELS: Record<string, string> = {
+  DELIVERY_NOT_CONFIRMED: 'Delivery not confirmed',
+  CARGO_DAMAGE: 'Cargo damage',
+  AMOUNT_MISMATCH: 'Amount mismatch',
+  FRAUD_SUSPECTED: 'Fraud suspected',
+  OTHER: 'Other',
+}
+
+export const DISPUTE_STATUS_LABELS: Record<string, string> = {
+  OPEN: 'Open',
+  RESOLVED: 'Resolved',
+}
+
+export const SPECIAL_HANDLING_LABELS: Record<string, string> = {
+  NONE: '—',
+  TEMPERATURE_CONTROLLED: 'Temp-controlled',
+  PERMIT_AND_ESCORT: 'Permits + escort',
+}
+
+export const INTEGRATION_STATUS_LABELS: Record<string, string> = {
+  DISCONNECTED: 'Not connected',
+  CONNECTED: 'Connected',
+  ERROR: 'Error',
+}
+
 // KAN-93: provider is inert data (no real gateway exists yet) — this is display-only.
 export const PAYMENT_PROVIDER_LABELS: Record<string, string> = {
   TELE_BIRR: 'Tele Birr',
@@ -198,6 +234,11 @@ export const STATUS_COLORS: Record<string, string> = {
   MATCHING: 'bg-blue-50 text-blue-700 ring-1 ring-blue-200',
   EXPIRED: 'bg-slate-100 text-slate-600 ring-1 ring-slate-200',
   SENT: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200',
+  TEMPERATURE_CONTROLLED: 'bg-cyan-50 text-cyan-700 ring-1 ring-cyan-200',
+  PERMIT_AND_ESCORT: 'bg-orange-50 text-orange-700 ring-1 ring-orange-200',
+  DISCONNECTED: 'bg-slate-100 text-slate-600 ring-1 ring-slate-200',
+  CONNECTED: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
+  ERROR: 'bg-red-50 text-red-700 ring-1 ring-red-200',
   VIEWED: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
   DECLINED: 'bg-red-50 text-red-700 ring-1 ring-red-200',
   BROADCAST: 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200',
@@ -211,4 +252,7 @@ export const STATUS_COLORS: Record<string, string> = {
   REVERSED: 'bg-slate-100 text-slate-700 ring-1 ring-slate-200',
   PREMIUM: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
   NORMAL: 'bg-slate-100 text-slate-600 ring-1 ring-slate-200',
+  DRAFT: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
+  PUBLISHED: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
+  RESOLVED: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
 }

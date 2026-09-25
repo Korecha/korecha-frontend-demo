@@ -90,7 +90,9 @@ export function AdminCorridorMap({ containers, locations }: AdminCorridorMapProp
           />
           <Polyline positions={CORRIDOR_ROUTE} pathOptions={{ color: '#2563eb', weight: 4, opacity: 0.55 }} />
 
-          {activeLocations.map((location) => (
+          {activeLocations.map((location) => {
+            if (location.coordinates?.lat == null || location.coordinates?.lng == null) return null
+            return (
             <Marker
               key={location.id}
               position={[location.coordinates.lat, location.coordinates.lng]}
@@ -104,7 +106,8 @@ export function AdminCorridorMap({ containers, locations }: AdminCorridorMapProp
                 </span>
               </Popup>
             </Marker>
-          ))}
+            )
+          })}
 
           {containersWithCoordinates.map((container) => {
             const coordinates = container.location?.coordinates

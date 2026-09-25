@@ -76,7 +76,9 @@ export function DriverMap({
             <Popup>You are live on the map</Popup>
           </Marker>
         )}
-        {routeLocations.map((loc) => (
+        {routeLocations.map((loc) => {
+          if (loc.coordinates?.lat == null || loc.coordinates?.lng == null) return null
+          return (
           <Marker
             key={loc.id}
             position={[loc.coordinates.lat, loc.coordinates.lng]}
@@ -88,7 +90,8 @@ export function DriverMap({
               <span className="text-xs text-slate-500">{loc.region}</span>
             </Popup>
           </Marker>
-        ))}
+          )
+        })}
       </MapContainer>
     </div>
   )

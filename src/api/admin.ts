@@ -6,17 +6,21 @@ import type {
   ApprovalStatus,
   CommissionSetting,
   CommissionScopeType,
+  CommissionMatrix,
   Container,
   ContainerSize,
   ContainerStatus,
   ContainerType,
+  DashboardPeriodKey,
   DashboardStats,
   EffectiveCommission,
   FleetManagerApplication,
   ItemType,
+  ItemTypeModePricingLeaf,
   LoadPosting,
   LoadPostingStatus,
   Location,
+  LocationStatus,
   ModeScope,
   Organization,
   OrgStatus,
@@ -34,8 +38,11 @@ import type {
   User,
 } from '../types'
 
-export function getDashboardStats() {
-  return api<{ data: DashboardStats }>('/api/admin/dashboard/stats')
+export function getDashboardStats(params?: { period?: DashboardPeriodKey }) {
+  const q = new URLSearchParams()
+  if (params?.period) q.set('period', params.period)
+  const qs = q.toString()
+  return api<{ data: DashboardStats }>(`/api/admin/dashboard/stats${qs ? `?${qs}` : ''}`)
 }
 
 export function listOrganizations(params?: {
@@ -203,8 +210,12 @@ export function bulkUploadContainers(file: File) {
   }>('/api/admin/containers/bulk', { method: 'POST', body: form })
 }
 
-export function listLocations() {
-  return api<{ data: Location[] }>('/api/admin/locations')
+export function listLocations(params?: { status?: LocationStatus | 'ALL'; isCustomsBranch?: boolean }) {
+  const q = new URLSearchParams()
+  if (params?.status) q.set('status', params.status)
+  if (params?.isCustomsBranch !== undefined) q.set('isCustomsBranch', String(params.isCustomsBranch))
+  const qs = q.toString()
+  return api<{ data: Location[] }>(`/api/admin/locations${qs ? `?${qs}` : ''}`)
 }
 
 export function createLocation(body: Partial<Location>) {
@@ -218,6 +229,13 @@ export function updateLocation(id: string, body: Partial<Location>) {
   return api<{ data: Location }>(`/api/admin/locations/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(body),
+  })
+}
+
+export function publishLocation(id: string, coordinates: { lat: number; lng: number }) {
+  return api<{ data: Location }>(`/api/admin/locations/${id}/publish`, {
+    method: 'PATCH',
+    body: JSON.stringify({ coordinates }),
   })
 }
 
@@ -361,6 +379,12 @@ export function createDefaultItemType(body: {
   unit?: string
   pricePerKmEtb?: number
   flatFeeEtb?: number
+  specialHandling?: ItemType['specialHandling']
+  requiresQuote?: boolean
+  modePricing?: {
+    UNIMODAL?: ItemTypeModePricingLeaf
+    MULTIMODAL?: ItemTypeModePricingLeaf
+  }
 }) {
   return api<{ data: ItemType }>('/api/admin/item-types', {
     method: 'POST',
@@ -376,6 +400,12 @@ export function updateDefaultItemType(
     unit: string
     pricePerKmEtb: number
     flatFeeEtb: number
+    specialHandling: ItemType['specialHandling']
+    requiresQuote: boolean
+    modePricing: {
+      UNIMODAL?: ItemTypeModePricingLeaf
+      MULTIMODAL?: ItemTypeModePricingLeaf
+    }
     isActive: boolean
   }>,
 ) {
@@ -407,14 +437,29 @@ export function createCommissionSetting(body: {
   })
 }
 
-export function getEffectiveCommission(params?: { mode?: string; tier?: string; at?: string }) {
+export function getEffectiveCommission(params?: {
+  mode?: string
+  tier?: string
+  importerTier?: string
+  at?: string
+}) {
   const q = new URLSearchParams()
   if (params?.mode) q.set('mode', params.mode)
   if (params?.tier) q.set('tier', params.tier)
+  if (params?.importerTier) q.set('importerTier', params.importerTier)
   if (params?.at) q.set('at', params.at)
   const qs = q.toString()
   return api<{ data: EffectiveCommission }>(
     `/api/admin/commission-settings/effective${qs ? `?${qs}` : ''}`,
+  )
+}
+
+export function getCommissionMatrix(params?: { at?: string }) {
+  const q = new URLSearchParams()
+  if (params?.at) q.set('at', params.at)
+  const qs = q.toString()
+  return api<{ data: CommissionMatrix }>(
+    `/api/admin/commission-settings/matrix${qs ? `?${qs}` : ''}`,
   )
 }
 
@@ -429,10 +474,18 @@ export function listPayments(params?: { page?: number; limit?: number; status?: 
   )
 }
 
-export function updatePaymentStatus(id: string, status: string) {
+export function updatePaymentStatus(
+  id: string,
+  body: {
+    status: string
+    releaseMethod?: import('../types').PaymentReleaseMethod
+    geofencePassed?: boolean
+    travelTimePlausible?: boolean
+  },
+) {
   return api<{ data: import('../types').Payment }>(`/api/admin/payments/${id}/status`, {
     method: 'PATCH',
-    body: JSON.stringify({ status }),
+    body: JSON.stringify(body),
   })
 }
 
@@ -440,12 +493,54 @@ export function updatePaymentStatus(id: string, status: string) {
 // gateway exists yet. Always updates the existing payment (one per shipment), never duplicates.
 export function recordManualPayment(
   id: string,
-  body: { provider: import('../types').PaymentProvider; providerReference?: string },
+  body: {
+    provider: import('../types').PaymentProvider
+    providerReference?: string
+    providerConfirmed?: boolean
+    providerTransactionId?: string
+  },
 ) {
   return api<{ data: import('../types').Payment }>(`/api/admin/payments/${id}/provider`, {
     method: 'PATCH',
     body: JSON.stringify(body),
   })
+}
+
+export function listPaymentDisputes(params?: { page?: number; limit?: number; status?: string }) {
+  const q = new URLSearchParams()
+  if (params?.page) q.set('page', String(params.page))
+  if (params?.limit) q.set('limit', String(params.limit))
+  if (params?.status) q.set('status', params.status)
+  const qs = q.toString()
+  return api<{ data: import('../types').PaymentDispute[]; pagination: PaginatedMeta }>(
+    `/api/admin/payment-disputes${qs ? `?${qs}` : ''}`,
+  )
+}
+
+export function raiseDispute(
+  paymentId: string,
+  body: { reasonCode: import('../types').DisputeReasonCode; reason: string },
+) {
+  return api<{ data: import('../types').PaymentDispute }>(
+    `/api/admin/payments/${paymentId}/disputes`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+  )
+}
+
+export function resolveDispute(
+  disputeId: string,
+  body: { resolution: import('../types').DisputeResolution; resolutionNotes?: string },
+) {
+  return api<{ data: import('../types').PaymentDispute }>(
+    `/api/admin/payment-disputes/${disputeId}/resolve`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+  )
 }
 
 export function listOrgTruckOwners(orgId: string, params?: { status?: ApprovalStatus }) {

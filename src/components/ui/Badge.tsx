@@ -3,15 +3,19 @@ import {
   AVAILABILITY_LABELS,
   AVAILABILITY_POSTING_STATUS_LABELS,
   CONTAINER_STATUS_LABELS,
+  LOCATION_STATUS_LABELS,
   IMPORTER_TIER_LABELS,
   JOB_STATUS_LABELS,
   LOAD_POSTING_STATUS_LABELS,
   MATCHING_MODE_LABELS,
   MATCH_OFFER_STATUS_LABELS,
   PAYMENT_STATUS_LABELS,
+  DISPUTE_STATUS_LABELS,
   ROLE_LABELS,
   SHIPMENT_MODE_LABELS,
   SHIPMENT_LEG_STATUS_LABELS,
+  SPECIAL_HANDLING_LABELS,
+  INTEGRATION_STATUS_LABELS,
   STATUS_COLORS,
 } from '../../utils/format'
 
@@ -28,9 +32,13 @@ export function Badge({ status }: { status: string }) {
     AVAILABILITY_LABELS[status] ||
     APPROVAL_LABELS[status] ||
     PAYMENT_STATUS_LABELS[status] ||
+    DISPUTE_STATUS_LABELS[status] ||
     ROLE_LABELS[status] ||
     CONTAINER_STATUS_LABELS[status] ||
+    LOCATION_STATUS_LABELS[status] ||
     IMPORTER_TIER_LABELS[status] ||
+    SPECIAL_HANDLING_LABELS[status] ||
+    INTEGRATION_STATUS_LABELS[status] ||
     status.replace(/_/g, ' ').toLowerCase()
   return (
     <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${color}`}>

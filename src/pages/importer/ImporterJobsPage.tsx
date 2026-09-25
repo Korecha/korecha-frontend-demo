@@ -31,6 +31,7 @@ function postingRouteLocations(posting: LoadPosting) {
       type: 'CITY' as const,
       region: '',
       coordinates: posting.pickup.coordinates,
+      status: 'PUBLISHED' as const,
       isActive: true,
     },
     {
@@ -39,6 +40,7 @@ function postingRouteLocations(posting: LoadPosting) {
       type: 'CITY' as const,
       region: '',
       coordinates: posting.delivery.coordinates,
+      status: 'PUBLISHED' as const,
       isActive: true,
     },
   ]

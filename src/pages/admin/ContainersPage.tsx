@@ -17,7 +17,7 @@ import { Modal, ModalFooter } from '../../components/ui/Modal'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Table, TableEmpty, TableHead, TableRow, TableWrapper, Td, Th } from '../../components/ui/Table'
 import type { Container, ContainerSize, ContainerStatus, ContainerType, Location, Organization } from '../../types'
-import { formatDate, isDemurrageRisk, SIZE_LABELS } from '../../utils/format'
+import { formatDate, SIZE_LABELS } from '../../utils/format'
 
 const SIZES: ContainerSize[] = ['TWENTY_FT', 'FORTY_FT', 'FORTY_FT_HC']
 const TYPES: ContainerType[] = ['DRY', 'REEFER', 'OPEN_TOP', 'FLAT_RACK', 'TANK']
@@ -91,7 +91,7 @@ export function ContainersPage() {
 
   useEffect(() => {
     listOrganizations().then((res) => setOrgs(res.data)).catch(() => { })
-    listLocations().then((res) => setLocations(res.data.filter((loc) => loc.isActive))).catch(() => { })
+    listLocations().then((res) => setLocations(res.data.filter((loc) => loc.isActive && loc.status === 'PUBLISHED'))).catch(() => { })
   }, [])
 
   const openCreate = () => {
@@ -166,7 +166,7 @@ export function ContainersPage() {
   }
 
   const shippingOrgs = orgs.filter((o) => o.type === 'SHIPPING_LINE')
-  const locationOptions = locations.filter((loc) => loc.isActive)
+  const locationOptions = locations.filter((loc) => loc.isActive && loc.status === 'PUBLISHED')
 
   return (
     <div>
@@ -208,6 +208,8 @@ export function ContainersPage() {
               <Th>Type</Th>
               <Th>Status</Th>
               <Th>Owner</Th>
+              <Th>Registered carrier</Th>
+              <Th>Linked posting</Th>
               <Th>Location</Th>
               <Th>Last Free Day</Th>
               <Th>Actions</Th>
@@ -215,9 +217,9 @@ export function ContainersPage() {
           </TableHead>
           <tbody>
             {loading ? (
-              <TableEmpty colSpan={8} message="Loading..." />
+              <TableEmpty colSpan={10} message="Loading..." />
             ) : containers.length === 0 ? (
-              <TableEmpty colSpan={8} message="No containers found" />
+              <TableEmpty colSpan={10} message="No containers found" />
             ) : (
               containers.map((c) => (
                 <TableRow key={c.id}>
@@ -234,10 +236,26 @@ export function ContainersPage() {
                     {c.shippingLineCode && <p className="mt-1 font-mono text-xs text-slate-500">{c.shippingLineCode}</p>}
                   </Td>
                   <Td>
+                    {c.registeredCarrier?.name || c.registeredCarrier?.code ? (
+                      <span title={c.registeredCarrier.source}>
+                        {c.registeredCarrier.name || c.registeredCarrier.code}
+                      </span>
+                    ) : (
+                      '—'
+                    )}
+                  </Td>
+                  <Td>
+                    {c.linkedLoadPostingId ? (
+                      <span className="font-mono text-xs text-slate-700">{c.linkedLoadPostingId.slice(-6)}</span>
+                    ) : (
+                      '—'
+                    )}
+                  </Td>
+                  <Td>
                     <p>{c.location?.label || '—'}</p>
                     {c.notes && <p className="mt-1 max-w-[12rem] truncate text-xs text-slate-500">{c.notes}</p>}
                   </Td>
-                  <Td className={isDemurrageRisk(c.lastFreeDay) ? 'font-semibold text-red-600' : ''}>
+                  <Td className={c.isDemurrageRisk ? 'font-semibold text-red-600' : ''}>
                     {formatDate(c.lastFreeDay)}
                   </Td>
                   <Td>

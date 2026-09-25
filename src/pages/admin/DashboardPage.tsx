@@ -1,16 +1,25 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getDashboardStats, getSettings, listContainers, listLocations } from '../../api/admin'
+import { getDashboardStats, listContainers, listLocations } from '../../api/admin'
 import { AdminCorridorMap } from '../../components/admin/AdminCorridorMap'
 import { Alert } from '../../components/ui/Alert'
 import { Badge } from '../../components/ui/Badge'
-import { StatCard } from '../../components/ui/Card'
+import { Card, StatCard } from '../../components/ui/Card'
 import { LinkButton } from '../../components/ui/LinkButton'
 import { Loading } from '../../components/ui/Loading'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { StarRating } from '../../components/ui/StarRating'
 import { Table, TableEmpty, TableHead, TableRow, TableWrapper, Td, Th } from '../../components/ui/Table'
-import type { Container, DashboardStats, Location } from '../../types'
-import { formatDate, formatEtb, isDemurrageRisk, SIZE_LABELS, TYPE_LABELS } from '../../utils/format'
+import { ChipTabs } from '../../components/ui/Tabs'
+import type { Container, DashboardPeriodKey, DashboardStats, Location } from '../../types'
+import { formatDate, formatEtb, SIZE_LABELS, TYPE_LABELS } from '../../utils/format'
+
+const PERIOD_TABS: { key: DashboardPeriodKey; label: string }[] = [
+  { key: '7d', label: '7d' },
+  { key: '30d', label: '30d' },
+  { key: '90d', label: '90d' },
+  { key: 'all', label: 'All' },
+]
 
 function demurrageTimeRemaining(lastFreeDay?: string | null): string {
   if (!lastFreeDay) return '—'
@@ -29,7 +38,32 @@ function orgTypeLabel(type: string): string {
   return TYPE_LABELS[type] || type.replace(/_/g, ' ').toLowerCase()
 }
 
+function periodLabel(key: DashboardPeriodKey) {
+  if (key === 'all') return 'all time'
+  return key
+}
+
+function ModeRatioBar({ unimodal, multimodal }: { unimodal: number; multimodal: number }) {
+  const total = unimodal + multimodal
+  const uniPct = total > 0 ? (unimodal / total) * 100 : 50
+  return (
+    <div>
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+        <div className="flex h-full w-full">
+          <div className="bg-korecha-primary" style={{ width: `${uniPct}%` }} />
+          <div className="bg-violet-400" style={{ width: `${100 - uniPct}%` }} />
+        </div>
+      </div>
+      <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+        <span>Unimodal {unimodal}</span>
+        <span>Multimodal {multimodal}</span>
+      </div>
+    </div>
+  )
+}
+
 export function DashboardPage() {
+  const [period, setPeriod] = useState<DashboardPeriodKey>('30d')
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [containers, setContainers] = useState<Container[]>([])
   const [locations, setLocations] = useState<Location[]>([])
@@ -37,20 +71,61 @@ export function DashboardPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    Promise.all([getDashboardStats(), listContainers(), getSettings(), listLocations()])
-      .then(([statsRes, containersRes, settingsRes, locationsRes]) => {
-        setStats(statsRes.data)
+    Promise.all([listContainers({ page: 1 }), listLocations()])
+      .then(([containersRes, locationsRes]) => {
         setContainers(containersRes.data)
         setLocations(locationsRes.data)
-        setDemurrageAlertHours(settingsRes.data.demurrageAlertHours)
+        setDemurrageAlertHours(containersRes.meta.demurrageAlertHours ?? 48)
       })
       .catch((err) => setError(err.message))
   }, [])
 
-  if (error) return <Alert>{error}</Alert>
+  useEffect(() => {
+    getDashboardStats({ period })
+      .then((statsRes) => {
+        setStats(statsRes.data)
+        setError('')
+      })
+      .catch((err) => setError(err.message))
+  }, [period])
+
+  if (error && !stats) return <Alert>{error}</Alert>
   if (!stats) return <Loading message="Loading dashboard..." />
 
-  const cards = [
+  const pendingTotal = stats.pendingApprovals?.total ?? 0
+  const flagged = stats.payments?.flaggedShipments ?? 0
+  const openDisputes = stats.payments?.openDisputes ?? 0
+  const ratingAverage = stats.ratings?.average ?? null
+  const unimodal = stats.shipments?.byMode?.UNIMODAL ?? 0
+  const multimodal = stats.shipments?.byMode?.MULTIMODAL ?? 0
+  const activePeriod = stats.period?.key ?? period
+
+  const operationsCards = [
+    { label: 'Active Loads', value: stats.loads?.active ?? 0 },
+    { label: 'Active Availability', value: stats.availability?.activePostings ?? 0 },
+    { label: 'Shipments In Transit', value: stats.shipments?.inTransit ?? 0 },
+    { label: 'Matches This Week', value: stats.matches?.thisWeek ?? 0 },
+  ]
+
+  const moneyCards = [
+    {
+      label: 'Commission Earned',
+      value: formatEtb(stats.payments?.commissionEarnedEtb ?? 0),
+      sub: `Period: ${periodLabel(activePeriod)}`,
+    },
+    {
+      label: 'Funds Held in Escrow',
+      value: formatEtb(stats.payments?.escrowHeldEtb ?? 0),
+    },
+    {
+      label: 'Flagged Shipments',
+      value: flagged,
+      warn: flagged > 0,
+      sub: `${openDisputes} open disputes`,
+    },
+  ]
+
+  const platformCards = [
     {
       label: 'Total Organizations',
       value: stats.organizations.total,
@@ -60,7 +135,6 @@ export function DashboardPage() {
         </Link>
       ),
     },
-    { label: 'Active Organizations', value: stats.organizations.byStatus.ACTIVE || 0 },
     {
       label: 'Total Containers',
       value: stats.containers.total,
@@ -73,18 +147,22 @@ export function DashboardPage() {
     {
       label: 'Demurrage Risk',
       value: stats.containers.demurrageRisk,
-      warn: (stats.containers.demurrageRisk as number) > 0,
-    },
-    { label: 'Avg Trucking Rate', value: `${formatEtb(stats.pricing.avgBasePricePerKm)}/km` },
-    {
-      label: 'Corridor Distance',
-      value: `${stats.pricing.corridorDistanceKm} km`,
-      sub: 'Djibouti → Addis Ababa',
+      warn: stats.containers.demurrageRisk > 0,
     },
   ]
 
+  const extrasCards = [
+    { label: 'Active Organizations', value: stats.organizations.byStatus.ACTIVE || 0 },
+    {
+      label: 'Primary corridor',
+      value: `${stats.pricing.corridorDistanceKm} km`,
+      sub: 'Djibouti → Addis Ababa',
+    },
+    { label: 'Avg Trucking Rate', value: `${formatEtb(stats.pricing.avgBasePricePerKm)}/km` },
+  ]
+
   const demurrageRiskContainers = containers
-    .filter((container) => isDemurrageRisk(container.lastFreeDay, demurrageAlertHours))
+    .filter((container) => container.isDemurrageRisk)
     .sort((a, b) => new Date(a.lastFreeDay || '').getTime() - new Date(b.lastFreeDay || '').getTime())
     .slice(0, 8)
 
@@ -105,14 +183,58 @@ export function DashboardPage() {
         }
       />
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-        {cards.map((card) => (
+      {error && <Alert>{error}</Alert>}
+
+      <ChipTabs items={PERIOD_TABS} active={period} onChange={setPeriod} />
+
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        {operationsCards.map((card) => (
+          <StatCard key={card.label} {...card} />
+        ))}
+      </div>
+
+      <div className="mt-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        {moneyCards.map((card) => (
+          <StatCard key={card.label} {...card} />
+        ))}
+        <StatCard
+          label="Average Platform Rating"
+          value={
+            ratingAverage == null ? (
+              <span className="text-xl font-semibold text-slate-400">No ratings yet</span>
+            ) : (
+              <span className="flex items-center gap-3">
+                <span>{ratingAverage.toFixed(1)}</span>
+                <StarRating value={ratingAverage} readOnly size="sm" />
+              </span>
+            )
+          }
+          sub={ratingAverage == null ? undefined : `${stats.ratings?.count ?? 0} ratings`}
+        />
+      </div>
+
+      <div className="mt-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <Link to="/admin/applications" className="block">
+          <StatCard
+            label="Pending Approvals"
+            value={pendingTotal}
+            warn={pendingTotal > 0}
+            sub={`${stats.pendingApprovals?.tradeCustomers ?? 0} trade · ${stats.pendingApprovals?.fleetManagers ?? 0} fleet`}
+          />
+        </Link>
+        {platformCards.map((card) => (
+          <StatCard key={card.label} {...card} />
+        ))}
+      </div>
+
+      <div className="mt-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        {extrasCards.map((card) => (
           <StatCard key={card.label} {...card} />
         ))}
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-korecha-border bg-white p-6 shadow-sm">
+        <Card>
           <h3 className="font-bold text-slate-900">Organizations by Type</h3>
           <div className="mt-5 space-y-3">
             {Object.entries(stats.organizations.byType).map(([type, count]) => (
@@ -127,8 +249,8 @@ export function DashboardPage() {
               <p className="text-sm text-slate-400">No organizations yet</p>
             )}
           </div>
-        </div>
-        <div className="rounded-2xl border border-korecha-border bg-white p-6 shadow-sm">
+        </Card>
+        <Card>
           <h3 className="font-bold text-slate-900">Containers by Status</h3>
           <div className="mt-5 space-y-3">
             {Object.entries(stats.containers.byStatus).map(([status, count]) => (
@@ -143,7 +265,38 @@ export function DashboardPage() {
               <p className="text-sm text-slate-400">No containers yet</p>
             )}
           </div>
-        </div>
+        </Card>
+        <Card>
+          <h3 className="font-bold text-slate-900">Shipments by Mode</h3>
+          <ModeRatioBar unimodal={unimodal} multimodal={multimodal} />
+        </Card>
+        <Card>
+          <h3 className="font-bold text-slate-900">External Integrations</h3>
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm text-slate-700">ESL GPS feed</p>
+                <p className="mt-0.5 text-xs text-slate-400">
+                  Last sync: {stats.integrations?.eslGpsFeed.lastSyncAt
+                    ? formatDate(stats.integrations.eslGpsFeed.lastSyncAt)
+                    : 'Never'}
+                </p>
+              </div>
+              <Badge status={stats.integrations?.eslGpsFeed.status ?? 'DISCONNECTED'} />
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm text-slate-700">Vessel ETA feed</p>
+                <p className="mt-0.5 text-xs text-slate-400">
+                  Last sync: {stats.integrations?.vesselEtaFeed.lastSyncAt
+                    ? formatDate(stats.integrations.vesselEtaFeed.lastSyncAt)
+                    : 'Never'}
+                </p>
+              </div>
+              <Badge status={stats.integrations?.vesselEtaFeed.status ?? 'DISCONNECTED'} />
+            </div>
+          </div>
+        </Card>
       </div>
 
       <div className="mt-8">

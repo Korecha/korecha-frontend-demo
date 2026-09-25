@@ -8,6 +8,7 @@ export function jobRouteLocations(job: { pickup: JobPoint; delivery: JobPoint })
       type: 'PORT',
       region: 'Pickup',
       coordinates: job.pickup.coordinates,
+      status: 'PUBLISHED',
       isActive: true,
     },
     {
@@ -16,6 +17,7 @@ export function jobRouteLocations(job: { pickup: JobPoint; delivery: JobPoint })
       type: 'PORT',
       region: 'Delivery',
       coordinates: job.delivery.coordinates,
+      status: 'PUBLISHED',
       isActive: true,
     },
   ]
@@ -40,6 +42,7 @@ export function legRouteLocations(leg: ShipmentLeg): Location[] {
       type: from.type,
       region: from.region,
       coordinates: from.coordinates,
+      status: 'PUBLISHED',
       isActive: true,
     },
     {
@@ -48,6 +51,7 @@ export function legRouteLocations(leg: ShipmentLeg): Location[] {
       type: to.type,
       region: to.region,
       coordinates: to.coordinates,
+      status: 'PUBLISHED',
       isActive: true,
     },
   ]

@@ -76,7 +76,7 @@ export function ContainerDetailPage() {
                     </div>
                     {container.organization && (
                         <div>
-                            <dt className="text-sm font-medium text-slate-500">Owner Organization</dt>
+                            <dt className="text-sm font-medium text-slate-500">Operating organization</dt>
                             <dd className="mt-1 text-base text-slate-900">
                                 {container.organization.name}
                                 {container.organization.type && (
@@ -85,8 +85,21 @@ export function ContainerDetailPage() {
                                     </span>
                                 )}
                             </dd>
+                            <p className="mt-1 text-xs text-slate-500">Organization that currently operates this box on the corridor.</p>
                         </div>
                     )}
+                    <div>
+                        <dt className="text-sm font-medium text-slate-500">Registered carrier</dt>
+                        <dd className="mt-1 text-base text-slate-900">
+                            {container.registeredCarrier?.name || container.registeredCarrier?.code || '—'}
+                            {container.registeredCarrier?.source && (
+                                <span className="ml-2 text-xs text-slate-500" title={container.registeredCarrier.source}>
+                                    ({container.registeredCarrier.source.replace(/_/g, ' ').toLowerCase()})
+                                </span>
+                            )}
+                        </dd>
+                        <p className="mt-1 text-xs text-slate-500">Derived from shipping-line code or the BIC prefix; not stored on the container.</p>
+                    </div>
                     {container.location?.label && (
                         <div>
                             <dt className="text-sm font-medium text-slate-500">Location</dt>
@@ -125,6 +138,38 @@ export function ContainerDetailPage() {
                     )}
                 </dl>
             </Card>
+
+            {container.linkedLoadPosting ? (
+                <Card>
+                    <h2 className="mb-4 text-lg font-bold text-slate-900">Linked load posting</h2>
+                    <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <dt className="text-sm font-medium text-slate-500">Posting</dt>
+                            <dd className="mt-1 font-mono text-base text-slate-900">{container.linkedLoadPosting.id}</dd>
+                        </div>
+                        <div>
+                            <dt className="text-sm font-medium text-slate-500">Status</dt>
+                            <dd className="mt-1">
+                                <Badge status={container.linkedLoadPosting.status} />
+                            </dd>
+                        </div>
+                        {container.linkedLoadPosting.mode && (
+                            <div>
+                                <dt className="text-sm font-medium text-slate-500">Mode</dt>
+                                <dd className="mt-1 text-base text-slate-900">{container.linkedLoadPosting.mode}</dd>
+                            </div>
+                        )}
+                        {(container.linkedLoadPosting.pickupLabel || container.linkedLoadPosting.deliveryLabel) && (
+                            <div className="sm:col-span-2">
+                                <dt className="text-sm font-medium text-slate-500">Route</dt>
+                                <dd className="mt-1 text-base font-semibold text-slate-900">
+                                    {container.linkedLoadPosting.pickupLabel || '—'} → {container.linkedLoadPosting.deliveryLabel || '—'}
+                                </dd>
+                            </div>
+                        )}
+                    </dl>
+                </Card>
+            ) : null}
 
             {/* Linked Shipment Section */}
             {shipment ? (

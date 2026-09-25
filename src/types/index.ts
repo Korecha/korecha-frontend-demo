@@ -52,6 +52,23 @@ export type ShipmentStatus =
 export type ShipmentLegStatus = 'ASSIGNED' | 'IN_TRANSIT' | 'COMPLETED' | 'CANCELLED'
 export type PaymentStatus = 'HELD' | 'RELEASED' | 'DISPUTED' | 'REVERSED'
 export type PaymentProvider = 'TELE_BIRR' | 'CBE_BIRR' | 'NATIONAL_IPS' | 'MANUAL'
+export type PaymentReleaseMethod = 'CUSTOMER_CONFIRMED' | 'AUTO_TIMEOUT' | 'ADMIN_OVERRIDE'
+export type DisputeReasonCode =
+  | 'DELIVERY_NOT_CONFIRMED'
+  | 'CARGO_DAMAGE'
+  | 'AMOUNT_MISMATCH'
+  | 'FRAUD_SUSPECTED'
+  | 'OTHER'
+export type DisputeStatus = 'OPEN' | 'RESOLVED'
+export type DisputeResolution = 'RELEASE' | 'REVERSE'
+export type SpecialHandling = 'NONE' | 'TEMPERATURE_CONTROLLED' | 'PERMIT_AND_ESCORT'
+export type IntegrationStatus = 'DISCONNECTED' | 'CONNECTED' | 'ERROR'
+export type ItemTypeResolvedFrom =
+  | 'ORG_TYPE'
+  | 'ORG_OVERRIDE'
+  | 'MODE_PRICING'
+  | 'ITEM_DEFAULT'
+  | 'NONE'
 
 export interface LiveLocation {
   lat: number
@@ -74,6 +91,7 @@ export type ContainerStatus =
   | 'AT_PORT'
   | 'MAINTENANCE'
 export type LocationType = 'PORT' | 'DRY_PORT' | 'WAREHOUSE' | 'CITY' | 'BORDER' | 'TRUCK_STOP'
+export type LocationStatus = 'DRAFT' | 'PUBLISHED'
 
 export interface User {
   id: string
@@ -255,6 +273,11 @@ export interface FleetManagerApplication extends Omit<FleetProfile, 'organizatio
   organizationId: string | { id: string; name: string } | null
 }
 
+export interface ItemTypeModePricingLeaf {
+  pricePerKmEtb?: number | null
+  flatFeeEtb?: number | null
+}
+
 export interface ItemType {
   id: string
   organizationId: string | null
@@ -263,6 +286,13 @@ export interface ItemType {
   unit: string
   pricePerKmEtb?: number
   flatFeeEtb?: number
+  modePricing?: {
+    UNIMODAL?: ItemTypeModePricingLeaf
+    MULTIMODAL?: ItemTypeModePricingLeaf
+  }
+  specialHandling?: SpecialHandling
+  requiresQuote?: boolean
+  resolvedFrom?: ItemTypeResolvedFrom
   isActive: boolean
   isPlatformDefault?: boolean
 }
@@ -418,7 +448,42 @@ export interface Payment {
   netAmountEtb: number
   provider: PaymentProvider
   providerReference: string | null
+  providerConfirmed?: boolean
+  providerTransactionId?: string | null
+  geofencePassed?: boolean | null
+  travelTimePlausible?: boolean | null
+  releaseMethod?: PaymentReleaseMethod | null
+  releasedAt?: string | null
+  payee?: {
+    fleetManagerId: string
+    fleetName: string
+    organizationName: string | null
+  } | null
+  openDisputeId?: string | null
   status: PaymentStatus
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PaymentDispute {
+  id: string
+  paymentId:
+    | string
+    | {
+        id: string
+        grossAmountEtb: number
+        netAmountEtb: number
+        status: PaymentStatus
+        shipmentId: string
+      }
+  reasonCode: DisputeReasonCode
+  reason: string
+  raisedBy: string | { id: string; fullName: string; email: string }
+  status: DisputeStatus
+  resolution: DisputeResolution | null
+  resolutionNotes?: string
+  resolvingAdmin?: string | { id: string; fullName: string; email: string } | null
+  resolvedAt?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -629,6 +694,16 @@ export interface Container {
   lastFreeDay?: string
   emptyReadyAt?: string
   notes?: string
+  registeredCarrier?: { code: string | null; name: string | null; source: string }
+  linkedLoadPostingId?: string | null
+  linkedLoadPosting?: {
+    id: string
+    status: string
+    mode?: string
+    pickupLabel?: string
+    deliveryLabel?: string
+  } | null
+  isDemurrageRisk?: boolean
   linkedShipment?: Shipment | null
 }
 
@@ -637,8 +712,16 @@ export interface Location {
   name: string
   type: LocationType
   region: string
-  coordinates: { lat: number; lng: number }
+  status: LocationStatus
+  coordinates?: { lat: number; lng: number } | null
+  isCustomsBranch?: boolean
   isActive: boolean
+}
+
+export interface IntegrationFeed {
+  status: IntegrationStatus
+  lastSyncAt?: string | null
+  endpointUrl?: string
 }
 
 export interface PlatformSettings {
@@ -648,10 +731,15 @@ export interface PlatformSettings {
   platformCommissionPercent: number
   minTripPriceEtb: number
   demurrageAlertHours: number
+  autoReleaseTimeoutHours?: number
   corridorDistanceKm: { djibouti_to_addis: number }
+  externalIntegrations?: {
+    eslGpsFeed: IntegrationFeed
+    vesselEtaFeed: IntegrationFeed
+  }
 }
 
-export type CommissionScopeType = 'GLOBAL' | 'MODE' | 'TIER'
+export type CommissionScopeType = 'GLOBAL' | 'MODE' | 'TIER' | 'MODE_TIER'
 
 export interface CommissionSetting {
   id: string
@@ -673,9 +761,28 @@ export interface EffectiveCommission {
   context: {
     mode: string | null
     tier: string | null
+    importerTier?: string | null
     at: string
   }
 }
+
+export interface CommissionMatrixCell {
+  mode: ShipmentMode
+  tier: ImporterTier
+  ratePct: number
+  source: {
+    type: 'SETTING' | 'FALLBACK'
+    setting: CommissionSetting | null
+  }
+}
+
+export interface CommissionMatrix {
+  at: string
+  fallbackPct: number
+  cells: CommissionMatrixCell[]
+}
+
+export type DashboardPeriodKey = '7d' | '30d' | '90d' | 'all'
 
 export interface DashboardStats {
   organizations: {
@@ -692,6 +799,44 @@ export interface DashboardStats {
     avgBasePricePerKm: number
     currency: string
     corridorDistanceKm: number
+  }
+  loads?: {
+    active: number
+    byStatus: Record<string, number>
+  }
+  availability?: {
+    activePostings: number
+  }
+  shipments?: {
+    inTransit: number
+    byMode: Record<string, number>
+  }
+  matches?: {
+    thisWeek: number
+  }
+  pendingApprovals?: {
+    tradeCustomers: number
+    fleetManagers: number
+    total: number
+  }
+  payments?: {
+    commissionEarnedEtb: number
+    escrowHeldEtb: number
+    flaggedShipments: number
+    openDisputes: number
+  }
+  ratings?: {
+    average: number | null
+    count: number
+  }
+  integrations?: {
+    eslGpsFeed: IntegrationFeed
+    vesselEtaFeed: IntegrationFeed
+  }
+  period?: {
+    key: DashboardPeriodKey
+    from: string | null
+    to: string
   }
 }
 
@@ -737,6 +882,7 @@ export interface PaginatedMeta {
   total: number
   page: number
   limit: number
+  demurrageAlertHours?: number
 }
 
 export interface ApiError {

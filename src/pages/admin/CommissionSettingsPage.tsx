@@ -24,13 +24,24 @@ import type {
   CommissionSetting,
   CorporateTier,
   EffectiveCommission,
+  ImporterTier,
   ShipmentMode,
 } from '../../types'
 import { formatDate } from '../../utils/format'
 
-const SCOPE_TYPES: CommissionScopeType[] = ['GLOBAL', 'MODE', 'TIER']
+const SCOPE_TYPES: CommissionScopeType[] = ['GLOBAL', 'MODE', 'TIER', 'MODE_TIER']
 const MODES: ShipmentMode[] = ['UNIMODAL', 'MULTIMODAL']
 const TIERS: CorporateTier[] = ['STANDARD', 'PRIORITY', 'PREFERRED']
+const MATRIX_TIERS: ImporterTier[] = ['NORMAL', 'PREMIUM']
+
+function formatScopeValue(scopeType: CommissionScopeType, scopeValue: string | null) {
+  if (!scopeValue) return ''
+  if (scopeType === 'MODE_TIER') {
+    const [mode, tier] = scopeValue.split(':')
+    if (mode && tier) return `${mode} × ${tier}`
+  }
+  return scopeValue
+}
 
 export function CommissionSettingsPage() {
   const [settings, setSettings] = useState<CommissionSetting[]>([])
@@ -46,6 +57,8 @@ export function CommissionSettingsPage() {
     ratePct: 0,
     scopeType: 'GLOBAL' as CommissionScopeType,
     scopeValue: '',
+    modeTierMode: '' as ShipmentMode | '',
+    modeTierTier: '' as ImporterTier | '',
     effectiveFrom: new Date().toISOString().split('T')[0],
   })
 
@@ -70,16 +83,26 @@ export function CommissionSettingsPage() {
     setSaved(false)
     setFormError('')
     try {
+      const scopeValue =
+        form.scopeType === 'GLOBAL'
+          ? null
+          : form.scopeType === 'MODE_TIER'
+            ? form.modeTierMode && form.modeTierTier
+              ? `${form.modeTierMode}:${form.modeTierTier}`
+              : null
+            : form.scopeValue || null
       await createCommissionSetting({
         ratePct: form.ratePct,
         scopeType: form.scopeType,
-        scopeValue: form.scopeType === 'GLOBAL' ? null : form.scopeValue || null,
+        scopeValue,
         effectiveFrom: new Date(form.effectiveFrom).toISOString(),
       })
       setForm({
         ratePct: 0,
         scopeType: 'GLOBAL',
         scopeValue: '',
+        modeTierMode: '',
+        modeTierTier: '',
         effectiveFrom: new Date().toISOString().split('T')[0],
       })
       setSaved(true)
@@ -91,7 +114,7 @@ export function CommissionSettingsPage() {
     }
   }
 
-  const scopeRequiresValue = form.scopeType !== 'GLOBAL'
+  const scopeRequiresValue = form.scopeType !== 'GLOBAL' && form.scopeType !== 'MODE_TIER'
   const scopeOptions = form.scopeType === 'MODE' ? MODES : form.scopeType === 'TIER' ? TIERS : []
 
   if (loading && settings.length === 0) return <Loading />
@@ -124,7 +147,7 @@ export function CommissionSettingsPage() {
                   : effective.source.setting
                     ? `${effective.source.setting.scopeType} rule` +
                       (effective.source.setting.scopeValue
-                        ? ` (${effective.source.setting.scopeValue})`
+                        ? ` (${formatScopeValue(effective.source.setting.scopeType, effective.source.setting.scopeValue)})`
                         : '')
                     : 'Active rule'}
               </p>
@@ -158,7 +181,9 @@ export function CommissionSettingsPage() {
                       <div>
                         <p className="font-medium">{setting.scopeType}</p>
                         {setting.scopeValue && (
-                          <p className="text-sm text-slate-500">{setting.scopeValue}</p>
+                          <p className="text-sm text-slate-500">
+                            {formatScopeValue(setting.scopeType, setting.scopeValue)}
+                          </p>
                         )}
                       </div>
                     </Td>
@@ -231,6 +256,8 @@ export function CommissionSettingsPage() {
                     ...form,
                     scopeType: e.target.value as CommissionScopeType,
                     scopeValue: '',
+                    modeTierMode: '',
+                    modeTierTier: '',
                   })
                 }
               >
@@ -243,6 +270,42 @@ export function CommissionSettingsPage() {
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {form.scopeType === 'MODE_TIER' && (
+              <>
+                <Field label="Shipment Mode">
+                  <Select
+                    value={form.modeTierMode}
+                    onChange={(e) =>
+                      setForm({ ...form, modeTierMode: e.target.value as ShipmentMode | '' })
+                    }
+                    required
+                  >
+                    <option value="">Select mode</option>
+                    {MODES.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+                <Field label="Importer Tier">
+                  <Select
+                    value={form.modeTierTier}
+                    onChange={(e) =>
+                      setForm({ ...form, modeTierTier: e.target.value as ImporterTier | '' })
+                    }
+                    required
+                  >
+                    <option value="">Select tier</option>
+                    {MATRIX_TIERS.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+              </>
+            )}
             {scopeRequiresValue && (
               <Field label={form.scopeType === 'MODE' ? 'Shipment Mode' : 'Corporate Tier'}>
                 <Select
