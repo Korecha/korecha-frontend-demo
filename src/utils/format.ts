@@ -72,6 +72,12 @@ export const IMPORTER_TIER_LABELS: Record<string, string> = {
   PREMIUM: 'Premium',
 }
 
+export const FX_FINANCING_LABELS: Record<string, string> = {
+  BANK_PERMIT: 'Bank permit',
+  SELF_FINANCED: 'Self-financed',
+  FRANCO_VALUTA: 'Franco Valuta',
+}
+
 export function fleetManagerChipLabel(subType?: string | null): string {
   if (subType == null) return 'Fleet manager'
   if (subType === 'MIXED') return 'Fleet manager — Mixed'

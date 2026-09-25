@@ -10,15 +10,14 @@ import type {
   ContainerSize,
   ContainerStatus,
   ContainerType,
-  CorporateCustomerProfile,
-  CorporateTier,
   DashboardStats,
   EffectiveCommission,
-  ImporterProfile,
+  FleetManagerApplication,
   ItemType,
   LoadPosting,
   LoadPostingStatus,
   Location,
+  ModeScope,
   Organization,
   OrgStatus,
   OrgType,
@@ -28,6 +27,8 @@ import type {
   QuotePreview,
   Shipment,
   ShipmentStatus,
+  TradeCustomerApplication,
+  TradeCustomerSource,
   Truck,
   TruckOwnerProfile,
   User,
@@ -231,39 +232,54 @@ export function updateSettings(body: Partial<PlatformSettings>) {
   })
 }
 
-export function listSoleImporterApplications(status = 'PENDING') {
-  return api<{ data: ImporterProfile[] }>(`/api/admin/applications/importers?status=${status}`)
-}
-
-export function reviewSoleImporterApplication(
-  id: string,
-  body: {
-    status: 'APPROVED' | 'REJECTED'
-    rejectionReason?: string
-  },
-) {
-  return api<{ data: ImporterProfile }>(`/api/admin/applications/importers/${id}/review`, {
-    method: 'POST',
-    body: JSON.stringify(body),
-  })
-}
-
-export function listCorporateCustomerApplications(status: ApprovalStatus | 'ALL' = 'PENDING') {
-  return api<{ data: CorporateCustomerProfile[] }>(
-    `/api/admin/applications/corporate-customers?status=${status}`,
+export function listTradeCustomerApplications(status: ApprovalStatus | 'ALL' = 'PENDING') {
+  const q = new URLSearchParams()
+  q.set('status', status)
+  return api<{ data: TradeCustomerApplication[] }>(
+    `/api/admin/applications/trade-customers?${q.toString()}`,
   )
 }
 
-export function reviewCorporateCustomerApplication(
+export function reviewTradeCustomerApplication(
+  id: string,
+  body: {
+    source: TradeCustomerSource
+    status: 'APPROVED' | 'REJECTED'
+    rejectionReason?: string
+    tier?: string
+  },
+) {
+  return api<{ data: TradeCustomerApplication }>(
+    `/api/admin/applications/trade-customers/${id}/review`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+  )
+}
+
+export function listFleetManagerApplications(params?: {
+  status?: ApprovalStatus | 'ALL'
+  modeScope?: ModeScope
+}) {
+  const q = new URLSearchParams()
+  if (params?.status) q.set('status', params.status)
+  if (params?.modeScope) q.set('modeScope', params.modeScope)
+  const qs = q.toString()
+  return api<{ data: FleetManagerApplication[] }>(
+    `/api/admin/applications/fleet-managers${qs ? `?${qs}` : ''}`,
+  )
+}
+
+export function reviewFleetManagerApplication(
   id: string,
   body: {
     status: 'APPROVED' | 'REJECTED'
     rejectionReason?: string
-    tier?: CorporateTier
   },
 ) {
-  return api<{ data: CorporateCustomerProfile }>(
-    `/api/admin/applications/corporate-customers/${id}/review`,
+  return api<{ data: FleetManagerApplication }>(
+    `/api/admin/applications/fleet-managers/${id}/review`,
     {
       method: 'POST',
       body: JSON.stringify(body),

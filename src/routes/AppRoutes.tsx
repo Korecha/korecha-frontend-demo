@@ -17,7 +17,6 @@ import { OrganizationDetailPage } from '../pages/admin/OrganizationDetailPage'
 import { OrganizationsPage } from '../pages/admin/OrganizationsPage'
 import { SettingsPage } from '../pages/admin/SettingsPage'
 import { AdminApplicationsPage } from '../pages/admin/ApplicationsPage'
-import { CorporateApplicationsPage } from '../pages/admin/CorporateApplicationsPage'
 import { AdminItemTypesPage } from '../pages/admin/ItemTypesPage'
 import { DriverHomePage } from '../pages/driver/DriverHomePage'
 import { DriverProfilePage } from '../pages/driver/DriverProfilePage'
@@ -102,7 +101,6 @@ export function AppRoutes() {
             <Route path="organizations" element={<OrganizationsPage />} />
             <Route path="organizations/:id" element={<OrganizationDetailPage />} />
             <Route path="applications" element={<AdminApplicationsPage />} />
-            <Route path="applications/corporate" element={<CorporateApplicationsPage />} />
             <Route path="item-types" element={<AdminItemTypesPage />} />
             <Route path="containers" element={<ContainersPage />} />
             <Route path="containers/upload" element={<ContainerBulkUploadPage />} />

@@ -21,6 +21,9 @@ export type FleetProviderType =
   | 'licensed_operator'
 export type CorporateTier = 'STANDARD' | 'PRIORITY' | 'PREFERRED'
 export type ImporterTier = 'NORMAL' | 'PREMIUM'
+export type FxFinancingDeclaration = 'BANK_PERMIT' | 'SELF_FINANCED' | 'FRANCO_VALUTA'
+export type TradeCustomerSource = 'IMPORTER_EXPORTER' | 'CORPORATE_CUSTOMER'
+export type TierVocabulary = 'IMPORTER' | 'CORPORATE'
 export type LicenseStatus = ApprovalStatus
 export type TruckOwnerType = 'INDIVIDUAL' | 'COMPANY'
 export type TradeSide = 'IMPORTER' | 'EXPORTER'
@@ -181,6 +184,7 @@ export interface CorporateCustomerProfile {
   businessRegistrationFile?: string
   tinNumber?: string
   tier: CorporateTier
+  fxFinancingDeclared?: FxFinancingDeclaration | null
   status: ApprovalStatus
   reviewedBy?: string
   reviewedAt?: string
@@ -214,9 +218,41 @@ export interface ImporterProfile {
   companyName?: string
   nationalIdFile: string
   importLicenseFile: string
+  fxFinancingDeclared?: FxFinancingDeclaration | null
   status: ApprovalStatus
   rejectionReason?: string
   user?: User
+}
+
+export interface ApplicationDocument {
+  key: string
+  label: string
+  url: string
+}
+
+export interface TradeCustomerApplication {
+  id: string
+  source: TradeCustomerSource
+  companyName: string
+  contact: { fullName: string; email: string; phone: string } | null
+  tradeSide: TradeSide | null
+  tier: string | null
+  tierLabel: string | null
+  tierVocabulary: TierVocabulary
+  fxFinancingDeclared: FxFinancingDeclaration | null
+  documents: ApplicationDocument[]
+  tinNumber?: string | null
+  status: ApprovalStatus
+  rejectionReason?: string | null
+  reviewedAt?: string | null
+  createdAt?: string
+}
+
+/** Queue row: FleetProfile plus review documents. organizationId is widened locally. */
+export interface FleetManagerApplication extends Omit<FleetProfile, 'organizationId'> {
+  documents: ApplicationDocument[]
+  multimodalLicenseNo?: string
+  organizationId: string | { id: string; name: string } | null
 }
 
 export interface ItemType {

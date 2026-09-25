@@ -8,7 +8,10 @@ import { Alert } from '../../components/ui/Alert'
 import { Button } from '../../components/ui/Button'
 import { Field, Input, PasswordInput, Select } from '../../components/ui/Input'
 import { PageHeader } from '../../components/ui/PageHeader'
-import type { Organization } from '../../types'
+import type { FleetProviderType, Organization } from '../../types'
+import { PROVIDER_TYPE_LABELS } from '../../utils/format'
+
+const FLEET_MANAGER_TYPES: FleetProviderType[] = ['transit_company', 'association', 'mto']
 
 export function RegisterFleetPage() {
   const navigate = useNavigate()
@@ -18,6 +21,8 @@ export function RegisterFleetPage() {
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
     organizationId: '',
+    providerType: 'transit_company' as FleetProviderType,
+    multimodalLicenseNo: '',
     fleetName: '',
     fullName: '',
     email: '',
@@ -29,13 +34,17 @@ export function RegisterFleetPage() {
   useEffect(() => {
     listPublicOrganizations()
       .then((r) => setOrgs(r.data))
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!ceoNationalId) {
       setError('CEO national ID document is required')
+      return
+    }
+    if (form.providerType === 'mto' && !form.multimodalLicenseNo.trim()) {
+      setError('Multimodal license number is required for MTO registration')
       return
     }
     setSubmitting(true)
@@ -78,6 +87,30 @@ export function RegisterFleetPage() {
                 ))}
               </Select>
             </Field>
+            <Field label="Fleet manager type">
+              <Select
+                value={form.providerType}
+                onChange={(e) =>
+                  setForm({ ...form, providerType: e.target.value as FleetProviderType })
+                }
+                required
+              >
+                {FLEET_MANAGER_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {PROVIDER_TYPE_LABELS[type]}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            {form.providerType === 'mto' && (
+              <Field label="Multimodal license number">
+                <Input
+                  value={form.multimodalLicenseNo}
+                  onChange={(e) => setForm({ ...form, multimodalLicenseNo: e.target.value })}
+                  required
+                />
+              </Field>
+            )}
             <Field label="Fleet / Company Name">
               <Input
                 value={form.fleetName}
